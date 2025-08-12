@@ -1,0 +1,46 @@
+[11:08:53 PM] 📡 GYRO
+    ↳ {"type":"GYRO","timestamp":81793,"quaternion":{"x":0.003906369212927641,"y":0.01132236701559496,"z":-0.0946073793755913
+,"w":-0.9954222235786004},"velocity":{"x":0,"y":0,"z":0}}
+[11:08:54 PM] 📡 GYRO
+    ↳ {"type":"GYRO","timestamp":82813,"quaternion":{"x":0.006469924008911405,"y":0.011352885525070956,"z":-0.094485305337687
+31,"w":-0.9954222235786004},"velocity":{"x":0,"y":0,"z":0}}
+^C
+shutting down...
+^C
+shutting down...
+^C
+shutting down...
+[11:08:55 PM] 📡 GYRO
+    ↳ {"type":"GYRO","timestamp":83893,"quaternion":{"x":0.00967436750389111,"y":0.010895107882930999,"z":-0.3163243507187109
+,"w":-0.9485152745139928},"velocity":{"x":0,"y":0,"z":0}}
+[11:08:56 PM] 📡 GYRO
+    ↳ {"type":"GYRO","timestamp":84913,"quaternion":{"x":0.008514664143803218,"y":0.011780144657734916,"z":-0.304879909665211
+95,"w":-0.9522690511795404},"velocity":{"x":0,"y":0,"z":0}}
+[11:08:57 PM] 📡 GYRO
+    ↳ {"type":"GYRO","timestamp":85936,"quaternion":{"x":0.007873775444807276,"y":0.012604144413586841,"z":-0.304757835627307
+96,"w":-0.9522995696890164},"velocity":{"x":0,"y":0,"z":0}}
+browser disconnected
+^C
+shutting down...
+^C
+shutting down...
+^C
+shutting down...
+^C
+shutting down...
+^C
+shutting down...
+^C
+shutting down...
+clear
+^C
+shutting down...
+^C
+shutting down...
+(node:12416) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [WebSocketS
+erver]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(Use `node --trace-warnings ...` to show where the warning was created)
+^C
+shutting down...
+^C
+shutting down...

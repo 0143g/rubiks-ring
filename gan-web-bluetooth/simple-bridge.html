@@ -134,7 +134,8 @@
         
         let websocket = null;
         let ganCubeConnection = null;
-        let lastGyroTime = 0;
+        let lastGyroDisplayTime = 0;
+        let lastGyroRelayTime = 0;
         let moveCount = 0;
         
         const statusDiv = document.getElementById('status');
@@ -284,21 +285,23 @@
                 }
                 
             } else if (event.type === 'GYRO') {
-                // Update display every 50ms to prevent performance issues
                 const now = Date.now();
-                if (now - lastGyroTime > 50) {
+                
+                // Update display every 50ms to prevent performance issues
+                if (now - lastGyroDisplayTime > 50) {
                     updateGyroDisplay(event.quaternion, event.velocity);
-                    lastGyroTime = now;
+                    lastGyroDisplayTime = now;
                 }
                 
-                // Still relay all gyro events to WSL (let WSL handle throttling)
-                if (shouldRelay) {
+                // Only relay gyro to WSL every XYZms to prevent terminal spam
+                if (shouldRelay && now - lastGyroRelayTime > 1000) {
                     sendToWSL({
                         type: event.type,
                         timestamp: Date.now(),
                         cubeTimestamp: event.cubeTimestamp,
                         ...event
                     });
+                    lastGyroRelayTime = now;
                 }
                 
             } else if (event.type === 'BATTERY') {

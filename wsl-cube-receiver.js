@@ -30,6 +30,7 @@ class CubeReceiver {
         this.server = null;
         this.moveCount = 0;
         this.lastMoveTime = null;
+        this.isShuttingDown = false;
         this.setupWebSocketServer();
     }
 
@@ -114,11 +115,28 @@ class CubeReceiver {
     }
 
     shutdown() {
+        if (this.isShuttingDown) {
+            console.log(`${colors.red}force exit${colors.reset}`);
+            process.exit(1);
+        }
+        
+        this.isShuttingDown = true;
         console.log(`\n${colors.yellow}shutting down...${colors.reset}`);
         
         if (this.server) {
-            this.server.close(() => {
-                console.log(`${colors.green}websocket server closed${colors.reset}`);
+            // Set a timeout to force exit if server doesn't close gracefully
+            const forceExitTimer = setTimeout(() => {
+                console.log(`${colors.red}force closing server${colors.reset}`);
+                process.exit(0);
+            }, 2000);
+            
+            this.server.close((err) => {
+                clearTimeout(forceExitTimer);
+                if (err) {
+                    console.log(`${colors.red}error closing server: ${err.message}${colors.reset}`);
+                } else {
+                    console.log(`${colors.green}websocket server closed${colors.reset}`);
+                }
                 process.exit(0);
             });
         } else {
@@ -130,6 +148,10 @@ class CubeReceiver {
 // Create and start the receiver
 const receiver = new CubeReceiver();
 
-// Graceful shutdown handling
-process.on('SIGINT', () => receiver.shutdown());
-process.on('SIGTERM', () => receiver.shutdown());
+// Graceful shutdown handling - only set up once
+let shutdownHandlerSet = false;
+if (!shutdownHandlerSet) {
+    process.on('SIGINT', () => receiver.shutdown());
+    process.on('SIGTERM', () => receiver.shutdown());
+    shutdownHandlerSet = true;
+}
