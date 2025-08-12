@@ -30,6 +30,7 @@ class CubeReceiver {
         this.server = null;
         this.moveCount = 0;
         this.lastMoveTime = null;
+        this.lastGyroTime = 0;
         this.isShuttingDown = false;
         this.setupWebSocketServer();
     }
@@ -108,6 +109,13 @@ class CubeReceiver {
                 console.log(`${colors.white}    ↳ facelets: ${event.facelets.substring(0, 20)}...${colors.reset}`);
             }
             
+        } else if (event.type === 'GYRO') {
+            const now = Date.now();
+            if (now - this.lastGyroTime > 1000) {
+                this.lastGyroTime = now;
+                console.log(`${colors.yellow}[${timestamp}] ${event.type}${colors.reset}`);
+                console.log(`${colors.white}    ↳ ${JSON.stringify(event)}${colors.reset}`);
+            }
         } else {
             console.log(`${colors.yellow}[${timestamp}] 📡 ${event.type}${colors.reset}`);
             console.log(`${colors.white}    ↳ ${JSON.stringify(event)}${colors.reset}`);

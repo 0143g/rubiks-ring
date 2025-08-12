@@ -1,24 +1,13 @@
-[11:56:29 PM] connect to wsl, then connect cube
-[11:56:32 PM] connected to wsl websocket server
-[11:56:34 PM] connecting to cube...
-[11:56:45 PM] connected to cube: GANi39Jl
-[11:56:45 PM] PERF: 1 gyro events, 1 renders, 0 skipped, update took 0.10ms
-[11:56:45 PM] hardware: GANi39Jl v0.1
-[11:56:46 PM] cube ready.
-[11:56:46 PM] battery: 41%
-[11:56:46 PM] orientation reset! cube position is now the baseline
-[11:56:46 PM] expected: red=front, white=top, green=left, blue=right, orange=back, yellow=bottom
-[11:56:49 PM] PERF: 49 gyro events, 7 renders, 42 skipped, update took 0.00ms
-[11:56:51 PM] PERF: 25 gyro events, 22 renders, 3 skipped, update took 0.00ms
-[11:56:53 PM] PERF: 21 gyro events, 17 renders, 4 skipped, update took 0.10ms
-[11:56:55 PM] PERF: 22 gyro events, 13 renders, 9 skipped, update took 0.10ms
-[11:56:57 PM] PERF: 20 gyro events, 12 renders, 8 skipped, update took 0.10ms
-[11:56:59 PM] move #1: U
-[11:56:59 PM] PERF: 27 gyro events, 17 renders, 10 skipped, update took 0.10ms
-[11:57:00 PM] move #2: U'
-[11:57:02 PM] PERF: 24 gyro events, 15 renders, 9 skipped, update took 0.10ms
-[11:57:02 PM] event: DISCONNECT
-[11:57:02 PM] cube disconnected
-[11:57:02 PM] disconnected
-[11:57:02 PM] websocket connection closed
-[11:57:28 PM] disconnected
+simple-bridge.html:191 connect to wsl, then connect cube
+simple-bridge.html:198 Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'scene')
+    at animateCubeOrientation (simple-bridge.html:198:51)
+animateCubeOrientation @ simple-bridge.html:198
+requestAnimationFrame
+(anonymous) @ simple-bridge.html:204
+simple-bridge.html:191 connected to wsl websocket server
+simple-bridge.html:191 connecting to cube...
+simple-bridge.html:191 connected to cube: GANi39Jl
+simple-bridge.html:191 hardware: GANi39Jl v0.1
+simple-bridge.html:191 event: FACELETS
+simple-bridge.html:191 cube ready.
+simple-bridge.html:191 battery: 40%

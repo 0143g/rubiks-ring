@@ -2,6 +2,8 @@
 <html>
 <head>
     <title>cube relay</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script type="module" src="https://cdn.cubing.net/v0/js/cubing/twisty"></script>
     <script type="importmap">
     {
         "imports": {
@@ -75,7 +77,7 @@
         
         <div class="cube-3d-container">
             <h3>visualization</h3>
-            <div id="cube3D" class="cube-3d-viewer"></div>
+            <div id="cube-twisty-player" class="cube-3d-viewer"></div>
         </div>
         
         <div class="dashboard">
@@ -139,35 +141,41 @@
     </div>
 
     <script type="module">
-        // Import GAN cube functionality and Three.js
         import { connectGanCube } from './dist/esm/index.mjs';
         import * as THREE from 'three';
-        
+        import { TwistyPlayer } from 'https://cdn.cubing.net/v0/js/cubing/twisty';
+
+        const SOLVED_STATE = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB";
+
+        var twistyPlayer = new TwistyPlayer({
+            puzzle: '3x3x3',
+            visualization: 'PG3D',
+            alg: '',
+            experimentalSetupAnchor: 'start',
+            background: 'none',
+            controlPanel: 'none',
+            hintFacelets: 'none',
+            experimentalDragInput: 'none',
+            cameraLatitude: 0,
+            cameraLongitude: 0,
+            cameraLatitudeLimit: 0,
+            tempoScale: 5
+        });
+
+        $('#cube-twisty-player').append(twistyPlayer);
+
         let websocket = null;
         let ganCubeConnection = null;
-        let lastGyroDisplayTime = 0;
-        let lastGyroRelayTime = 0;
         let moveCount = 0;
-        let baselineQuaternion = null;
-        let currentQuaternion = { x: 0, y: 0, z: 0, w: 1 };
-        let lastQuaternion = { x: 0, y: 0, z: 0, w: 1 };
-        let targetQuaternion = { x: 0, y: 0, z: 0, w: 1 };
-        let renderRequested = false;
-        let isInterpolating = false;
-        let interpolationStartTime = 0;
+        let basis = null;
+        let cubeQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(30 * Math.PI / 180, -30 * Math.PI / 180, 0));
+        const HOME_ORIENTATION = new THREE.Quaternion().setFromEuler(new THREE.Euler(15 * Math.PI / 180, -20 * Math.PI / 180, 0));
         
-        // Performance monitoring
-        let lastPerfLog = 0;
-        let gyroEventCount = 0;
-        let renderCount = 0;
-        let skippedUpdates = 0;
-        
-        // 3D Cube visualization
-        let scene, camera, renderer, cube3D;
+        var twistyScene;
+        var twistyVantage;
         
         const statusDiv = document.getElementById('status');
         const logDiv = document.getElementById('log');
-        const activityIndicator = document.getElementById('activityIndicator');
         
         function log(message) {
             const timestamp = new Date().toLocaleTimeString();
@@ -175,7 +183,6 @@
             logDiv.innerHTML += entry;
             logDiv.scrollTop = logDiv.scrollHeight;
             
-            // Limit to last 50 entries to prevent memory issues
             const entries = logDiv.querySelectorAll('.log-entry');
             if (entries.length > 50) {
                 entries[0].remove();
@@ -183,287 +190,44 @@
             
             console.log(message);
         }
-        
-        // Initialize 3D cube visualization
-        function init3DCube() {
-            const container = document.getElementById('cube3D');
-            
-            // Scene setup
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0xf8f9fa);
-            
-            // Camera setup - facing red side directly
-            camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
-            camera.position.set(0, 0, 4);
-            camera.lookAt(0, 0, 0);
-            
-            // Renderer setup
-            renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance" });
-            renderer.setSize(container.clientWidth, container.clientHeight);
-            renderer.shadowMap.enabled = false; // Disable shadows for performance
-            container.appendChild(renderer.domElement);
-            
-            // Lighting (simplified)
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-            scene.add(ambientLight);
-            
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.4);
-            directionalLight.position.set(5, 5, 5);
-            scene.add(directionalLight);
-            
-            // Create 3x3x3 Rubik's cube
-            cube3D = new THREE.Group(); // Container for all small cubes
-            
-            const smallCubeSize = 0.3;
-            const spacing = 0.02; // Small gap between cubes
-            const totalSize = smallCubeSize + spacing;
-            
-            // Define face colors: Right(+X), Left(-X), Top(+Y), Bottom(-Y), Front(+Z), Back(-Z)
-            // Based on your specification: red=front, white=top, green=left, blue=right, orange=back, yellow=bottom
-            const faceColors = {
-                right: 0x0000ff,   // Blue
-                left: 0x00ff00,    // Green
-                top: 0xffffff,     // White
-                bottom: 0xffff00,  // Yellow
-                front: 0xff0000,   // Red
-                back: 0xff8800     // Orange
-            };
-            
-            const geometry = new THREE.BoxGeometry(smallCubeSize, smallCubeSize, smallCubeSize);
-            
-            // Pre-create materials to reuse
-            const materialCache = {
-                right: new THREE.MeshBasicMaterial({ color: 0x0000ff }),
-                left: new THREE.MeshBasicMaterial({ color: 0x00ff00 }),
-                top: new THREE.MeshBasicMaterial({ color: 0xffffff }),
-                bottom: new THREE.MeshBasicMaterial({ color: 0xffff00 }),
-                front: new THREE.MeshBasicMaterial({ color: 0xff0000 }),
-                back: new THREE.MeshBasicMaterial({ color: 0xff8800 }),
-                inner: new THREE.MeshBasicMaterial({ color: 0x333333 })
-            };
-            
-            // Create 3x3x3 grid of small cubes
-            for (let x = -1; x <= 1; x++) {
-                for (let y = -1; y <= 1; y++) {
-                    for (let z = -1; z <= 1; z++) {
-                        // Create materials for each small cube based on its position (reuse cached materials)
-                        const materials = [];
-                        
-                        // Right face (+X) - Blue if on right edge
-                        materials.push(x === 1 ? materialCache.right : materialCache.inner);
-                        
-                        // Left face (-X) - Green if on left edge  
-                        materials.push(x === -1 ? materialCache.left : materialCache.inner);
-                        
-                        // Top face (+Y) - White if on top edge
-                        materials.push(y === 1 ? materialCache.top : materialCache.inner);
-                        
-                        // Bottom face (-Y) - Yellow if on bottom edge
-                        materials.push(y === -1 ? materialCache.bottom : materialCache.inner);
-                        
-                        // Front face (+Z) - Red if on front edge
-                        materials.push(z === 1 ? materialCache.front : materialCache.inner);
-                        
-                        // Back face (-Z) - Orange if on back edge
-                        materials.push(z === -1 ? materialCache.back : materialCache.inner);
-                        
-                        const smallCube = new THREE.Mesh(geometry, materials);
-                        smallCube.position.set(x * totalSize, y * totalSize, z * totalSize);
-                        cube3D.add(smallCube);
-                        
-                        // Add wireframe edges only to edge cubes for performance
-                        if (Math.abs(x) === 1 || Math.abs(y) === 1 || Math.abs(z) === 1) {
-                            const edges = new THREE.EdgesGeometry(geometry);
-                            const lineBasicMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
-                            const wireframe = new THREE.LineSegments(edges, lineBasicMaterial);
-                            smallCube.add(wireframe);
-                        }
-                    }
+
+        async function animateCubeOrientation() {
+            if (!twistyScene || !twistyVantage) {
+                var vantageList = await twistyPlayer.experimentalCurrentVantages();
+                twistyVantage = [...vantageList][0];
+                if (twistyVantage && twistyVantage.scene) {
+                    twistyScene = await twistyVantage.scene.scene();
                 }
             }
-            
-            scene.add(cube3D);
-            
-            // Initial render
-            requestRender();
-        }
-        
-        function render3D() {
-            if (renderRequested) {
-                renderRequested = false;
-                const startTime = performance.now();
-                
-                // Handle interpolation for smooth motion between gyro updates
-                if (isInterpolating) {
-                    const elapsed = startTime - interpolationStartTime;
-                    const duration = 50; // Interpolate over 50ms
-                    const t = Math.min(elapsed / duration, 1.0);
-                    
-                    if (t >= 1.0) {
-                        isInterpolating = false;
-                        lastQuaternion = { ...targetQuaternion };
-                    } else {
-                        const interpolated = quaternionSlerp(lastQuaternion, targetQuaternion, t);
-                        update3DCubeRotation(interpolated);
-                        requestRender(); // Continue interpolating
-                    }
-                }
-                
-                renderer.render(scene, camera);
-                renderCount++;
+            if (twistyScene && twistyVantage) {
+                twistyScene.quaternion.slerp(cubeQuaternion, 0.25);
+                twistyVantage.render();
             }
+            requestAnimationFrame(animateCubeOrientation);
         }
-        
-        function requestRender() {
-            if (!renderRequested) {
-                renderRequested = true;
-                requestAnimationFrame(render3D);
-            }
-        }
-        
-        function quaternionDistance(q1, q2) {
-            return Math.abs(q1.x - q2.x) + Math.abs(q1.y - q2.y) + Math.abs(q1.z - q2.z) + Math.abs(q1.w - q2.w);
-        }
-        
-        function quaternionSlerp(q1, q2, t) {
-            // Spherical linear interpolation
-            const dot = q1.x * q2.x + q1.y * q2.y + q1.z * q2.z + q1.w * q2.w;
-            const absDot = Math.abs(dot);
-            
-            if (absDot >= 1.0) {
-                return { ...q1 };
-            }
-            
-            const theta = Math.acos(absDot);
-            const sinTheta = Math.sin(theta);
-            
-            if (Math.abs(sinTheta) < 0.001) {
-                return {
-                    x: q1.x * 0.5 + q2.x * 0.5,
-                    y: q1.y * 0.5 + q2.y * 0.5,
-                    z: q1.z * 0.5 + q2.z * 0.5,
-                    w: q1.w * 0.5 + q2.w * 0.5
-                };
-            }
-            
-            const a = Math.sin((1 - t) * theta) / sinTheta;
-            const b = Math.sin(t * theta) / sinTheta;
-            
-            const sign = dot < 0 ? -1 : 1;
-            
-            return {
-                x: q1.x * a + q2.x * b * sign,
-                y: q1.y * a + q2.y * b * sign,
-                z: q1.z * a + q2.z * b * sign,
-                w: q1.w * a + q2.w * b * sign
-            };
-        }
-        
-        function update3DCubeRotation(quaternion) {
-            if (cube3D) {
-                // Convert GAN quaternion to Three.js coordinate system
-                // GAN cube uses different axis orientation than Three.js
-                // Need to remap axes to match physical rotation
-                
-                // Try different axis mappings to match physical rotation
-                // GAN: X=?, Y=?, Z=? -> Three.js: X=left/right, Y=up/down, Z=forward/back
-                cube3D.quaternion.set(
-                    quaternion.y, // Map GAN Y to Three.js X
-                    quaternion.z, // Map GAN Z to Three.js Y 
-                    quaternion.x, // Map GAN X to Three.js Z
-                    quaternion.w   // W stays the same
-                );
-                
-                // Request a render since cube rotation changed
-                requestRender();
-            }
-        }
-        
-        // Quaternion math functions
-        function multiplyQuaternions(q1, q2) {
-            return {
-                x: q1.w * q2.x + q1.x * q2.w + q1.y * q2.z - q1.z * q2.y,
-                y: q1.w * q2.y - q1.x * q2.z + q1.y * q2.w + q1.z * q2.x,
-                z: q1.w * q2.z + q1.x * q2.y - q1.y * q2.x + q1.z * q2.w,
-                w: q1.w * q2.w - q1.x * q2.x - q1.y * q2.y - q1.z * q2.z
-            };
-        }
-        
-        function conjugateQuaternion(q) {
-            return { x: -q.x, y: -q.y, z: -q.z, w: q.w };
-        }
-        
-        function getRelativeQuaternion(current, baseline) {
-            if (!baseline) return current;
-            const baselineConj = conjugateQuaternion(baseline);
-            return multiplyQuaternions(baselineConj, current);
-        }
-        
+        requestAnimationFrame(animateCubeOrientation);
+
         function updateGyroDisplay(quaternion, velocity) {
-            const startTime = performance.now();
-            gyroEventCount++;
-            
-            // Store current quaternion for reset functionality
-            currentQuaternion = { ...quaternion };
-            
-            // Calculate relative orientation if we have a baseline
-            const displayQuaternion = getRelativeQuaternion(quaternion, baselineQuaternion);
-            
-            // Only update if quaternion changed significantly (lowered threshold for smoothness)
-            const distance = quaternionDistance(displayQuaternion, lastQuaternion);
-            if (distance < 0.001) {
-                skippedUpdates++;
-                return; // Skip update for minimal changes
+            let { x: qx, y: qy, z: qz, w: qw } = quaternion;
+            let quat = new THREE.Quaternion(qx, qz, -qy, qw).normalize();
+            if (!basis) {
+                basis = quat.clone().conjugate();
             }
-            
-            // Set up smooth interpolation to new target
-            targetQuaternion = { ...displayQuaternion };
-            isInterpolating = true;
-            interpolationStartTime = startTime;
-            
-            // Batch DOM updates
-            const quatX = document.getElementById('quatX');
-            const quatY = document.getElementById('quatY');
-            const quatZ = document.getElementById('quatZ');
-            const quatW = document.getElementById('quatW');
-            const velocityEl = document.getElementById('velocity');
-            
-            quatX.textContent = displayQuaternion.x.toFixed(3);
-            quatY.textContent = displayQuaternion.y.toFixed(3);
-            quatZ.textContent = displayQuaternion.z.toFixed(3);
-            quatW.textContent = displayQuaternion.w.toFixed(3);
+            cubeQuaternion.copy(quat.premultiply(basis).premultiply(HOME_ORIENTATION));
+
+            $('#quatX').text(qx.toFixed(3));
+            $('#quatY').text(qy.toFixed(3));
+            $('#quatZ').text(qz.toFixed(3));
+            $('#quatW').text(qw.toFixed(3));
             
             if (velocity) {
-                velocityEl.textContent = `x:${velocity.x}, y:${velocity.y}, z:${velocity.z}`;
-            }
-            
-            // Start interpolated rotation update
-            requestRender();
-            
-            const endTime = performance.now();
-            
-            // Log performance stats every 2 seconds
-            if (endTime - lastPerfLog > 2000) {
-                log(`PERF: ${gyroEventCount} gyro events, ${renderCount} renders, ${skippedUpdates} skipped, interpolating: ${isInterpolating}`);
-                gyroEventCount = renderCount = skippedUpdates = 0;
-                lastPerfLog = endTime;
+                $('#velocity').text(`x:${velocity.x}, y:${velocity.y}, z:${velocity.z}`);
             }
         }
         
         function resetOrientation() {
-            if (!ganCubeConnection) {
-                log('connect cube first before resetting orientation');
-                return;
-            }
-            
-            // Set current orientation as the baseline (table position)
-            baselineQuaternion = { ...currentQuaternion };
-            
-            log('orientation reset! cube position is now the baseline');
-            log('expected: red=front, white=top, green=left, blue=right, orange=back, yellow=bottom');
-            
-            // Force update display to show reset
-            updateGyroDisplay(currentQuaternion, null);
+            basis = null;
+            log('orientation reset!');
         }
         
         function updateCubeInfo(key, value) {
@@ -478,7 +242,6 @@
             statusDiv.className = `status ${connected ? 'connected' : 'disconnected'}`;
         }
         
-        // WebSocket connection to WSL Node.js server
         function connectWebSocket() {
             try {
                 websocket = new WebSocket('ws://localhost:8080');
@@ -502,7 +265,6 @@
             }
         }
         
-        // Send data to WSL via WebSocket
         function sendToWSL(data) {
             if (websocket && websocket.readyState === WebSocket.OPEN) {
                 websocket.send(JSON.stringify(data));
@@ -511,7 +273,6 @@
             return false;
         }
         
-        // Connect to GAN cube and relay events
         async function connectCube() {
             if (ganCubeConnection) {
                 log('cube already connected!');
@@ -521,7 +282,6 @@
             try {
                 log('connecting to cube...');
                 
-                // Custom MAC address provider for browser compatibility
                 const customMacAddressProvider = async (device, isFallbackCall) => {
                     if (isFallbackCall) {
                         return prompt('Unable to determine cube MAC address!\nPlease enter MAC address manually:');
@@ -535,16 +295,13 @@
                 
                 log(`connected to cube: ${ganCubeConnection.deviceName}`);
                 
-                // Update cube info display
                 updateCubeInfo('deviceName', ganCubeConnection.deviceName);
                 updateCubeInfo('deviceMAC', ganCubeConnection.deviceMAC);
                 
-                // Subscribe to cube events
                 ganCubeConnection.events$.subscribe(event => {
                     handleCubeEvent(event);
                 });
                 
-                // Request initial cube info
                 await ganCubeConnection.sendCubeCommand({ type: "REQUEST_HARDWARE" });
                 await ganCubeConnection.sendCubeCommand({ type: "REQUEST_FACELETS" });
                 await ganCubeConnection.sendCubeCommand({ type: "REQUEST_BATTERY" });
@@ -556,18 +313,17 @@
                 ganCubeConnection = null;
             }
         }
+
+        let cubeStateInitialized = false;
         
-        // Handle cube events and relay to WSL
-        function handleCubeEvent(event) {
-            const eventReceiveTime = performance.now();
-            
-            // Always relay to WSL (with throttling for gyro)
+        async function handleCubeEvent(event) {
             const shouldRelay = websocket && websocket.readyState === WebSocket.OPEN;
             
             if (event.type === 'MOVE') {
                 moveCount++;
                 log(`move #${moveCount}: ${event.move}`);
                 updateCubeInfo('lastMove', event.move);
+                twistyPlayer.experimentalAddMove(event.move, { cancel: false });
                 
                 if (shouldRelay) {
                     sendToWSL({
@@ -579,22 +335,15 @@
                 }
                 
             } else if (event.type === 'GYRO') {
-                const now = Date.now();
-                const gyroLatency = eventReceiveTime - (event.timestamp || eventReceiveTime);
-                
-                // Update display on every gyro event for maximum smoothness
                 updateGyroDisplay(event.quaternion, event.velocity);
-                lastGyroDisplayTime = now;
                 
-                // Only relay gyro to WSL every XYZms to prevent terminal spam
-                if (shouldRelay && now - lastGyroRelayTime > 1000) {
+                if (shouldRelay) {
                     sendToWSL({
                         type: event.type,
                         timestamp: Date.now(),
                         cubeTimestamp: event.cubeTimestamp,
                         ...event
                     });
-                    lastGyroRelayTime = now;
                 }
                 
             } else if (event.type === 'BATTERY') {
@@ -622,8 +371,14 @@
                     });
                 }
                 
-            } else if (event.type === 'FACELETS') {
-                
+            } else if (event.type === 'FACELETS' && !cubeStateInitialized) {
+                if (event.facelets != SOLVED_STATE) {
+                    twistyPlayer.alg = event.facelets;
+                } else {
+                    twistyPlayer.alg = '';
+                }
+                cubeStateInitialized = true;
+
                 if (shouldRelay) {
                     sendToWSL({
                         type: event.type,
@@ -658,16 +413,13 @@
                 ganCubeConnection = null;
                 log('cube disconnected');
                 
-                // Reset cube info display
                 updateCubeInfo('deviceName', 'not connected');
                 updateCubeInfo('deviceMAC', '--:--:--:--:--:--');
                 updateCubeInfo('hardware', 'unknown');
                 updateCubeInfo('battery', '--%');
                 updateCubeInfo('lastMove', 'none');
                 
-                // Reset gyro display and baseline
-                baselineQuaternion = null;
-                currentQuaternion = { x: 0, y: 0, z: 0, w: 1 };
+                basis = null;
                 updateGyroDisplay({x: 0, y: 0, z: 0, w: 1}, {x: 0, y: 0, z: 0});
             }
             
@@ -676,14 +428,10 @@
             moveCount = 0;
         }
         
-        // Event listeners
         document.getElementById('connectWS').addEventListener('click', connectWebSocket);
         document.getElementById('connectCube').addEventListener('click', connectCube);
         document.getElementById('resetOrientation').addEventListener('click', resetOrientation);
         document.getElementById('disconnect').addEventListener('click', disconnect);
-        
-        // Initialize 3D cube visualization
-        init3DCube();
         
         log('connect to wsl, then connect cube');
     </script>

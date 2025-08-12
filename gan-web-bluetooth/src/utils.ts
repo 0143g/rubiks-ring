@@ -1,166 +1,186 @@
 
-import { GanCubeMove } from './gan-cube-protocol';
+const REID_EDGE_ORDER = "UF UR UB UL DF DR DB DL FR FL BR BL".split(" ");
+const REID_CORNER_ORDER = "UFR URB UBL ULF DRF DFL DLB DBR".split(" ");
+const REID_CENTER_ORDER = "U L F R B D".split(" ");
 
-/**
- * Return current host clock timestamp with millisecond precision
- * Use monotonic clock when available
- * @returns Current host clock timestamp in milliseconds
- */
-const now: () => number =
-    typeof window != 'undefined' && typeof window.performance?.now == 'function' ?
-        () => Math.floor(window.performance.now()) :
-        typeof process != 'undefined' && typeof process.hrtime?.bigint == 'function' ?
-            () => Number(process.hrtime.bigint() / 1_000_000n) :
-            () => Date.now();
-
-function linregress(X: Array<number | null>, Y: Array<number | null>) {
-    var sumX = 0;
-    var sumY = 0;
-    var sumXY = 0;
-    var sumXX = 0;
-    var sumYY = 0;
-    var n = 0;
-    for (var i = 0; i < X.length; i++) {
-        var x = X[i];
-        var y = Y[i];
-        if (x == null || y == null) {
-            continue;
-        }
-        n++;
-        sumX += x;
-        sumY += y;
-        sumXY += x * y;
-        sumXX += x * x;
-        sumYY += y * y;
-    }
-    var varX = n * sumXX - sumX * sumX;
-    var covXY = n * sumXY - sumX * sumY;
-    var slope = varX < 1e-3 ? 1 : covXY / varX;
-    var intercept = n < 1 ? 0 : sumY / n - slope * sumX / n;
-    return [slope, intercept];
-}
-
-/**
- * Use linear regression to fit timestamps reported by cube hardware with host device timestamps
- * @param cubeMoves List representing window of cube moves to operate on
- * @returns New copy of move list with fitted cubeTimestamp values
- */
-function cubeTimestampLinearFit(cubeMoves: Array<GanCubeMove>): Array<GanCubeMove> {
-    var res: Array<GanCubeMove> = [];
-    // Calculate and fix timestamp values for missed and recovered cube moves.
-    if (cubeMoves.length >= 2) {
-        // 1st pass - tail-to-head, align missed move cube timestamps to next move -50ms
-        for (let i = cubeMoves.length - 1; i > 0; i--) {
-            if (cubeMoves[i].cubeTimestamp != null && cubeMoves[i - 1].cubeTimestamp == null)
-                cubeMoves[i - 1].cubeTimestamp = cubeMoves[i].cubeTimestamp! - 50;
-        }
-        // 2nd pass - head-to-tail, align missed move cube timestamp to prev move +50ms
-        for (let i = 0; i < cubeMoves.length - 1; i++) {
-            if (cubeMoves[i].cubeTimestamp != null && cubeMoves[i + 1].cubeTimestamp == null)
-                cubeMoves[i + 1].cubeTimestamp = cubeMoves[i].cubeTimestamp! + 50;
-        }
-    }
-    // Apply linear regression to the cube timestamps
-    if (cubeMoves.length > 0) {
-        var [slope, intercept] = linregress(cubeMoves.map(m => m.cubeTimestamp), cubeMoves.map(m => m.localTimestamp));
-        var first = Math.round(slope * cubeMoves[0].cubeTimestamp! + intercept);
-        cubeMoves.forEach(m => {
-            res.push({
-                face: m.face,
-                direction: m.direction,
-                move: m.move,
-                localTimestamp: m.localTimestamp,
-                cubeTimestamp: Math.round(slope * m.cubeTimestamp! + intercept) - first
-            });
-        });
-    }
-    return res;
-}
-
-/**
- * Calculate time skew degree in percent between cube hardware and host device
- * @param cubeMoves List representing window of cube moves to operate on
- * @returns Time skew value in percent
- */
-function cubeTimestampCalcSkew(cubeMoves: Array<GanCubeMove>): number {
-    if (!cubeMoves.length) return 0;
-    var [slope] = linregress(cubeMoves.map(m => m.localTimestamp), cubeMoves.map(m => m.cubeTimestamp));
-    return Math.round((slope - 1) * 100000) / 1000;
-}
-
-const CORNER_FACELET_MAP = [
-    [8, 9, 20], // URF
-    [6, 18, 38], // UFL
-    [0, 36, 47], // ULB
-    [2, 45, 11], // UBR
-    [29, 26, 15], // DFR
-    [27, 44, 24], // DLF
-    [33, 53, 42], // DBL
-    [35, 17, 51]  // DRB
+const REID_TO_FACELETS_MAP: [number, number, number][] = [
+  [1, 2, 0],
+  [0, 2, 0],
+  [1, 1, 0],
+  [0, 3, 0],
+  [2, 0, 0],
+  [0, 1, 0],
+  [1, 3, 0],
+  [0, 0, 0],
+  [1, 0, 0],
+  [1, 0, 2],
+  [0, 1, 1],
+  [1, 1, 1],
+  [0, 8, 1],
+  [2, 3, 0],
+  [0, 10, 1],
+  [1, 4, 1],
+  [0, 5, 1],
+  [1, 7, 2],
+  [1, 3, 2],
+  [0, 0, 1],
+  [1, 0, 1],
+  [0, 9, 0],
+  [2, 2, 0],
+  [0, 8, 0],
+  [1, 5, 1],
+  [0, 4, 1],
+  [1, 4, 2],
+  [1, 5, 0],
+  [0, 4, 0],
+  [1, 4, 0],
+  [0, 7, 0],
+  [2, 5, 0],
+  [0, 5, 0],
+  [1, 6, 0],
+  [0, 6, 0],
+  [1, 7, 0],
+  [1, 2, 2],
+  [0, 3, 1],
+  [1, 3, 1],
+  [0, 11, 1],
+  [2, 1, 0],
+  [0, 9, 1],
+  [1, 6, 1],
+  [0, 7, 1],
+  [1, 5, 2],
+  [1, 1, 2],
+  [0, 2, 1],
+  [1, 2, 1],
+  [0, 10, 0],
+  [2, 4, 0],
+  [0, 11, 0],
+  [1, 7, 1],
+  [0, 6, 1],
+  [1, 6, 2],
 ];
 
-const EDGE_FACELET_MAP = [
-    [5, 10], // UR
-    [7, 19], // UF
-    [3, 37], // UL
-    [1, 46], // UB
-    [32, 16], // DR
-    [28, 25], // DF
-    [30, 43], // DL
-    [34, 52], // DB
-    [23, 12], // FR
-    [21, 41], // FL
-    [50, 39], // BL
-    [48, 14]  // BR
+const CORNER_MAPPING = [
+  [0, 21, 15],
+  [5, 13, 47],
+  [7, 45, 39],
+  [2, 37, 23],
+  [29, 10, 16],
+  [31, 18, 32],
+  [26, 34, 40],
+  [24, 42, 8],
 ];
 
-/**
- * 
- * Convert Corner/Edge Permutation/Orientation cube state to the Kociemba facelets representation string
- * 
- * Example - solved state:
- *   cp = [0, 1, 2, 3, 4, 5, 6, 7]
- *   co = [0, 0, 0, 0, 0, 0, 0, 0]
- *   ep = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
- *   eo = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
- *   facelets = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
- * Example - state after F R moves made:
- *   cp = [0, 5, 2, 1, 7, 4, 6, 3]
- *   co = [1, 2, 0, 2, 1, 1, 0, 2]
- *   ep = [1, 9, 2, 3, 11, 8, 6, 7, 4, 5, 10, 0]
- *   eo = [1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0]
- *   facelets = "UUFUUFLLFUUURRRRRRFFRFFDFFDRRBDDBDDBLLDLLDLLDLBBUBBUBB"
- * 
- * @param cp Corner Permutation
- * @param co Corner Orientation
- * @param ep Egde Permutation
- * @param eo Edge Orientation
- * @returns Cube state in the Kociemba facelets representation string
- * 
- */
-function toKociembaFacelets(cp: Array<number>, co: Array<number>, ep: Array<number>, eo: Array<number>): string {
-    var faces = "URFDLB";
-    var facelets: Array<string> = [];
-    for (let i = 0; i < 54; i++) {
-        facelets[i] = faces[~~(i / 9)];
+const EDGE_MAPPING = [
+  [1, 22],
+  [3, 14],
+  [6, 46],
+  [4, 38],
+  [30, 17],
+  [27, 9],
+  [25, 41],
+  [28, 33],
+  [19, 12],
+  [20, 35],
+  [44, 11],
+  [43, 36],
+];
+
+const FACE_ORDER = "URFDLB";
+
+const PIECE_MAP = {};
+
+REID_EDGE_ORDER.forEach((edge, idx) => {
+  for (let i = 0; i < 2; i++) {
+    PIECE_MAP[rotateLeft(edge, i)] = { piece: idx, orientation: i };
+  }
+});
+
+REID_CORNER_ORDER.forEach((corner, idx) => {
+  for (let i = 0; i < 3; i++) {
+    PIECE_MAP[rotateLeft(corner, i)] = { piece: idx, orientation: i };
+  }
+});
+
+function rotateLeft(s, i) {
+  return s.slice(i) + s.slice(0, i);
+}
+
+function toReid333Struct(pattern) {
+  const output = [[], []];
+  for (let i = 0; i < 6; i++) {
+    if (pattern.patternData["CENTERS"].pieces[i] !== i) {
+      throw new Error("non-oriented puzzles are not supported");
     }
-    for (let i = 0; i < 8; i++) {
-        for (let p = 0; p < 3; p++) {
-            facelets[CORNER_FACELET_MAP[i][(p + co[i]) % 3]] = faces[~~(CORNER_FACELET_MAP[cp[i]][p] / 9)];
-        }
-    }
-    for (let i = 0; i < 12; i++) {
-        for (let p = 0; p < 2; p++) {
-            facelets[EDGE_FACELET_MAP[i][(p + eo[i]) % 2]] = faces[~~(EDGE_FACELET_MAP[ep[i]][p] / 9)];
-        }
-    }
-    return facelets.join('');
+  }
+  for (let i = 0; i < 12; i++) {
+    output[0].push(
+      rotateLeft(
+        REID_EDGE_ORDER[pattern.patternData["EDGES"].pieces[i]],
+        pattern.patternData["EDGES"].orientation[i],
+      ),
+    );
+  }
+  for (let i = 0; i < 8; i++) {
+    output[1].push(
+      rotateLeft(
+        REID_CORNER_ORDER[pattern.patternData["CORNERS"].pieces[i]],
+        pattern.patternData["CORNERS"].orientation[i],
+      ),
+    );
+  }
+  output.push(REID_CENTER_ORDER);
+  return output;
+}
+
+function patternToFacelets(pattern) {
+  const reid = toReid333Struct(pattern);
+  return REID_TO_FACELETS_MAP.map(([orbit, perm, ori]) => reid[orbit][perm][ori]).join("");
+}
+
+function faceletsToPattern(facelets) {
+
+  const stickers = [];
+  facelets.match(/.{9}/g)?.forEach(face => {
+    face.split('').reverse().forEach((s, i) => {
+      if (i != 4)
+        stickers.push(FACE_ORDER.indexOf(s));
+    });
+  });
+
+  const patternData = {
+    CORNERS: {
+      pieces: [],
+      orientation: [],
+    },
+    EDGES: {
+      pieces: [],
+      orientation: [],
+    },
+    CENTERS: {
+      pieces: [0, 1, 2, 3, 4, 5],
+      orientation: [0, 0, 0, 0, 0, 0],
+      orientationMod: [1, 1, 1, 1, 1, 1]
+    },
+  };
+
+  for (const cm of CORNER_MAPPING) {
+    const pi = PIECE_MAP[cm.map((i) => FACE_ORDER[stickers[i]]).join('')];
+    patternData.CORNERS.pieces.push(pi.piece);
+    patternData.CORNERS.orientation.push(pi.orientation);
+  }
+
+  for (const em of EDGE_MAPPING) {
+    const pi = PIECE_MAP[em.map((i) => FACE_ORDER[stickers[i]]).join('')];
+    patternData.EDGES.pieces.push(pi.piece);
+    patternData.EDGES.orientation.push(pi.orientation);
+  }
+
+  return patternData;
+
 }
 
 export {
-    now,
-    cubeTimestampLinearFit,
-    cubeTimestampCalcSkew,
-    toKociembaFacelets,
+  patternToFacelets,
+  faceletsToPattern
 }
-
