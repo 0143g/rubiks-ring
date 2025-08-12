@@ -34,8 +34,8 @@ class CubeReceiver {
     }
 
     setupWebSocketServer() {
-        console.log(`${colors.cyan}${colors.bright}🎲 GAN Cube Terminal Receiver${colors.reset}`);
-        console.log(`${colors.yellow}Starting WebSocket server on ws://localhost:8080${colors.reset}`);
+        console.log(`${colors.cyan}${colors.bright}cube receiver${colors.reset}`);
+        console.log(`${colors.yellow}starting websocket server on 8080${colors.reset}`);
         
         this.server = new WebSocket.Server({ 
             port: 8080,
@@ -43,35 +43,34 @@ class CubeReceiver {
         });
 
         this.server.on('listening', () => {
-            console.log(`${colors.green}✅ WebSocket server ready!${colors.reset}`);
-            console.log(`${colors.blue}Waiting for browser connection...${colors.reset}`);
-            console.log(`${colors.white}Open cube-bridge.html in Chrome and click "Connect to WSL"${colors.reset}\n`);
+            console.log(`${colors.green}websocket server ready${colors.reset}`);
+            console.log(`${colors.blue}waiting for browser connection${colors.reset}`);
         });
 
         this.server.on('connection', (ws, req) => {
             const clientIP = req.socket.remoteAddress;
-            console.log(`${colors.green}🔗 Browser connected from ${clientIP}${colors.reset}`);
+            console.log(`${colors.green}browser connected from ${clientIP}${colors.reset}`);
             
             ws.on('message', (data) => {
                 try {
                     const event = JSON.parse(data.toString());
                     this.handleCubeEvent(event);
                 } catch (error) {
-                    console.log(`${colors.red}❌ Invalid JSON received: ${error.message}${colors.reset}`);
+                    console.log(`${colors.red}invalid json received: ${error.message}${colors.reset}`);
                 }
             });
 
             ws.on('close', () => {
-                console.log(`${colors.yellow}🔌 Browser disconnected${colors.reset}`);
+                console.log(`${colors.yellow}browser disconnected${colors.reset}`);
             });
 
             ws.on('error', (error) => {
-                console.log(`${colors.red}WebSocket error: ${error.message}${colors.reset}`);
+                console.log(`${colors.red}websocket error: ${error.message}${colors.reset}`);
             });
         });
 
         this.server.on('error', (error) => {
-            console.log(`${colors.red}Server error: ${error.message}${colors.reset}`);
+            console.log(`${colors.red}server error: ${error.message}${colors.reset}`);
         });
     }
 
@@ -103,9 +102,9 @@ class CubeReceiver {
             }
             
         } else if (event.type === 'FACELETS') {
-            console.log(`${colors.magenta}[${timestamp}] 🎲 Cube state updated${colors.reset}`);
+            console.log(`${colors.magenta}[${timestamp}] cube state updated${colors.reset}`);
             if (event.facelets) {
-                console.log(`${colors.white}    ↳ Facelets: ${event.facelets.substring(0, 20)}...${colors.reset}`);
+                console.log(`${colors.white}    ↳ facelets: ${event.facelets.substring(0, 20)}...${colors.reset}`);
             }
             
         } else {
@@ -114,22 +113,13 @@ class CubeReceiver {
         }
     }
 
-    showStats() {
-        console.log(`\n${colors.bright}📊 Session Stats:${colors.reset}`);
-        console.log(`${colors.white}Total moves detected: ${this.moveCount}${colors.reset}`);
-        if (this.lastMoveTime) {
-            const elapsed = ((Date.now() - this.lastMoveTime) / 1000).toFixed(1);
-            console.log(`${colors.white}Last move: ${elapsed}s ago${colors.reset}`);
-        }
-    }
-
     shutdown() {
-        console.log(`\n${colors.yellow}🛑 Shutting down...${colors.reset}`);
+        console.log(`\n${colors.yellow}shutting down...${colors.reset}`);
         this.showStats();
         
         if (this.server) {
             this.server.close(() => {
-                console.log(`${colors.green}✅ WebSocket server closed${colors.reset}`);
+                console.log(`${colors.green}websocket server closed${colors.reset}`);
                 process.exit(0);
             });
         } else {
@@ -144,10 +134,3 @@ const receiver = new CubeReceiver();
 // Graceful shutdown handling
 process.on('SIGINT', () => receiver.shutdown());
 process.on('SIGTERM', () => receiver.shutdown());
-
-// Show stats every 30 seconds if there's activity
-setInterval(() => {
-    if (receiver.moveCount > 0) {
-        receiver.showStats();
-    }
-}, 30000);

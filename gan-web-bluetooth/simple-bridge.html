@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>cube wsl bridge</title>
+    <title>cube relay</title>
     <script type="importmap">
     {
         "imports": {
@@ -20,7 +20,7 @@
     </style>
 </head>
 <body>
-    <h1>cube wsl bridge</h1>
+    <h1>cube relay</h1>
     
     <div id="status" class="status disconnected">
         status: disconnected 
@@ -30,10 +30,10 @@
     <button id="connectCube">connect cube</button>
     <button id="disconnect">disconnect</button>
     
-    <h3>Move Events:</h3>
+    <h3>move events:</h3>
     <div id="log" class="log"></div>
     
-    <h3>Gyro Events:</h3>
+    <h3>gyro events:</h3>
     <div id="gyroLog" class="log"></div>
 
     <script type="module">
@@ -72,21 +72,21 @@
                 websocket = new WebSocket('ws://localhost:8080');
                 
                 websocket.onopen = () => {
-                    log('Connected to WSL WebSocket server');
-                    updateStatus('WebSocket Connected', true);
+                    log('connected to wsl websocket server');
+                    updateStatus('websocket connected', true);
                 };
                 
                 websocket.onclose = () => {
-                    log('WebSocket connection closed');
-                    updateStatus('WebSocket Disconnected', false);
+                    log('websocket connection closed');
+                    updateStatus('websocket disconnected', false);
                 };
                 
                 websocket.onerror = (error) => {
-                    log(`WebSocket error: ${error}`);
+                    log(`websocket error: ${error}`);
                 };
                 
             } catch (error) {
-                log(`Failed to connect WebSocket: ${error}`);
+                log(`failed to connect WebSocket: ${error}`);
             }
         }
         
@@ -102,12 +102,12 @@
         // Connect to GAN cube and relay events
         async function connectCube() {
             if (ganCubeConnection) {
-                log('❌ Cube already connected!');
+                log('cube already connected!');
                 return;
             }
             
             try {
-                log('🔗 Connecting to GAN cube...');
+                log('connecting to cube...');
                 
                 // Custom MAC address provider for browser compatibility
                 const customMacAddressProvider = async (device, isFallbackCall) => {
@@ -121,7 +121,7 @@
                 
                 ganCubeConnection = await connectGanCube(customMacAddressProvider);
                 
-                log(`✅ Connected to cube: ${ganCubeConnection.deviceName} (${ganCubeConnection.deviceMAC})`);
+                log(`connected to cube: ${ganCubeConnection.deviceName} (${ganCubeConnection.deviceMAC})`);
                 
                 // Subscribe to cube events
                 ganCubeConnection.events$.subscribe(event => {
@@ -133,17 +133,17 @@
                 await ganCubeConnection.sendCubeCommand({ type: "REQUEST_FACELETS" });
                 await ganCubeConnection.sendCubeCommand({ type: "REQUEST_BATTERY" });
                 
-                log('🎯 Cube ready! Make moves to send events to WSL.');
+                log('cube ready.');
                 
             } catch (error) {
-                log(`❌ Failed to connect to cube: ${error.message}`);
+                log(`failed to connect to cube: ${error.message}`);
                 ganCubeConnection = null;
             }
         }
         
         // Handle cube events and relay to WSL
         function handleCubeEvent(event) {
-            console.log('GAN Cube Event:', event);
+            console.log('cube event:', event);
             
             // Relay event to WSL if connected
             if (websocket && websocket.readyState === WebSocket.OPEN) {
@@ -155,14 +155,14 @@
                 };
                 
                 if (event.type === 'MOVE') {
-                    log(`Cube move: ${event.move}`);
+                    log(`cube move: ${event.move}`);
                     sendToWSL(relayEvent);
                 } else if (event.type === 'GYRO') {
-                    // Throttle gyro events - only log every 100ms
+                    // Throttle gyro events - only log every 10ms
                     const now = Date.now();
-                    if (now - lastGyroTime > 100) {
+                    if (now - lastGyroTime > 10) {
                         const { x, y, z, w } = event.quaternion;
-                        let gyroMsg = `Quaternion: x=${x.toFixed(3)}, y=${y.toFixed(3)}, z=${z.toFixed(3)}, w=${w.toFixed(3)}`;
+                        let gyroMsg = `quaternion: x=${x.toFixed(3)}, y=${y.toFixed(3)}, z=${z.toFixed(3)}, w=${w.toFixed(3)}`;
                         
                         if (event.velocity) {
                             const { x: vx, y: vy, z: vz } = event.velocity;
@@ -174,21 +174,21 @@
                     }
                     sendToWSL(relayEvent);
                 } else if (event.type === 'BATTERY') {
-                    log(`Battery: ${event.batteryLevel}%`);
+                    log(`battery: ${event.batteryLevel}%`);
                     sendToWSL(relayEvent);
                 } else if (event.type === 'HARDWARE') {
-                    log(`Hardware: ${event.hardwareName} v${event.hardwareVersion}`);
+                    log(`hardware: ${event.hardwareName} v${event.hardwareVersion}`);
                     sendToWSL(relayEvent);
                 } else if (event.type === 'FACELETS') {
-                    log(`Cube state updated`);
+                    log(`cube state updated`);
                     sendToWSL(relayEvent);
                 } else {
-                    log(`Event: ${event.type}`);
+                    log(`event: ${event.type}`);
                     sendToWSL(relayEvent);
                 }
             } else {
                 if (event.type !== 'GYRO') { // Don't spam with gyro errors
-                    log(`Cannot relay ${event.type} - WSL not connected`);
+                    log(`cannot relay ${event.type} - WSL not connected`);
                 }
             }
         }
@@ -202,11 +202,11 @@
             if (ganCubeConnection) {
                 ganCubeConnection.disconnect();
                 ganCubeConnection = null;
-                log('🔌 Cube disconnected');
+                log('cube disconnected');
             }
             
-            log('Disconnected');
-            updateStatus('Disconnected', false);
+            log('disconnected');
+            updateStatus('disconnected', false);
         }
         
         // Event listeners
