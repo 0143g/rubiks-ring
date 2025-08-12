@@ -115,7 +115,6 @@ class CubeReceiver {
 
     shutdown() {
         console.log(`\n${colors.yellow}shutting down...${colors.reset}`);
-        this.showStats();
         
         if (this.server) {
             this.server.close(() => {
