@@ -2,6 +2,14 @@
 <html>
 <head>
     <title>GAN Cube → WSL Bridge (Simple)</title>
+    <script type="importmap">
+    {
+        "imports": {
+            "rxjs": "https://cdn.skypack.dev/rxjs@7",
+            "aes-js": "https://cdn.skypack.dev/aes-js@3"
+        }
+    }
+    </script>
     <style>
         body { font-family: monospace; margin: 20px; }
         .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
@@ -19,14 +27,18 @@
     </div>
     
     <button id="connectWS">Connect to WSL (ws://localhost:8080)</button>
-    <button id="testCube">Test Cube Events</button>
+    <button id="connectCube">Connect GAN Cube</button>
     <button id="disconnect">Disconnect</button>
     
     <h3>Event Log:</h3>
     <div id="log" class="log"></div>
 
-    <script>
+    <script type="module">
+        // Import GAN cube functionality
+        import { connectGanCube } from './dist/esm/index.mjs';
+        
         let websocket = null;
+        let ganCubeConnection = null;
         
         const statusDiv = document.getElementById('status');
         const logDiv = document.getElementById('log');
@@ -76,43 +88,77 @@
             return false;
         }
         
-        // Test cube events (simulation for now)
-        function testCubeEvents() {
-            if (!websocket || websocket.readyState !== WebSocket.OPEN) {
-                log('❌ Connect to WSL first!');
+        // Connect to GAN cube and relay events
+        async function connectCube() {
+            if (ganCubeConnection) {
+                log('❌ Cube already connected!');
                 return;
             }
             
-            log('🧪 Testing cube events...');
-            
-            const moves = ['R', "R'", 'U', "U'", 'F', "F'", 'L', "L'", 'D', "D'", 'B', "B'"];
-            let moveIndex = 0;
-            
-            const testInterval = setInterval(() => {
-                if (websocket && websocket.readyState === WebSocket.OPEN) {
-                    const move = moves[moveIndex % moves.length];
-                    moveIndex++;
-                    
-                    const event = {
-                        type: 'MOVE',
-                        move: move,
-                        face: Math.floor(Math.random() * 6),
-                        direction: Math.floor(Math.random() * 2),
-                        timestamp: Date.now()
-                    };
-                    
-                    log(`📤 Sending move: ${move}`);
-                    sendToWSL(event);
-                    
-                    if (moveIndex >= 6) { // Send 6 test moves
-                        clearInterval(testInterval);
-                        log('✅ Test complete');
+            try {
+                log('🔗 Connecting to GAN cube...');
+                
+                // Custom MAC address provider for browser compatibility
+                const customMacAddressProvider = async (device, isFallbackCall) => {
+                    if (isFallbackCall) {
+                        return prompt('Unable to determine cube MAC address!\nPlease enter MAC address manually:');
+                    } else {
+                        return typeof device.watchAdvertisements == 'function' ? null :
+                            prompt('Browser does not support Web Bluetooth watchAdvertisements() API.\nEnable chrome://flags/#enable-experimental-web-platform-features\n\nOr enter cube MAC address manually:');
                     }
+                };
+                
+                ganCubeConnection = await connectGanCube(customMacAddressProvider);
+                
+                log(`✅ Connected to cube: ${ganCubeConnection.deviceName} (${ganCubeConnection.deviceMAC})`);
+                
+                // Subscribe to cube events
+                ganCubeConnection.events$.subscribe(event => {
+                    handleCubeEvent(event);
+                });
+                
+                // Request initial cube info
+                await ganCubeConnection.sendCubeCommand({ type: "REQUEST_HARDWARE" });
+                await ganCubeConnection.sendCubeCommand({ type: "REQUEST_FACELETS" });
+                await ganCubeConnection.sendCubeCommand({ type: "REQUEST_BATTERY" });
+                
+                log('🎯 Cube ready! Make moves to send events to WSL.');
+                
+            } catch (error) {
+                log(`❌ Failed to connect to cube: ${error.message}`);
+                ganCubeConnection = null;
+            }
+        }
+        
+        // Handle cube events and relay to WSL
+        function handleCubeEvent(event) {
+            console.log('GAN Cube Event:', event);
+            
+            // Relay event to WSL if connected
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
+                const relayEvent = {
+                    type: event.type,
+                    timestamp: Date.now(),
+                    cubeTimestamp: event.cubeTimestamp,
+                    ...event
+                };
+                
+                if (event.type === 'MOVE') {
+                    log(`📤 Cube move: ${event.move}`);
+                } else if (event.type === 'BATTERY') {
+                    log(`🔋 Battery: ${event.batteryLevel}%`);
+                } else if (event.type === 'HARDWARE') {
+                    log(`🔧 Hardware: ${event.hardwareName} v${event.hardwareVersion}`);
+                } else if (event.type === 'FACELETS') {
+                    log(`🎲 Cube state updated`);
                 } else {
-                    clearInterval(testInterval);
-                    log('❌ WebSocket disconnected during test');
+                    log(`📡 Event: ${event.type}`);
                 }
-            }, 1000);
+                
+                sendToWSL(relayEvent);
+            } else {
+                log(`❌ Cannot relay ${event.type} - WSL not connected`);
+            }
         }
         
         function disconnect() {
@@ -121,16 +167,22 @@
                 websocket = null;
             }
             
+            if (ganCubeConnection) {
+                ganCubeConnection.disconnect();
+                ganCubeConnection = null;
+                log('🔌 Cube disconnected');
+            }
+            
             log('Disconnected');
             updateStatus('Disconnected', false);
         }
         
         // Event listeners
         document.getElementById('connectWS').addEventListener('click', connectWebSocket);
-        document.getElementById('testCube').addEventListener('click', testCubeEvents);
+        document.getElementById('connectCube').addEventListener('click', connectCube);
         document.getElementById('disconnect').addEventListener('click', disconnect);
         
-        log('Simple bridge interface loaded. Click "Connect to WSL" to test WebSocket connection.');
+        log('GAN Cube → WSL Bridge loaded. Connect to WSL first, then connect your GAN cube to relay moves.');
     </script>
 </body>
 </html>
