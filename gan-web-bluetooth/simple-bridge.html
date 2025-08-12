@@ -38,6 +38,7 @@
         button:hover { opacity: 0.9; }
         #connectWS { background: #007bff; color: white; }
         #connectCube { background: #28a745; color: white; }
+        #resetOrientation { background: #ffc107; color: #212529; }
         #disconnect { background: #dc3545; color: white; }
         
         h1 { margin: 0 0 20px 0; color: #333; }
@@ -65,6 +66,7 @@
             
             <button id="connectWS">connect to wsl</button>
             <button id="connectCube">connect cube</button>
+            <button id="resetOrientation">reset orientation</button>
             <button id="disconnect">disconnect</button>
         </div>
         
@@ -137,6 +139,8 @@
         let lastGyroDisplayTime = 0;
         let lastGyroRelayTime = 0;
         let moveCount = 0;
+        let baselineQuaternion = null;
+        let currentQuaternion = { x: 0, y: 0, z: 0, w: 1 };
         
         const statusDiv = document.getElementById('status');
         const logDiv = document.getElementById('log');
@@ -157,11 +161,37 @@
             console.log(message);
         }
         
+        // Quaternion math functions
+        function multiplyQuaternions(q1, q2) {
+            return {
+                x: q1.w * q2.x + q1.x * q2.w + q1.y * q2.z - q1.z * q2.y,
+                y: q1.w * q2.y - q1.x * q2.z + q1.y * q2.w + q1.z * q2.x,
+                z: q1.w * q2.z + q1.x * q2.y - q1.y * q2.x + q1.z * q2.w,
+                w: q1.w * q2.w - q1.x * q2.x - q1.y * q2.y - q1.z * q2.z
+            };
+        }
+        
+        function conjugateQuaternion(q) {
+            return { x: -q.x, y: -q.y, z: -q.z, w: q.w };
+        }
+        
+        function getRelativeQuaternion(current, baseline) {
+            if (!baseline) return current;
+            const baselineConj = conjugateQuaternion(baseline);
+            return multiplyQuaternions(baselineConj, current);
+        }
+        
         function updateGyroDisplay(quaternion, velocity) {
-            document.getElementById('quatX').textContent = quaternion.x.toFixed(3);
-            document.getElementById('quatY').textContent = quaternion.y.toFixed(3);
-            document.getElementById('quatZ').textContent = quaternion.z.toFixed(3);
-            document.getElementById('quatW').textContent = quaternion.w.toFixed(3);
+            // Store current quaternion for reset functionality
+            currentQuaternion = { ...quaternion };
+            
+            // Calculate relative orientation if we have a baseline
+            const displayQuaternion = getRelativeQuaternion(quaternion, baselineQuaternion);
+            
+            document.getElementById('quatX').textContent = displayQuaternion.x.toFixed(3);
+            document.getElementById('quatY').textContent = displayQuaternion.y.toFixed(3);
+            document.getElementById('quatZ').textContent = displayQuaternion.z.toFixed(3);
+            document.getElementById('quatW').textContent = displayQuaternion.w.toFixed(3);
             
             if (velocity) {
                 document.getElementById('velocity').textContent = `x:${velocity.x}, y:${velocity.y}, z:${velocity.z}`;
@@ -172,6 +202,22 @@
             setTimeout(() => {
                 activityIndicator.className = 'activity-indicator inactive';
             }, 100);
+        }
+        
+        function resetOrientation() {
+            if (!ganCubeConnection) {
+                log('connect cube first before resetting orientation');
+                return;
+            }
+            
+            // Set current orientation as the baseline (table position)
+            baselineQuaternion = { ...currentQuaternion };
+            
+            log('orientation reset! cube position is now the baseline');
+            log('expected: red=front, white=top, green=left, blue=right, orange=back, yellow=bottom');
+            
+            // Force update display to show reset
+            updateGyroDisplay(currentQuaternion, null);
         }
         
         function updateCubeInfo(key, value) {
@@ -372,7 +418,9 @@
                 updateCubeInfo('battery', '--%');
                 updateCubeInfo('lastMove', 'none');
                 
-                // Reset gyro display
+                // Reset gyro display and baseline
+                baselineQuaternion = null;
+                currentQuaternion = { x: 0, y: 0, z: 0, w: 1 };
                 updateGyroDisplay({x: 0, y: 0, z: 0, w: 1}, {x: 0, y: 0, z: 0});
             }
             
@@ -384,6 +432,7 @@
         // Event listeners
         document.getElementById('connectWS').addEventListener('click', connectWebSocket);
         document.getElementById('connectCube').addEventListener('click', connectCube);
+        document.getElementById('resetOrientation').addEventListener('click', resetOrientation);
         document.getElementById('disconnect').addEventListener('click', disconnect);
         
         log('connect to wsl, then connect cube');
