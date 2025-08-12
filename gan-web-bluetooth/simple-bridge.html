@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GAN Cube → WSL Bridge (Simple)</title>
+    <style>
+        body { font-family: monospace; margin: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .connected { background: #d4edda; border: 1px solid #c3e6cb; }
+        .disconnected { background: #f8d7da; border: 1px solid #f5c6cb; }
+        .log { background: #f8f9fa; border: 1px solid #dee2e6; padding: 10px; height: 300px; overflow-y: scroll; }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1>GAN Cube → WSL Bridge (Simple Test)</h1>
+    
+    <div id="status" class="status disconnected">
+        Status: Disconnected
+    </div>
+    
+    <button id="connectWS">Connect to WSL (ws://localhost:8080)</button>
+    <button id="testCube">Test Cube Events</button>
+    <button id="disconnect">Disconnect</button>
+    
+    <h3>Event Log:</h3>
+    <div id="log" class="log"></div>
+
+    <script>
+        let websocket = null;
+        
+        const statusDiv = document.getElementById('status');
+        const logDiv = document.getElementById('log');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function updateStatus(message, connected = false) {
+            statusDiv.textContent = `Status: ${message}`;
+            statusDiv.className = `status ${connected ? 'connected' : 'disconnected'}`;
+        }
+        
+        // WebSocket connection to WSL Node.js server
+        function connectWebSocket() {
+            try {
+                websocket = new WebSocket('ws://localhost:8080');
+                
+                websocket.onopen = () => {
+                    log('Connected to WSL WebSocket server');
+                    updateStatus('WebSocket Connected', true);
+                };
+                
+                websocket.onclose = () => {
+                    log('WebSocket connection closed');
+                    updateStatus('WebSocket Disconnected', false);
+                };
+                
+                websocket.onerror = (error) => {
+                    log(`WebSocket error: ${error}`);
+                };
+                
+            } catch (error) {
+                log(`Failed to connect WebSocket: ${error}`);
+            }
+        }
+        
+        // Send data to WSL via WebSocket
+        function sendToWSL(data) {
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
+                websocket.send(JSON.stringify(data));
+                return true;
+            }
+            return false;
+        }
+        
+        // Test cube events (simulation for now)
+        function testCubeEvents() {
+            if (!websocket || websocket.readyState !== WebSocket.OPEN) {
+                log('❌ Connect to WSL first!');
+                return;
+            }
+            
+            log('🧪 Testing cube events...');
+            
+            const moves = ['R', "R'", 'U', "U'", 'F', "F'", 'L', "L'", 'D', "D'", 'B', "B'"];
+            let moveIndex = 0;
+            
+            const testInterval = setInterval(() => {
+                if (websocket && websocket.readyState === WebSocket.OPEN) {
+                    const move = moves[moveIndex % moves.length];
+                    moveIndex++;
+                    
+                    const event = {
+                        type: 'MOVE',
+                        move: move,
+                        face: Math.floor(Math.random() * 6),
+                        direction: Math.floor(Math.random() * 2),
+                        timestamp: Date.now()
+                    };
+                    
+                    log(`📤 Sending move: ${move}`);
+                    sendToWSL(event);
+                    
+                    if (moveIndex >= 6) { // Send 6 test moves
+                        clearInterval(testInterval);
+                        log('✅ Test complete');
+                    }
+                } else {
+                    clearInterval(testInterval);
+                    log('❌ WebSocket disconnected during test');
+                }
+            }, 1000);
+        }
+        
+        function disconnect() {
+            if (websocket) {
+                websocket.close();
+                websocket = null;
+            }
+            
+            log('Disconnected');
+            updateStatus('Disconnected', false);
+        }
+        
+        // Event listeners
+        document.getElementById('connectWS').addEventListener('click', connectWebSocket);
+        document.getElementById('testCube').addEventListener('click', testCubeEvents);
+        document.getElementById('disconnect').addEventListener('click', disconnect);
+        
+        log('Simple bridge interface loaded. Click "Connect to WSL" to test WebSocket connection.');
+    </script>
+</body>
+</html>
