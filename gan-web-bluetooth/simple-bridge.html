@@ -204,7 +204,7 @@
         const ORIENTATION_CONFIG = {
             // Movement controls (WASD)
             movement: {
-                deadzone: 0.15,        // Ignore small tilts
+                deadzone: 0.05,        // Much smaller deadzone for easier activation
                 sensitivity: 2.0,      // Amplify tilt response
                 roll: {               // Forward/backward tilt
                     forward: 'KeyW',   // Tilt forward → W key
@@ -217,7 +217,7 @@
             },
             // Camera controls (mouse movement)
             camera: {
-                deadzone: 0.1,
+                deadzone: 0.02,        // Much smaller deadzone for easier mouse control
                 sensitivity: 150,      // Mouse pixels per radian
                 yaw: {                 // Rotation around vertical axis
                     enabled: true,     // Yaw → Mouse X movement
@@ -233,9 +233,11 @@
         // Orientation processing state
         let orientationState = {
             lastQuaternion: { x: 0, y: 0, z: 0, w: 1 },
+            currentQuaternion: { x: 0, y: 0, z: 0, w: 1 },
             activeKeys: new Set(),
             mouseAccumulator: { x: 0, y: 0 },
-            referenceOrientation: null
+            referenceOrientation: null,
+            lastLogTime: 0  // For rate limiting excessive logging
         };
         
         function logInput(message) {
@@ -244,10 +246,13 @@
             inputLogDiv.innerHTML += entry;
             inputLogDiv.scrollTop = inputLogDiv.scrollHeight;
             
-            // Keep only last 20 entries
+            // Keep only last 15 entries (reduced for better performance)
             const entries = inputLogDiv.querySelectorAll('div');
-            if (entries.length > 20) {
-                entries[0].remove();
+            if (entries.length > 15) {
+                // Remove multiple entries at once for efficiency
+                for (let i = 0; i < entries.length - 15; i++) {
+                    entries[i].remove();
+                }
             }
         }
         
@@ -435,7 +440,7 @@
             orientationState.mouseAccumulator.y += deltaY;
             
             // Only send mouse events for significant movement
-            const threshold = 1.0;
+            const threshold = 0.5;  // Reduced threshold for more responsive mouse movement
             if (Math.abs(orientationState.mouseAccumulator.x) > threshold || 
                 Math.abs(orientationState.mouseAccumulator.y) > threshold) {
                 
@@ -469,7 +474,12 @@
                 repeat: false
             });
             document.dispatchEvent(event);
-            logInput(`⌨️ REAL KEY PRESS: ${key.toUpperCase()}`);
+            // Rate limit key press logging
+            const now = Date.now();
+            if (now - orientationState.lastLogTime > 500) {  // Only log every 500ms
+                logInput(`⌨️ REAL KEY PRESS: ${key.toUpperCase()}`);
+                orientationState.lastLogTime = now;
+            }
         }
         
         // Key release simulation  
@@ -513,7 +523,10 @@
             });
             document.dispatchEvent(event);
             
-            logInput(`🖱️ REAL MOUSE MOVE: (${deltaX}, ${deltaY})`);
+            // Rate limit mouse movement logging to reduce spam
+            if (Math.random() < 0.1) {  // Only log 10% of mouse movements
+                logInput(`🖱️ REAL MOUSE MOVE: (${deltaX}, ${deltaY})`);
+            }
             
             testTextBox.style.borderColor = '#ffc107';
             setTimeout(() => {
@@ -571,6 +584,9 @@
         
         // Process orientation data for joystick emulation
         function processOrientation(quaternion) {
+            // Store current quaternion for reset functionality
+            orientationState.currentQuaternion = { ...quaternion };
+            
             // Set reference orientation on first reading
             if (!orientationState.referenceOrientation) {
                 orientationState.referenceOrientation = { ...quaternion };
@@ -605,9 +621,13 @@
             logDiv.innerHTML += entry;
             logDiv.scrollTop = logDiv.scrollHeight;
             
+            // Keep only last 30 entries (reduced for better performance)
             const entries = logDiv.querySelectorAll('.log-entry');
-            if (entries.length > 50) {
-                entries[0].remove();
+            if (entries.length > 30) {
+                // Remove multiple entries at once for efficiency
+                for (let i = 0; i < entries.length - 30; i++) {
+                    entries[i].remove();
+                }
             }
             
             console.log(message);
@@ -649,7 +669,15 @@
         
         function resetOrientation() {
             basis = null;
-            orientationState.referenceOrientation = null;
+            
+            // Set current cube orientation as new reference (this is the key fix!)
+            if (orientationState.currentQuaternion) {
+                orientationState.referenceOrientation = { ...orientationState.currentQuaternion };
+                logInput('🔄 New reference set to current cube position');
+            } else {
+                orientationState.referenceOrientation = null;
+                logInput('🔄 Reference orientation cleared');
+            }
             
             // Release all active keys
             for (const key of orientationState.activeKeys) {
@@ -657,8 +685,17 @@
             }
             orientationState.activeKeys.clear();
             
-            log('orientation reset!');
-            logInput('🔄 Reference orientation reset');
+            // Reset displays to show relative values from new reference
+            $('#quatX').text('0.000');
+            $('#quatY').text('0.000');
+            $('#quatZ').text('0.000');
+            $('#quatW').text('1.000');
+            $('#velocity').text('x:0.00, y:0.00, z:0.00');
+            
+            // Reset cube quaternion to identity for visualization
+            cubeQuaternion.set(0, 0, 0, 1);
+            
+            log('orientation reset! current position is now neutral');
         }
         
         function updateCubeInfo(key, value) {
