@@ -143,13 +143,19 @@
         
         <div class="panel">
             <h3>cube controller test</h3>
-            <p>cube-to-input mapping below:</p>
             <div style="margin: 15px 0;">
-                <strong>Current Mappings:</strong><br>
+                <strong>Discrete Moves:</strong><br>
                 <span style="color: #007bff;">R = Left Click</span> | 
                 <span style="color: #007bff;">R' = Right Click</span> | 
                 <span style="color: #28a745;">L = Key 'A'</span> | 
                 <span style="color: #28a745;">L' = Key 'D'</span>
+            </div>
+            <div style="margin: 15px 0;">
+                <strong>Orientation Controls:</strong><br>
+                <span style="color: #dc3545;">Tilt Forward/Back = W/S Keys</span> | 
+                <span style="color: #dc3545;">Tilt Left/Right = A/D Keys</span><br>
+                <span style="color: #ffc107;">Rotate Yaw = Mouse X Movement</span>
+                <br><small style="color: #666;">Use "Reset Orientation" to set neutral position</small>
             </div>
             <textarea id="testTextBox" 
                 placeholder="rotate facelets to show inputs..."
@@ -205,6 +211,44 @@
             "L'": { type: 'key', action: 'KeyD', char: 'D', description: 'Key D' }
         };
         
+        // Orientation-to-Input Mapping Configuration
+        const ORIENTATION_CONFIG = {
+            // Movement controls (WASD)
+            movement: {
+                deadzone: 0.15,        // Ignore small tilts
+                sensitivity: 2.0,      // Amplify tilt response
+                roll: {               // Forward/backward tilt
+                    forward: 'KeyW',   // Tilt forward → W key
+                    backward: 'KeyS'   // Tilt backward → S key
+                },
+                pitch: {                // Left/right tilt  
+                    left: 'KeyA',      // Tilt left → A key
+                    right: 'KeyD'      // Tilt right → D key
+                }
+            },
+            // Camera controls (mouse movement)
+            camera: {
+                deadzone: 0.1,
+                sensitivity: 150,      // Mouse pixels per radian
+                yaw: {                 // Rotation around vertical axis
+                    enabled: true,     // Yaw → Mouse X movement
+                    invert: false
+                },
+                pitch: {               // Up/down tilt (optional)
+                    enabled: false,    // Could enable for pitch camera
+                    invert: true       // Usually inverted in games
+                }
+            }
+        };
+        
+        // Orientation processing state
+        let orientationState = {
+            lastQuaternion: { x: 0, y: 0, z: 0, w: 1 },
+            activeKeys: new Set(),
+            mouseAccumulator: { x: 0, y: 0 },
+            referenceOrientation: null
+        };
+        
         function logInput(message) {
             const timestamp = new Date().toLocaleTimeString();
             const entry = `<div style="margin: 2px 0; color: #666;">[${timestamp}] ${message}</div>`;
@@ -240,7 +284,7 @@
                 logInput(`🖱️ Simulated ${clickType === 'click' ? 'LEFT' : 'RIGHT'} CLICK on test box`);
                 
             } catch (error) {
-                logInput(`❌ Failed to simulate ${clickType}: ${error.message}`);
+                logInput(`Failed to simulate ${clickType}: ${error.message}`);
             }
         }
         
@@ -282,7 +326,7 @@
                 logInput(`⌨️ Simulated KEY PRESS: '${character}' (${keyCode})`);
                 
             } catch (error) {
-                logInput(`❌ Failed to simulate key press '${character}': ${error.message}`);
+                logInput(`Failed to simulate key press '${character}': ${error.message}`);
             }
         }
         
@@ -294,14 +338,201 @@
                 return;
             }
             
-            log(`🎮 CONTROLLER: ${move} → ${mapping.description}`);
-            logInput(`🎯 Detected move: ${move} → ${mapping.description}`);
+            log(`CONTROLLER: ${move} → ${mapping.description}`);
+            logInput(`Detected move: ${move} → ${mapping.description}`);
             
             if (mapping.type === 'click') {
                 simulateMouseClick(mapping.action === 'left' ? 'click' : 'contextmenu');
             } else if (mapping.type === 'key') {
                 simulateKeyPress(mapping.action, mapping.char);
             }
+        }
+        
+        // Convert quaternion to Euler angles (pitch, roll, yaw)
+        function quaternionToEuler(q) {
+            const { x, y, z, w } = q;
+            
+            // Roll (x-axis rotation)
+            const sinr_cosp = 2 * (w * x + y * z);
+            const cosr_cosp = 1 - 2 * (x * x + y * y);
+            const roll = Math.atan2(sinr_cosp, cosr_cosp);
+            
+            // Pitch (y-axis rotation)
+            const sinp = 2 * (w * y - z * x);
+            const pitch = Math.abs(sinp) >= 1 ? Math.sign(sinp) * Math.PI / 2 : Math.asin(sinp);
+            
+            // Yaw (z-axis rotation)
+            const siny_cosp = 2 * (w * z + x * y);
+            const cosy_cosp = 1 - 2 * (y * y + z * z);
+            const yaw = Math.atan2(siny_cosp, cosy_cosp);
+            
+            return { pitch, roll, yaw };
+        }
+        
+        // Apply deadzone and sensitivity to input value
+        function applyDeadzone(value, deadzone, sensitivity = 1.0) {
+            const abs = Math.abs(value);
+            if (abs < deadzone) return 0;
+            
+            // Scale beyond deadzone and apply sensitivity
+            const sign = Math.sign(value);
+            const scaled = (abs - deadzone) / (1 - deadzone);
+            return sign * scaled * sensitivity;
+        }
+        
+        // Simulate continuous key press/release
+        function updateMovementKeys(pitch, roll) {
+            const config = ORIENTATION_CONFIG.movement;
+            
+            // Apply deadzones and get movement values
+            const forward = applyDeadzone(-pitch, config.deadzone, config.sensitivity); // Negative for forward
+            const strafe = applyDeadzone(roll, config.deadzone, config.sensitivity);
+            
+            // Determine which keys should be active
+            const targetKeys = new Set();
+            
+            if (forward > 0.1) targetKeys.add(config.pitch.forward);   // W
+            if (forward < -0.1) targetKeys.add(config.pitch.backward); // S
+            if (strafe > 0.1) targetKeys.add(config.roll.right);       // D  
+            if (strafe < -0.1) targetKeys.add(config.roll.left);       // A
+            
+            // Release keys that are no longer needed
+            for (const key of orientationState.activeKeys) {
+                if (!targetKeys.has(key)) {
+                    releaseKey(key);
+                    orientationState.activeKeys.delete(key);
+                }
+            }
+            
+            // Press new keys
+            for (const key of targetKeys) {
+                if (!orientationState.activeKeys.has(key)) {
+                    pressKey(key);
+                    orientationState.activeKeys.add(key);
+                }
+            }
+        }
+        
+        // Simulate mouse movement for camera control
+        function updateCameraMovement(yaw, pitch) {
+            const config = ORIENTATION_CONFIG.camera;
+            
+            if (!config.yaw.enabled && !config.pitch.enabled) return;
+            
+            let deltaX = 0, deltaY = 0;
+            
+            if (config.yaw.enabled) {
+                deltaX = applyDeadzone(yaw, config.deadzone, config.sensitivity);
+                if (config.yaw.invert) deltaX = -deltaX;
+            }
+            
+            if (config.pitch.enabled) {
+                deltaY = applyDeadzone(pitch, config.deadzone, config.sensitivity);
+                if (config.pitch.invert) deltaY = -deltaY;
+            }
+            
+            // Accumulate small movements for smoother mouse control
+            orientationState.mouseAccumulator.x += deltaX;
+            orientationState.mouseAccumulator.y += deltaY;
+            
+            // Only send mouse events for significant movement
+            const threshold = 1.0;
+            if (Math.abs(orientationState.mouseAccumulator.x) > threshold || 
+                Math.abs(orientationState.mouseAccumulator.y) > threshold) {
+                
+                simulateMouseMovement(
+                    Math.round(orientationState.mouseAccumulator.x),
+                    Math.round(orientationState.mouseAccumulator.y)
+                );
+                
+                orientationState.mouseAccumulator.x = 0;
+                orientationState.mouseAccumulator.y = 0;
+            }
+        }
+        
+        // Key press simulation
+        function pressKey(keyCode) {
+            try {
+                const event = new KeyboardEvent('keydown', {
+                    code: keyCode,
+                    key: keyCode.replace('Key', '').toLowerCase(),
+                    bubbles: true,
+                    cancelable: true,
+                    repeat: false
+                });
+                document.dispatchEvent(event);
+                logInput(`⌨️ KEY PRESS: ${keyCode}`);
+            } catch (error) {
+                logInput(`Failed to press key ${keyCode}: ${error.message}`);
+            }
+        }
+        
+        // Key release simulation  
+        function releaseKey(keyCode) {
+            try {
+                const event = new KeyboardEvent('keyup', {
+                    code: keyCode,
+                    key: keyCode.replace('Key', '').toLowerCase(),
+                    bubbles: true,
+                    cancelable: true
+                });
+                document.dispatchEvent(event);
+                logInput(`⌨️ KEY RELEASE: ${keyCode}`);
+            } catch (error) {
+                logInput(`Failed to release key ${keyCode}: ${error.message}`);
+            }
+        }
+        
+        // Mouse movement simulation
+        function simulateMouseMovement(deltaX, deltaY) {
+            try {
+                // Create mouse move event
+                const event = new MouseEvent('mousemove', {
+                    bubbles: true,
+                    cancelable: true,
+                    movementX: deltaX,
+                    movementY: deltaY
+                });
+                
+                document.dispatchEvent(event);
+                logInput(`MOUSE MOVE: (${deltaX}, ${deltaY})`);
+                
+                // Visual feedback
+                testTextBox.style.borderColor = '#ffc107';
+                setTimeout(() => {
+                    testTextBox.style.borderColor = '#dee2e6';
+                }, 100);
+                
+            } catch (error) {
+                logInput(`Failed to move mouse: ${error.message}`);
+            }
+        }
+        
+        // Process orientation data for joystick emulation
+        function processOrientation(quaternion) {
+            // Set reference orientation on first reading
+            if (!orientationState.referenceOrientation) {
+                orientationState.referenceOrientation = { ...quaternion };
+                logInput('Reference orientation set');
+                return;
+            }
+            
+            // Calculate relative orientation from reference
+            const relative = {
+                x: quaternion.x - orientationState.referenceOrientation.x,
+                y: quaternion.y - orientationState.referenceOrientation.y,
+                z: quaternion.z - orientationState.referenceOrientation.z,
+                w: quaternion.w - orientationState.referenceOrientation.w
+            };
+            
+            // Convert to Euler angles
+            const euler = quaternionToEuler(relative);
+            
+            // Update movement and camera
+            updateMovementKeys(euler.pitch, euler.roll);
+            updateCameraMovement(euler.yaw, euler.pitch);
+            
+            orientationState.lastQuaternion = { ...quaternion };
         }
         
         function log(message) {
@@ -354,7 +585,16 @@
         
         function resetOrientation() {
             basis = null;
+            orientationState.referenceOrientation = null;
+            
+            // Release all active keys
+            for (const key of orientationState.activeKeys) {
+                releaseKey(key);
+            }
+            orientationState.activeKeys.clear();
+            
             log('orientation reset!');
+            logInput('🔄 Reference orientation reset');
         }
         
         function updateCubeInfo(key, value) {
@@ -467,6 +707,9 @@
             } else if (event.type === 'GYRO') {
                 updateGyroDisplay(event.quaternion, event.velocity);
                 
+                // Process orientation for joystick emulation
+                processOrientation(event.quaternion);
+                
                 if (shouldRelay) {
                     sendToWSL({
                         type: event.type,
@@ -565,12 +808,16 @@
         
         // Initialize controller system
         function initializeController() {
-            logInput('cube controller system initialized');
-            logInput('active mappings:');
+            logInput('Cube Controller System Initialized');
+            logInput('Discrete Move Mappings:');
             Object.entries(MOVE_MAPPINGS).forEach(([move, mapping]) => {
                 logInput(`   ${move} = ${mapping.description}`);
             });
-            logInput('perform mapped moves on your cube.');
+            logInput('Orientation Controls:');
+            logInput('   Tilt Forward/Back = W/S Keys');
+            logInput('   Tilt Left/Right = A/D Keys');  
+            logInput('   Rotate (Yaw) = Mouse X Movement');
+            logInput('   Connect cube and perform moves/tilts to test!');
         }
         
         // Test function for manual verification
@@ -578,7 +825,7 @@
             logInput('Testing all mappings...');
             Object.keys(MOVE_MAPPINGS).forEach((move, index) => {
                 setTimeout(() => {
-                    logInput(`🔬 Testing: ${move}`);
+                    logInput(`testing: ${move}`);
                     processCubeMove(move);
                 }, index * 1000);
             });
@@ -595,7 +842,7 @@
         setTimeout(initializeController, 500);
         
         log('connect to wsl, then connect cube');
-        log('🎮 cube controller system ready - perform R, R\', L, L\' moves to test');
+        log('cube controller system ready - perform R, R\', L, L\' moves to test');
     </script>
 </body>
 </html>
