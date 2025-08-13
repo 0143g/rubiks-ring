@@ -658,10 +658,23 @@
             // Left/right tilt should be around Y-axis (yaw)
             
             // Based on OUTPUT.txt analysis: relative.y = microwave spin (ignore), relative.x & z = actual tilts
-            // Map to human orientation from ORIENTATION.txt: green front, white top cube
-            let tiltX = Math.max(-1.0, Math.min(1.0, relative.x * 4.0));  // Forward/back: knife/basketball rotation
-            let tiltY = Math.max(-1.0, Math.min(1.0, relative.z * 4.0));  // Left/right: clockwise/counterclockwise tilt
+            // Map to human orientation from ORIENTATION.txt: green front, white top cube (axes swapped to fix direction)
+            let rawTiltX = relative.z * 4.0;  // Forward/back: knife/basketball rotation
+            let rawTiltY = relative.x * 4.0;  // Left/right: clockwise/counterclockwise tilt
             // relative.y (microwave spin axis) is completely ignored - sends ZERO to left stick
+            
+            // Isolate primary axis to prevent diagonal movement
+            let tiltX = 0, tiltY = 0;
+            const absX = Math.abs(rawTiltX);
+            const absY = Math.abs(rawTiltY);
+            
+            // Only use the dominant axis, ignore the weaker one to prevent diagonal drift
+            if (absX > absY && absX > 0.15) {
+                tiltX = Math.max(-1.0, Math.min(1.0, rawTiltX));  // Forward/back only
+            } else if (absY > absX && absY > 0.15) {
+                tiltY = Math.max(-1.0, Math.min(1.0, rawTiltY));  // Left/right only
+            }
+            // If both are weak or equal, send zero (neutral position)
             
             // Debug output
             if (Math.random() < 0.1) {
