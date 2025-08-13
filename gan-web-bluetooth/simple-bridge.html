@@ -144,14 +144,14 @@
         </div>
         
         <div class="panel">
-            <h3>🎮 virtual xbox controller</h3>
+            <h3>virtual xbox controller</h3>
             <div style="margin: 15px 0;">
-                <strong>🕹️ Left Analog Stick:</strong><br>
+                <strong>Left Analog Stick:</strong><br>
                 <span style="color: #28a745;">Cube Tilt = Joystick Movement</span><br>
                 <small style="color: #666;">Tilt cube in any direction for smooth analog control</small>
             </div>
             <div style="margin: 15px 0;">
-                <strong>🎯 Face Buttons:</strong><br>
+                <strong>Face Buttons:</strong><br>
                 <span style="color: #007bff;">R = A Button</span> | 
                 <span style="color: #007bff;">R' = B Button</span> | 
                 <span style="color: #28a745;">L = X Button</span> | 
@@ -341,12 +341,12 @@
             const mapping = MOVE_MAPPINGS[move];
             
             if (!mapping) {
-                logInput(`ℹ️ No mapping defined for move: ${move}`);
+                logInput(`No mapping defined for move: ${move}`);
                 return;
             }
             
-            log(`🎮 CONTROLLER: ${move} → ${mapping.description}`);
-            logInput(`🎯 Detected move: ${move} → ${mapping.description}`);
+            log(`CONTROLLER: ${move} = ${mapping.description}`);
+            logInput(`Detected move: ${move} = ${mapping.description}`);
             
             // Send move directly to controller bridge for processing
             sendToControllerBridge({
@@ -553,24 +553,24 @@
                 controllerBridge = new WebSocket('ws://localhost:8082');
                 
                 controllerBridge.onopen = () => {
-                    logInput('🔗 Connected to Windows input bridge!');
-                    logInput('💪 Real system input now active');
-                    log('✅ Windows input bridge connected - ready for gaming!');
+                    logInput('Connected to Windows input bridge');
+                    logInput('Real system input now active');
+                    log('Windows input bridge connected - ready for gaming');
                 };
                 
                 controllerBridge.onclose = () => {
-                    logInput('⚠️ Windows input bridge disconnected');
-                    logInput('ℹ️ Restart: python windows_input_bridge.py');
+                    logInput('Windows input bridge disconnected');
+                    logInput('Restart: python windows_input_bridge.py');
                     controllerBridge = null;
                 };
                 
                 controllerBridge.onerror = (error) => {
-                    logInput(`❌ Controller bridge error: ${error}`);
+                    logInput(`Controller bridge error: ${error}`);
                     console.error('WebSocket error:', error);
                 };
                 
             } catch (error) {
-                logInput(`❌ Failed to connect to controller bridge: ${error}`);
+                logInput(`Failed to connect to controller bridge: ${error}`);
                 console.error('Controller bridge connection error:', error);
             }
         }
@@ -583,13 +583,13 @@
                 } else {
                     // Only log occasionally to avoid spam
                     if (Math.random() < 0.1) { // 10% chance to log
-                        logInput('⚠️ Windows bridge not connected - using browser simulation only');
+                        logInput('Windows bridge not connected - using browser simulation only');
                     }
                     return false;
                 }
             } catch (error) {
                 console.error('Error sending to controller bridge:', error);
-                logInput(`❌ Bridge send error: ${error.message}`);
+                logInput(`Bridge send error: ${error.message}`);
                 return false;
             }
         }
@@ -637,7 +637,7 @@
             // Rate limited visual feedback
             if (Math.random() < 0.05) {  // Only log 5% of updates
                 if (Math.abs(tiltX) > 0.1 || Math.abs(tiltY) > 0.1) {
-                    logInput(`🕹️ Left Stick: X=${tiltX.toFixed(2)}, Y=${tiltY.toFixed(2)}`);
+                    logInput(`Left Stick: X=${tiltX.toFixed(2)}, Y=${tiltY.toFixed(2)}`);
                 }
             }
             
@@ -702,10 +702,10 @@
             // Set current cube orientation as new reference (this is the key fix!)
             if (orientationState.currentQuaternion) {
                 orientationState.referenceOrientation = { ...orientationState.currentQuaternion };
-                logInput('🔄 New reference set to current cube position');
+                logInput('New reference set to current cube position');
             } else {
                 orientationState.referenceOrientation = null;
-                logInput('🔄 Reference orientation cleared');
+                logInput('Reference orientation cleared');
             }
             
             // Release all active keys
@@ -939,13 +939,13 @@
         
         // Initialize controller system
         function initializeController() {
-            logInput('🎮 Virtual Xbox Controller System Initialized');
-            logInput('🕹️ Left Analog Stick = Cube Tilt (smooth analog control)');
-            logInput('🎯 Face Button Mappings:');
+            logInput('Virtual Xbox Controller System Initialized');
+            logInput('Left Analog Stick = Cube Tilt (smooth analog control)');
+            logInput('Face Button Mappings:');
             logInput('   R = A Button | R\' = B Button');
             logInput('   L = X Button | L\' = Y Button');
-            logInput('✅ Games will recognize this as a real Xbox controller!');
-            logInput('📋 Connect cube and test in any game with controller support');
+            logInput('Games will recognize this as a real Xbox controller');
+            logInput('Connect cube and test in any game with controller support');
         }
         
         // Initialize on page load
