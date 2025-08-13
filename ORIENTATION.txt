@@ -1,0 +1,92 @@
+# GAN Smart Cube Coordinate System Reference
+
+## Cube Internal Coordinate System
+
+the gan smart cube uses the following internal coordinate system:
+
+```
+CUBE COORDINATE AXES:
+- X-axis: points from cube center through RED face
+- Y-axis: points from cube center through WHITE face  
+- Z-axis: points from cube center through GREEN face
+- Origin: center of cube
+- Handedness: right-handed coordinate system
+```
+
+## Understanding Quaternion Behavior
+
+when rotating the cube around different axes, specific quaternion components change:
+
+- **rotating around y-axis** (white-yellow axis): only z and w components change significantly
+- **rotating around z-axis** (green-blue axis): only x and w components change significantly  
+- **rotating around x-axis** (red-orange axis): only y and w components change significantly
+
+this was confirmed empirically by spinning the cube with different faces on the desk.
+
+## Factory Default vs Practical Reference
+
+**critical insight**: the cube's "factory default" orientation (quaternion ≈ 0,0,0,-1) corresponds to an impractical viewing angle - looking at the edge between green and red faces with white on top. this is 180° rotated from mathematical identity (0,0,0,1).
+
+**practical reference position**: white on top, green facing you
+- measured quaternion: (-0.008, -0.011, 0.390, 0.921)
+- this represents ~47° rotation around y-axis from mathematical identity
+- this is how users naturally hold the cube
+
+## Quaternion Mappings for Key Orientations
+
+here are the measured quaternions for standard cube positions (all with cube flat on desk):
+
+```typescript
+const FACE_QUATERNIONS = {
+  "white_top_green_front": { x: -0.008, y: -0.011, z: 0.390, w: 0.921 },
+  "yellow_top_green_front": { x: -0.397, y: 0.918, z: -0.012, w: -0.002 },
+  "blue_top_white_front": { x: 0.662, y: 0.280, z: 0.275, w: 0.639 },
+  "green_top_white_front": { x: 0.286, y: -0.661, z: 0.644, w: -0.260 },
+  "red_top_white_front": { x: 0.666, y: -0.273, z: 0.645, w: 0.259 },
+  "orange_top_white_front": { x: 0.257, y: 0.673, z: -0.265, w: 0.642 }
+}
+```
+
+## Recommended Transformation Strategy
+
+since the cube's "identity" is impractical, treat "white top, green front" as your effective identity:
+
+```typescript
+class CubeOrientationTransform {
+  // the quaternion for our chosen "home" position
+  private readonly HOME_QUATERNION = { x: -0.008, y: -0.011, z: 0.390, w: 0.921 };
+  
+  // convert raw cube quaternion to normalized orientation
+  // where (0,0,0,1) means white top, green front
+  normalizeOrientation(rawQuat: Quaternion): Quaternion {
+    // multiply by inverse of home quaternion to get relative rotation
+    return multiplyQuaternions(
+      rawQuat,
+      inverseQuaternion(this.HOME_QUATERNION)
+    );
+  }
+}
+```
+
+## Axis Mapping Summary
+
+for integration with other systems:
+
+```
+CUBE AXES → STANDARD RUBIK'S NOTATION:
+- cube +X → points toward RED face
+- cube +Y → points toward WHITE face (top in standard position)
+- cube +Z → points toward GREEN face (front in standard position)
+
+FACE COLORS (standard rubik's cube):
+- top: WHITE (opposite: YELLOW)
+- front: GREEN (opposite: BLUE)  
+- right: RED (opposite: ORANGE)
+```
+
+## Implementation Notes
+
+1. **noise threshold**: quaternion values < 0.02 are likely sensor noise
+2. **w ≈ -1 detection**: if you see w close to -1, the cube is in its weird factory default
+3. **clean rotations**: 90° face rotations produce quaternions with one dominant component (~0.707) plus w
+4. **compound rotations**: multiple face rotations create quaternions with multiple significant components
