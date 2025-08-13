@@ -122,18 +122,21 @@ class WindowsInputServer:
         # Get tilt values from cube orientation
         tilt_x = data.get('tiltX', 0.0)  # Left/Right tilt
         tilt_y = data.get('tiltY', 0.0)  # Forward/Back tilt
+        spin_z = data.get('spinZ', 0.0)  # Spin rotation (microwave/ballerina axis)
         
         # Convert to joystick range (-32768 to 32767)
-        stick_x = max(-32768, min(32767, int(tilt_x * 32767)))
-        stick_y = max(-32768, min(32767, int(tilt_y * 32767)))
+        left_stick_x = max(-32768, min(32767, int(tilt_x * 32767)))
+        left_stick_y = max(-32768, min(32767, int(tilt_y * 32767)))
+        right_stick_x = max(-32768, min(32767, int(spin_z * 32767)))
         
-        # Set left analog stick position
-        self.gamepad.left_joystick(x_value=stick_x, y_value=stick_y)
+        # Set analog stick positions
+        self.gamepad.left_joystick(x_value=left_stick_x, y_value=left_stick_y)
+        self.gamepad.right_joystick(x_value=right_stick_x, y_value=0)  # Only X-axis for camera
         self.gamepad.update()
         
         # Rate limit logging
-        if abs(stick_x) > 1000 or abs(stick_y) > 1000:  # Only log significant movement
-            print(f"Left Stick: X={stick_x}, Y={stick_y}")
+        if abs(left_stick_x) > 1000 or abs(left_stick_y) > 1000 or abs(right_stick_x) > 1000:
+            print(f"Left Stick: X={left_stick_x}, Y={left_stick_y} | Right Stick: X={right_stick_x}")
             
     def handle_key_press(self, data):
         """Handle continuous key press"""

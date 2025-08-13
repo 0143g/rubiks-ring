@@ -171,9 +171,6 @@
         import * as THREE from 'three';
         import { TwistyPlayer } from 'https://cdn.cubing.net/v0/js/cubing/twisty';
 
-        // Standard solved cube state: White top, Red front, Blue right, Orange left, Yellow bottom, Green back
-        // But we want: Red front, White top, Green left, Blue right, Yellow bottom, Orange back
-        // So we need to rotate the view to show Red as front face
         const SOLVED_STATE = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB";
 
         var twistyPlayer = new TwistyPlayer({
@@ -370,7 +367,7 @@
                     mapping: mapping,
                     timestamp: Date.now()
                 });
-                logInput(`🎮 COMBO: ${mapping.description}`);
+                logInput(`COMBO: ${mapping.description}`);
             } else {
                 // Handle regular single-button moves
                 sendToControllerBridge({
@@ -673,11 +670,11 @@
             // Forward/back tilt should be around X-axis (pitch)
             // Left/right tilt should be around Y-axis (yaw)
             
-            // Based on OUTPUT.txt analysis: relative.y = microwave spin (ignore), relative.x & z = actual tilts
+            // Based on OUTPUT.txt analysis: relative.y = microwave spin (extract for right stick), relative.x & z = actual tilts
             // Map to human orientation from ORIENTATION.txt: green front, white top cube (axes swapped + inverted)
             let rawTiltX = -relative.z * 4.0;  // Forward/back: knife/basketball rotation (inverted)
             let rawTiltY = -relative.x * 4.0;  // Left/right: clockwise/counterclockwise tilt (inverted)
-            // relative.y (microwave spin axis) is completely ignored - sends ZERO to left stick
+            let rawSpinZ = -relative.y * 2.5;   // Microwave spin axis - reduced sensitivity for camera control
             
             // Isolate primary axis to prevent diagonal movement
             let tiltX = 0, tiltY = 0;
@@ -695,26 +692,32 @@
             // Debug output
             if (Math.random() < 0.1) {
                 logInput(`DEBUG Quat: x=${relative.x.toFixed(3)}, y=${relative.y.toFixed(3)}, z=${relative.z.toFixed(3)}, w=${relative.w.toFixed(3)}`);
-                logInput(`DEBUG Tilt: X=${tiltX.toFixed(3)}, Y=${tiltY.toFixed(3)}`);
+                logInput(`DEBUG Raw: spinZ=${rawSpinZ.toFixed(3)}, tiltX=${rawTiltX.toFixed(3)}, tiltY=${rawTiltY.toFixed(3)}`);
             }
+            
+            // Process spin axis for right stick (no axis isolation needed)
+            let spinZ = Math.max(-1.0, Math.min(1.0, rawSpinZ));
             
             // Apply deadzone (much smaller for analog control)
             const deadzone = 0.1;
+            const spinDeadzone = 0.1;
             if (Math.abs(tiltX) < deadzone) tiltX = 0;
             if (Math.abs(tiltY) < deadzone) tiltY = 0;
+            if (Math.abs(spinZ) < spinDeadzone) spinZ = 0;
             
             // Send to gamepad controller for analog joystick
             sendToControllerBridge({
                 type: 'ORIENTATION',
                 tiltX: tiltX,
                 tiltY: tiltY,
+                spinZ: spinZ,
                 timestamp: Date.now()
             });
             
             // Rate limited visual feedback
             if (Math.random() < 0.05) {  // Only log 5% of updates
-                if (Math.abs(tiltX) > 0.1 || Math.abs(tiltY) > 0.1) {
-                    logInput(`Left Stick: X=${tiltX.toFixed(2)}, Y=${tiltY.toFixed(2)}`);
+                if (Math.abs(tiltX) > 0.1 || Math.abs(tiltY) > 0.1 || Math.abs(spinZ) > 0.1) {
+                    logInput(`Left Stick: X=${tiltX.toFixed(2)}, Y=${tiltY.toFixed(2)} | Right Stick: X=${spinZ.toFixed(2)}`);
                 }
             }
             
