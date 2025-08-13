@@ -97,17 +97,17 @@ class WindowsInputServer:
         # Use gamepad buttons if available, fallback to keyboard/mouse
         if self.gamepad:
             if move == "R":
-                self.gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_A)
-                print("  ✅ Gamepad A Button → Windows")
+                self.gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER)
+                print("  ✅ Gamepad R1 (Right Bumper) → Windows")
             elif move == "R'":
-                self.gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
-                print("  ✅ Gamepad B Button → Windows")
+                self.gamepad_trigger_press('right')
+                print("  ✅ Gamepad R2 (Right Trigger) → Windows")
             elif move == "L":
                 self.gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_X)
                 print("  ✅ Gamepad X Button → Windows")
             elif move == "L'":
-                self.gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_Y)
-                print("  ✅ Gamepad Y Button → Windows")
+                self.gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+                print("  ✅ Gamepad B Button → Windows")
         else:
             # Fallback to original keyboard/mouse
             if move == "R":
@@ -228,6 +228,31 @@ class WindowsInputServer:
             self.gamepad.update()
         
         threading.Thread(target=release_button, daemon=True).start()
+        
+    def gamepad_trigger_press(self, trigger_side):
+        """Press and release a gamepad trigger"""
+        if not self.gamepad:
+            return
+            
+        # Triggers use values from 0 to 255
+        if trigger_side == 'right':
+            self.gamepad.right_trigger(value=255)  # Full press
+        elif trigger_side == 'left':
+            self.gamepad.left_trigger(value=255)   # Full press
+        
+        self.gamepad.update()
+        
+        # Schedule trigger release after short delay
+        import threading
+        def release_trigger():
+            time.sleep(0.1)  # 100ms press
+            if trigger_side == 'right':
+                self.gamepad.right_trigger(value=0)  # Release
+            elif trigger_side == 'left':
+                self.gamepad.left_trigger(value=0)   # Release
+            self.gamepad.update()
+        
+        threading.Thread(target=release_trigger, daemon=True).start()
         
     def release_all_keys(self):
         """Release all currently pressed keys and reset gamepad"""

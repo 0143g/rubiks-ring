@@ -151,11 +151,11 @@
                 <small style="color: #666;">Tilt cube in any direction for smooth analog control</small>
             </div>
             <div style="margin: 15px 0;">
-                <strong>Face Buttons:</strong><br>
-                <span style="color: #007bff;">R = A Button</span> | 
-                <span style="color: #007bff;">R' = B Button</span> | 
+                <strong>Controller Buttons:</strong><br>
+                <span style="color: #007bff;">R = R1 (Right Bumper)</span> | 
+                <span style="color: #007bff;">R' = R2 (Right Trigger)</span><br>
                 <span style="color: #28a745;">L = X Button</span> | 
-                <span style="color: #28a745;">L' = Y Button</span>
+                <span style="color: #28a745;">L' = B Button</span>
             </div>
             <textarea id="testTextBox" 
                 placeholder="games will see this as a real xbox controller..."
@@ -169,19 +169,22 @@
         import * as THREE from 'three';
         import { TwistyPlayer } from 'https://cdn.cubing.net/v0/js/cubing/twisty';
 
+        // Standard solved cube state: White top, Red front, Blue right, Orange left, Yellow bottom, Green back
+        // But we want: Red front, White top, Green left, Blue right, Yellow bottom, Orange back
+        // So we need to rotate the view to show Red as front face
         const SOLVED_STATE = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB";
 
         var twistyPlayer = new TwistyPlayer({
             puzzle: '3x3x3',
             visualization: 'PG3D',
-            alg: '',
+            alg: 'y',              // Rotate cube to show red in front (y rotation)
             experimentalSetupAnchor: 'start',
             background: 'none',
             controlPanel: 'none',
             hintFacelets: 'none',
             experimentalDragInput: 'none',
-            cameraLatitude: 0,
-            cameraLongitude: 0,
+            cameraLatitude: 0,     // Straight-on view (no angle)
+            cameraLongitude: 0,    // Direct frontal view of red face
             cameraLatitudeLimit: 0,
             tempoScale: 5
         });
@@ -194,6 +197,8 @@
         let moveCount = 0;
         let basis = null;
         let cubeQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0));
+        // Set HOME_ORIENTATION to show standard cube layout:
+        // Red front, White top, Green left, Blue right, Yellow bottom, Orange back
         const HOME_ORIENTATION = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0));
         
         var twistyScene;
@@ -206,10 +211,10 @@
         
         // Cube Controller Input Mapping System
         const MOVE_MAPPINGS = {
-            'R': { type: 'click', action: 'left', description: 'Left Click' },
-            "R'": { type: 'click', action: 'right', description: 'Right Click' },
-            'L': { type: 'key', action: 'KeyA', char: 'A', description: 'Key A' },
-            "L'": { type: 'key', action: 'KeyD', char: 'D', description: 'Key D' }
+            'R': { type: 'gamepad', action: 'R1', description: 'R1 (Right Bumper)' },
+            "R'": { type: 'gamepad', action: 'R2', description: 'R2 (Right Trigger)' },
+            'L': { type: 'gamepad', action: 'X', description: 'X Button' },
+            "L'": { type: 'gamepad', action: 'B', description: 'B Button' }
         };
         
         // Orientation-to-Input Mapping Configuration
@@ -721,8 +726,13 @@
             $('#quatW').text('1.000');
             $('#velocity').text('x:0.00, y:0.00, z:0.00');
             
-            // Reset cube quaternion to identity for visualization
-            cubeQuaternion.set(0, 0, 0, 1);
+            // Reset cube visualization to standard orientation
+            cubeQuaternion.copy(HOME_ORIENTATION);
+            
+            // Reset the TwistyPlayer to show red face in front (desk orientation)
+            if (twistyPlayer) {
+                twistyPlayer.alg = 'y';  // Y rotation shows red in front
+            }
             
             log('orientation reset! current position is now neutral');
         }
@@ -941,9 +951,9 @@
         function initializeController() {
             logInput('Virtual Xbox Controller System Initialized');
             logInput('Left Analog Stick = Cube Tilt (smooth analog control)');
-            logInput('Face Button Mappings:');
-            logInput('   R = A Button | R\' = B Button');
-            logInput('   L = X Button | L\' = Y Button');
+            logInput('Controller Button Mappings:');
+            logInput('   R = R1 (Right Bumper) | R\' = R2 (Right Trigger)');
+            logInput('   L = X Button | L\' = B Button');
             logInput('Games will recognize this as a real Xbox controller');
             logInput('Connect cube and test in any game with controller support');
         }
