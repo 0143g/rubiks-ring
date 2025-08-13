@@ -589,9 +589,12 @@
             // Convert to Euler angles
             const euler = quaternionToEuler(relative);
             
-            // Update movement and camera
+            // Fix orientation mapping based on user feedback:
+            // Current: forward/back tilt → mouse X, left/right tilt → mouse X (inverted)
+            // Desired: forward/back tilt → mouse Y, left/right tilt → mouse X
+            
             updateMovementKeys(euler.pitch, euler.roll);
-            updateCameraMovement(euler.yaw, euler.pitch);
+            updateCameraMovement(-euler.roll, euler.pitch);  // left/right tilt → mouse X (inverted), forward/back → mouse Y
             
             orientationState.lastQuaternion = { ...quaternion };
         }
@@ -640,7 +643,7 @@
             $('#quatW').text(qw.toFixed(3));
             
             if (velocity) {
-                $('#velocity').text(`x:${velocity.x}, y:${velocity.y}, z:${velocity.z}`);
+                $('#velocity').text(`x:${velocity.x.toFixed(2)}, y:${velocity.y.toFixed(2)}, z:${velocity.z.toFixed(2)}`);
             }
         }
         
@@ -882,31 +885,8 @@
             logInput('   Connect cube and perform moves/tilts to test!');
         }
         
-        // Test function for manual verification
-        function testAllMappings() {
-            logInput('Testing all mappings...');
-            Object.keys(MOVE_MAPPINGS).forEach((move, index) => {
-                setTimeout(() => {
-                    logInput(`testing: ${move}`);
-                    processCubeMove(move);
-                }, index * 1000);
-            });
-        }
-        
-        // Add test button
-        const testButton = document.createElement('button');
-        testButton.textContent = 'Test All Mappings';
-        testButton.style.cssText = 'margin: 10px 5px; padding: 8px 16px; background: #6f42c1; color: white; border: none; border-radius: 4px; cursor: pointer;';
-        testButton.addEventListener('click', testAllMappings);
-        document.querySelector('.header').appendChild(testButton);
-        
         // Initialize on page load
         setTimeout(initializeController, 500);
-        
-        log('🔗 Step 1: Connect to WSL (node wsl-cube-receiver.js)');
-        log('🔗 Step 2: Connect Controller Bridge (python windows_input_server.py)'); 
-        log('🔗 Step 3: Connect Cube');
-        log('🎮 Step 4: Test moves in games!');
     </script>
 </body>
 </html>
