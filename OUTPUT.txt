@@ -1,11 +1,15 @@
-PS M:\mikerson\rubiks> python .\windows_input_server.py
-✅ Windows input libraries loaded
-🖥️ GAN Cube → Windows Input Server
-🚀 Starting WebSocket server on localhost:8082
-📋 Waiting for browser to connect...
-
-connection handler failed
-Traceback (most recent call last):
-  File "C:\Users\User\AppData\Local\Programs\Python\Python39\lib\site-packages\websockets\asyncio\server.py", line 376, in conn_handler
-    await self.handler(connection)
-TypeError: handle_client() missing 1 required positional argument: 'path'
+[11:43:07 PM] DEBUG Quat: x=0.006, y=-0.751, z=0.021, w=-0.660
+[11:43:07 PM] DEBUG Tilt: X=0.024, Y=1.000
+[11:43:08 PM] DEBUG Quat: x=0.017, y=-0.983, z=0.008, w=0.185
+[11:43:08 PM] DEBUG Tilt: X=0.067, Y=1.000
+[11:43:08 PM] DEBUG Quat: x=0.019, y=-0.686, z=-0.005, w=0.727
+[11:43:08 PM] DEBUG Tilt: X=0.077, Y=1.000
+[11:43:09 PM] DEBUG Quat: x=0.006, y=0.056, z=-0.019, w=0.998
+[11:43:09 PM] DEBUG Tilt: X=0.025, Y=-0.222
+[11:43:09 PM] DEBUG Quat: x=0.006, y=0.076, z=-0.018, w=0.997
+[11:43:09 PM] DEBUG Tilt: X=0.022, Y=-0.304
+[11:43:10 PM] DEBUG Quat: x=-0.010, y=0.789, z=-0.020, w=0.613
+[11:43:10 PM] DEBUG Tilt: X=-0.040, Y=-1.000
+[11:43:12 PM] DEBUG Quat: x=-0.008, y=0.178, z=0.013, w=-0.984
+[11:43:12 PM] DEBUG Tilt: X=-0.033, Y=-0.711
+[11:43:12 PM] Left Stick: X=0.00, Y=-0.71

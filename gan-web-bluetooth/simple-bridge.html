@@ -657,9 +657,11 @@
             // Forward/back tilt should be around X-axis (pitch)
             // Left/right tilt should be around Y-axis (yaw)
             
-            // Use small angle approximation: for small rotations, quat.x ≈ rotation_angle_x/2
-            let tiltX = Math.max(-1.0, Math.min(1.0, relative.z * 4.0));  
-            let tiltY = Math.max(-1.0, Math.min(1.0, -relative.y * 4.0));
+            // Based on OUTPUT.txt analysis: relative.y = microwave spin (ignore), relative.x & z = actual tilts
+            // Map to human orientation from ORIENTATION.txt: green front, white top cube
+            let tiltX = Math.max(-1.0, Math.min(1.0, relative.x * 4.0));  // Forward/back: knife/basketball rotation
+            let tiltY = Math.max(-1.0, Math.min(1.0, relative.z * 4.0));  // Left/right: clockwise/counterclockwise tilt
+            // relative.y (microwave spin axis) is completely ignored - sends ZERO to left stick
             
             // Debug output
             if (Math.random() < 0.1) {
