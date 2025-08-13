@@ -144,10 +144,22 @@
         </div>
         
         <div class="panel">
-            <h3>cube controller test</h3>
+            <h3>🎮 virtual xbox controller</h3>
+            <div style="margin: 15px 0;">
+                <strong>🕹️ Left Analog Stick:</strong><br>
+                <span style="color: #28a745;">Cube Tilt = Joystick Movement</span><br>
+                <small style="color: #666;">Tilt cube in any direction for smooth analog control</small>
+            </div>
+            <div style="margin: 15px 0;">
+                <strong>🎯 Face Buttons:</strong><br>
+                <span style="color: #007bff;">R = A Button</span> | 
+                <span style="color: #007bff;">R' = B Button</span> | 
+                <span style="color: #28a745;">L = X Button</span> | 
+                <span style="color: #28a745;">L' = Y Button</span>
+            </div>
             <textarea id="testTextBox" 
-                placeholder="rotate facelets to show inputs..."
-                style="width: 100%; height: 100px; padding: 10px; border: 2px solid #dee2e6; border-radius: 5px; font-family: monospace; font-size: 14px; resize: vertical;"></textarea>
+                placeholder="games will see this as a real xbox controller..."
+                style="width: 100%; height: 60px; padding: 10px; border: 2px solid #dee2e6; border-radius: 5px; font-family: monospace; font-size: 14px; resize: vertical;"></textarea>
             <div id="inputLog" style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 150px; overflow-y: auto;"></div>
         </div>
     </div>
@@ -582,7 +594,7 @@
             }
         }
         
-        // Process orientation data for joystick emulation
+        // Process orientation data for analog joystick control
         function processOrientation(quaternion) {
             // Store current quaternion for reset functionality
             orientationState.currentQuaternion = { ...quaternion };
@@ -605,12 +617,29 @@
             // Convert to Euler angles
             const euler = quaternionToEuler(relative);
             
-            // Fix orientation mapping based on user feedback:
-            // Current: forward/back tilt → mouse X, left/right tilt → mouse X (inverted)
-            // Desired: forward/back tilt → mouse Y, left/right tilt → mouse X
+            // Convert tilt to normalized joystick values (-1.0 to 1.0)
+            let tiltX = Math.max(-1.0, Math.min(1.0, euler.roll * 2.0));    // Left/Right tilt
+            let tiltY = Math.max(-1.0, Math.min(1.0, -euler.pitch * 2.0));  // Forward/Back tilt (inverted)
             
-            updateMovementKeys(euler.pitch, euler.roll);
-            updateCameraMovement(-euler.roll, euler.pitch);  // left/right tilt → mouse X (inverted), forward/back → mouse Y
+            // Apply deadzone (much smaller for analog control)
+            const deadzone = 0.1;
+            if (Math.abs(tiltX) < deadzone) tiltX = 0;
+            if (Math.abs(tiltY) < deadzone) tiltY = 0;
+            
+            // Send to gamepad controller for analog joystick
+            sendToControllerBridge({
+                type: 'ORIENTATION',
+                tiltX: tiltX,
+                tiltY: tiltY,
+                timestamp: Date.now()
+            });
+            
+            // Rate limited visual feedback
+            if (Math.random() < 0.05) {  // Only log 5% of updates
+                if (Math.abs(tiltX) > 0.1 || Math.abs(tiltY) > 0.1) {
+                    logInput(`🕹️ Left Stick: X=${tiltX.toFixed(2)}, Y=${tiltY.toFixed(2)}`);
+                }
+            }
             
             orientationState.lastQuaternion = { ...quaternion };
         }
@@ -910,16 +939,13 @@
         
         // Initialize controller system
         function initializeController() {
-            logInput('Cube Controller System Initialized');
-            logInput('Discrete Move Mappings:');
-            Object.entries(MOVE_MAPPINGS).forEach(([move, mapping]) => {
-                logInput(`   ${move} = ${mapping.description}`);
-            });
-            logInput('Orientation Controls:');
-            logInput('   Tilt Forward/Back = W/S Keys');
-            logInput('   Tilt Left/Right = A/D Keys');  
-            logInput('   Rotate (Yaw) = Mouse X Movement');
-            logInput('   Connect cube and perform moves/tilts to test!');
+            logInput('🎮 Virtual Xbox Controller System Initialized');
+            logInput('🕹️ Left Analog Stick = Cube Tilt (smooth analog control)');
+            logInput('🎯 Face Button Mappings:');
+            logInput('   R = A Button | R\' = B Button');
+            logInput('   L = X Button | L\' = Y Button');
+            logInput('✅ Games will recognize this as a real Xbox controller!');
+            logInput('📋 Connect cube and test in any game with controller support');
         }
         
         // Initialize on page load

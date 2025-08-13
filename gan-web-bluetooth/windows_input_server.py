@@ -20,12 +20,41 @@ except ImportError:
     print("Run on Windows: pip install pywin32")
     sys.exit(1)
 
+# Try to import virtual gamepad library
+try:
+    import vgamepad as vg
+    print("✅ Virtual gamepad library loaded")
+    GAMEPAD_AVAILABLE = True
+except ImportError:
+    print("⚠️ vgamepad not found - installing...")
+    import subprocess
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "vgamepad"])
+        import vgamepad as vg
+        print("✅ Virtual gamepad library installed and loaded")
+        GAMEPAD_AVAILABLE = True
+    except Exception as e:
+        print(f"❌ Could not install vgamepad: {e}")
+        print("💡 Falling back to keyboard/mouse only")
+        GAMEPAD_AVAILABLE = False
+
 class WindowsInputServer:
     def __init__(self):
         self.active_keys = set()
         self.mouse_sensitivity = 2.0
         self.last_mouse_time = 0
         self.connected_clients = set()
+        
+        # Initialize virtual gamepad
+        self.gamepad = None
+        if GAMEPAD_AVAILABLE:
+            try:
+                self.gamepad = vg.VX360Gamepad()
+                print("🎮 Virtual Xbox controller created!")
+                print("   Games will see this as a real Xbox controller")
+            except Exception as e:
+                print(f"⚠️ Could not create virtual gamepad: {e}")
+                self.gamepad = None
         
         # Virtual key code mapping
         self.key_map = {
@@ -49,6 +78,8 @@ class WindowsInputServer:
         
         if msg_type == 'MOVE':
             self.handle_cube_move(data)
+        elif msg_type == 'ORIENTATION':
+            self.handle_orientation(data)
         elif msg_type == 'KEY_PRESS':
             self.handle_key_press(data)
         elif msg_type == 'KEY_RELEASE':
@@ -63,18 +94,55 @@ class WindowsInputServer:
         move = data.get('move', '')
         print(f"🎮 Cube move: {move}")
         
-        if move == "R":
-            self.mouse_click("left")
-            print("  ✅ Left Click → Windows")
-        elif move == "R'":
-            self.mouse_click("right")
-            print("  ✅ Right Click → Windows")
-        elif move == "L":
-            self.key_press("a")
-            print("  ✅ Key A → Windows")
-        elif move == "L'":
-            self.key_press("d")
-            print("  ✅ Key D → Windows")
+        # Use gamepad buttons if available, fallback to keyboard/mouse
+        if self.gamepad:
+            if move == "R":
+                self.gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_A)
+                print("  ✅ Gamepad A Button → Windows")
+            elif move == "R'":
+                self.gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+                print("  ✅ Gamepad B Button → Windows")
+            elif move == "L":
+                self.gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_X)
+                print("  ✅ Gamepad X Button → Windows")
+            elif move == "L'":
+                self.gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_Y)
+                print("  ✅ Gamepad Y Button → Windows")
+        else:
+            # Fallback to original keyboard/mouse
+            if move == "R":
+                self.mouse_click("left")
+                print("  ✅ Left Click → Windows")
+            elif move == "R'":
+                self.mouse_click("right")
+                print("  ✅ Right Click → Windows")
+            elif move == "L":
+                self.key_press("a")
+                print("  ✅ Key A → Windows")
+            elif move == "L'":
+                self.key_press("d")
+                print("  ✅ Key D → Windows")
+                
+    def handle_orientation(self, data):
+        """Handle cube orientation for analog joystick control"""
+        if not self.gamepad:
+            return  # No gamepad available
+            
+        # Get tilt values from cube orientation
+        tilt_x = data.get('tiltX', 0.0)  # Left/Right tilt
+        tilt_y = data.get('tiltY', 0.0)  # Forward/Back tilt
+        
+        # Convert to joystick range (-32768 to 32767)
+        stick_x = max(-32768, min(32767, int(tilt_x * 32767)))
+        stick_y = max(-32768, min(32767, int(tilt_y * 32767)))
+        
+        # Set left analog stick position
+        self.gamepad.left_joystick(x_value=stick_x, y_value=stick_y)
+        self.gamepad.update()
+        
+        # Rate limit logging
+        if abs(stick_x) > 1000 or abs(stick_y) > 1000:  # Only log significant movement
+            print(f"🕹️ Left Stick: X={stick_x}, Y={stick_y}")
             
     def handle_key_press(self, data):
         """Handle continuous key press"""
@@ -144,12 +212,36 @@ class WindowsInputServer:
         if vk_code:
             win32api.keybd_event(vk_code, 0, win32con.KEYEVENTF_KEYUP, 0)
             
+    def gamepad_button_press(self, button):
+        """Press and release a gamepad button"""
+        if not self.gamepad:
+            return
+            
+        self.gamepad.press_button(button=button)
+        self.gamepad.update()
+        
+        # Schedule button release after short delay
+        import threading
+        def release_button():
+            time.sleep(0.1)  # 100ms press
+            self.gamepad.release_button(button=button)
+            self.gamepad.update()
+        
+        threading.Thread(target=release_button, daemon=True).start()
+        
     def release_all_keys(self):
-        """Release all currently pressed keys"""
+        """Release all currently pressed keys and reset gamepad"""
         for key in list(self.active_keys):
             self.key_up(key)
         self.active_keys.clear()
-        print("🔄 All keys released")
+        
+        # Reset gamepad to neutral state
+        if self.gamepad:
+            self.gamepad.reset()
+            self.gamepad.update()
+            print("🔄 All keys and gamepad reset")
+        else:
+            print("🔄 All keys released")
 
 # Global server instance
 server = WindowsInputServer()
