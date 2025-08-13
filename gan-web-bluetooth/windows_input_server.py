@@ -154,7 +154,7 @@ class WindowsInputServer:
 # Global server instance
 server = WindowsInputServer()
 
-async def handle_client(websocket, path):
+async def handle_client(websocket):
     """Handle incoming WebSocket connections from browser"""
     client_addr = websocket.remote_address
     server.connected_clients.add(websocket)
@@ -190,11 +190,10 @@ async def main():
     print()
     
     # Start WebSocket server
-    start_server = websockets.serve(handle_client, HOST, PORT)
-    
     try:
-        await start_server
-        await asyncio.Future()  # Run forever
+        async with websockets.serve(handle_client, HOST, PORT):
+            print(f"✅ Server started successfully on {HOST}:{PORT}")
+            await asyncio.Future()  # Run forever
     except KeyboardInterrupt:
         print("\n👋 Server stopped by user")
     finally:
