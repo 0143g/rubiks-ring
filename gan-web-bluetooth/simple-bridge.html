@@ -45,6 +45,7 @@
         button:hover { opacity: 0.9; }
         #connectWS { background: #007bff; color: white; }
         #connectCube { background: #28a745; color: white; }
+        #connectBridge { background: #6f42c1; color: white; }
         #resetOrientation { background: #ffc107; color: #212529; }
         #disconnect { background: #dc3545; color: white; }
         
@@ -73,6 +74,7 @@
             
             <button id="connectWS">connect to wsl</button>
             <button id="connectCube">connect cube</button>
+            <button id="connectBridge">connect controller bridge</button>
             <button id="resetOrientation">reset orientation</button>
             <button id="disconnect">disconnect</button>
         </div>
@@ -189,6 +191,7 @@
         $('#cube-twisty-player').append(twistyPlayer);
 
         let websocket = null;
+        let controllerBridge = null;  // WebSocket to native controller bridge
         let ganCubeConnection = null;
         let moveCount = 0;
         let basis = null;
@@ -263,29 +266,30 @@
         }
         
         function simulateMouseClick(clickType) {
-            try {
-                // Create and dispatch mouse event
-                const event = new MouseEvent(clickType, {
-                    view: window,
-                    bubbles: true,
-                    cancelable: true,
-                    button: clickType === 'click' ? 0 : 2 // 0 = left, 2 = right
-                });
-                
-                // Target the test text box for demonstration
-                testTextBox.dispatchEvent(event);
-                
-                // Visual feedback
-                testTextBox.style.borderColor = clickType === 'click' ? '#007bff' : '#dc3545';
-                setTimeout(() => {
-                    testTextBox.style.borderColor = '#dee2e6';
-                }, 200);
-                
-                logInput(`🖱️ Simulated ${clickType === 'click' ? 'LEFT' : 'RIGHT'} CLICK on test box`);
-                
-            } catch (error) {
-                logInput(`Failed to simulate ${clickType}: ${error.message}`);
-            }
+            const button = clickType === 'click' ? 'left' : 'right';
+            
+            // Send to native bridge for real system input
+            sendToControllerBridge({
+                type: 'MOUSE_CLICK',
+                button: button,
+                timestamp: Date.now()
+            });
+            
+            // Visual feedback in browser (for testing)
+            const event = new MouseEvent(clickType, {
+                view: window,
+                bubbles: true,
+                cancelable: true,
+                button: clickType === 'click' ? 0 : 2
+            });
+            testTextBox.dispatchEvent(event);
+            
+            testTextBox.style.borderColor = clickType === 'click' ? '#007bff' : '#dc3545';
+            setTimeout(() => {
+                testTextBox.style.borderColor = '#dee2e6';
+            }, 200);
+            
+            logInput(`🖱️ REAL ${button.toUpperCase()} CLICK sent to system`);
         }
         
         function simulateKeyPress(keyCode, character) {
@@ -338,9 +342,18 @@
                 return;
             }
             
-            log(`CONTROLLER: ${move} → ${mapping.description}`);
-            logInput(`Detected move: ${move} → ${mapping.description}`);
+            log(`🎮 CONTROLLER: ${move} → ${mapping.description}`);
+            logInput(`🎯 Detected move: ${move} → ${mapping.description}`);
             
+            // Send move directly to controller bridge for processing
+            sendToControllerBridge({
+                type: 'MOVE',
+                move: move,
+                mapping: mapping,
+                timestamp: Date.now()
+            });
+            
+            // Also do local simulation for visual feedback
             if (mapping.type === 'click') {
                 simulateMouseClick(mapping.action === 'left' ? 'click' : 'contextmenu');
             } else if (mapping.type === 'key') {
@@ -452,59 +465,121 @@
         
         // Key press simulation
         function pressKey(keyCode) {
-            try {
-                const event = new KeyboardEvent('keydown', {
-                    code: keyCode,
-                    key: keyCode.replace('Key', '').toLowerCase(),
-                    bubbles: true,
-                    cancelable: true,
-                    repeat: false
-                });
-                document.dispatchEvent(event);
-                logInput(`⌨️ KEY PRESS: ${keyCode}`);
-            } catch (error) {
-                logInput(`Failed to press key ${keyCode}: ${error.message}`);
-            }
+            const key = keyCode.replace('Key', '').toLowerCase();
+            
+            // Send to native bridge for real system input
+            sendToControllerBridge({
+                type: 'KEY_PRESS',
+                key: key,
+                timestamp: Date.now()
+            });
+            
+            // Visual feedback in browser
+            const event = new KeyboardEvent('keydown', {
+                code: keyCode,
+                key: key,
+                bubbles: true,
+                cancelable: true,
+                repeat: false
+            });
+            document.dispatchEvent(event);
+            logInput(`⌨️ REAL KEY PRESS: ${key.toUpperCase()}`);
         }
         
         // Key release simulation  
         function releaseKey(keyCode) {
-            try {
-                const event = new KeyboardEvent('keyup', {
-                    code: keyCode,
-                    key: keyCode.replace('Key', '').toLowerCase(),
-                    bubbles: true,
-                    cancelable: true
-                });
-                document.dispatchEvent(event);
-                logInput(`⌨️ KEY RELEASE: ${keyCode}`);
-            } catch (error) {
-                logInput(`Failed to release key ${keyCode}: ${error.message}`);
-            }
+            const key = keyCode.replace('Key', '').toLowerCase();
+            
+            // Send to native bridge for real system input
+            sendToControllerBridge({
+                type: 'KEY_RELEASE',
+                key: key,
+                timestamp: Date.now()
+            });
+            
+            // Visual feedback in browser
+            const event = new KeyboardEvent('keyup', {
+                code: keyCode,
+                key: key,
+                bubbles: true,
+                cancelable: true
+            });
+            document.dispatchEvent(event);
+            logInput(`⌨️ REAL KEY RELEASE: ${key.toUpperCase()}`);
         }
         
         // Mouse movement simulation
         function simulateMouseMovement(deltaX, deltaY) {
+            // Send to native bridge for real system input
+            sendToControllerBridge({
+                type: 'MOUSE_MOVE',
+                deltaX: deltaX,
+                deltaY: deltaY,
+                timestamp: Date.now()
+            });
+            
+            // Visual feedback in browser
+            const event = new MouseEvent('mousemove', {
+                bubbles: true,
+                cancelable: true,
+                movementX: deltaX,
+                movementY: deltaY
+            });
+            document.dispatchEvent(event);
+            
+            logInput(`🖱️ REAL MOUSE MOVE: (${deltaX}, ${deltaY})`);
+            
+            testTextBox.style.borderColor = '#ffc107';
+            setTimeout(() => {
+                testTextBox.style.borderColor = '#dee2e6';
+            }, 100);
+        }
+        
+        // Controller bridge communication  
+        function connectControllerBridge() {
             try {
-                // Create mouse move event
-                const event = new MouseEvent('mousemove', {
-                    bubbles: true,
-                    cancelable: true,
-                    movementX: deltaX,
-                    movementY: deltaY
-                });
+                // Connect to Windows input bridge on port 8082
+                controllerBridge = new WebSocket('ws://localhost:8082');
                 
-                document.dispatchEvent(event);
-                logInput(`MOUSE MOVE: (${deltaX}, ${deltaY})`);
+                controllerBridge.onopen = () => {
+                    logInput('🔗 Connected to Windows input bridge!');
+                    logInput('💪 Real system input now active');
+                    log('✅ Windows input bridge connected - ready for gaming!');
+                };
                 
-                // Visual feedback
-                testTextBox.style.borderColor = '#ffc107';
-                setTimeout(() => {
-                    testTextBox.style.borderColor = '#dee2e6';
-                }, 100);
+                controllerBridge.onclose = () => {
+                    logInput('⚠️ Windows input bridge disconnected');
+                    logInput('ℹ️ Restart: python windows_input_bridge.py');
+                    controllerBridge = null;
+                };
+                
+                controllerBridge.onerror = (error) => {
+                    logInput(`❌ Controller bridge error: ${error}`);
+                    console.error('WebSocket error:', error);
+                };
                 
             } catch (error) {
-                logInput(`Failed to move mouse: ${error.message}`);
+                logInput(`❌ Failed to connect to controller bridge: ${error}`);
+                console.error('Controller bridge connection error:', error);
+            }
+        }
+        
+        function sendToControllerBridge(data) {
+            try {
+                if (controllerBridge && controllerBridge.readyState === WebSocket.OPEN) {
+                    controllerBridge.send(JSON.stringify(data));
+                    return true;
+                } else {
+                    // Only log occasionally to avoid spam
+                    if (Math.random() < 0.1) { // 10% chance to log
+                        logInput('⚠️ Windows bridge not connected - using browser simulation only');
+                    }
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error sending to controller bridge:', error);
+                logInput(`❌ Bridge send error: ${error.message}`);
+                return false;
             }
         }
         
@@ -803,6 +878,7 @@
         
         document.getElementById('connectWS').addEventListener('click', connectWebSocket);
         document.getElementById('connectCube').addEventListener('click', connectCube);
+        document.getElementById('connectBridge').addEventListener('click', connectControllerBridge);
         document.getElementById('resetOrientation').addEventListener('click', resetOrientation);
         document.getElementById('disconnect').addEventListener('click', disconnect);
         
@@ -841,8 +917,10 @@
         // Initialize on page load
         setTimeout(initializeController, 500);
         
-        log('connect to wsl, then connect cube');
-        log('cube controller system ready - perform R, R\', L, L\' moves to test');
+        log('🔗 Step 1: Connect to WSL (node wsl-cube-receiver.js)');
+        log('🔗 Step 2: Connect Controller Bridge (python windows_input_server.py)'); 
+        log('🔗 Step 3: Connect Cube');
+        log('🎮 Step 4: Test moves in games!');
     </script>
 </body>
 </html>

@@ -1,13 +1,11 @@
-simple-bridge.html:191 connect to wsl, then connect cube
-simple-bridge.html:198 Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'scene')
-    at animateCubeOrientation (simple-bridge.html:198:51)
-animateCubeOrientation @ simple-bridge.html:198
-requestAnimationFrame
-(anonymous) @ simple-bridge.html:204
-simple-bridge.html:191 connected to wsl websocket server
-simple-bridge.html:191 connecting to cube...
-simple-bridge.html:191 connected to cube: GANi39Jl
-simple-bridge.html:191 hardware: GANi39Jl v0.1
-simple-bridge.html:191 event: FACELETS
-simple-bridge.html:191 cube ready.
-simple-bridge.html:191 battery: 40%
+PS M:\mikerson\rubiks> python .\windows_input_server.py
+✅ Windows input libraries loaded
+🖥️ GAN Cube → Windows Input Server
+🚀 Starting WebSocket server on localhost:8082
+📋 Waiting for browser to connect...
+
+connection handler failed
+Traceback (most recent call last):
+  File "C:\Users\User\AppData\Local\Programs\Python\Python39\lib\site-packages\websockets\asyncio\server.py", line 376, in conn_handler
+    await self.handler(connection)
+TypeError: handle_client() missing 1 required positional argument: 'path'
