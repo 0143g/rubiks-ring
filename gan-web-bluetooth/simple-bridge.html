@@ -165,7 +165,7 @@
     </div>
 
     <script type="module">
-        import { connectGanCube } from './dist/esm/index.mjs';
+        import { connectGanCube, CubeOrientationTransform, multiplyQuaternions, inverseQuaternion, FACE_QUATERNIONS } from './dist/esm/index.mjs';
         import * as THREE from 'three';
         import { TwistyPlayer } from 'https://cdn.cubing.net/v0/js/cubing/twisty';
 
@@ -195,10 +195,14 @@
         let controllerBridge = null;  // WebSocket to native controller bridge
         let ganCubeConnection = null;
         let moveCount = 0;
+        
+        // Initialize orientation transformer
+        const orientationTransform = new CubeOrientationTransform();
         let basis = null;
         let cubeQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0));
-        // Set HOME_ORIENTATION to show standard cube layout:
-        // Red front, White top, Green left, Blue right, Yellow bottom, Orange back
+        
+        // Home orientation is now handled by CubeOrientationTransform
+        // The normalized (0,0,0,1) means white top, green front
         const HOME_ORIENTATION = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0));
         
         var twistyScene;
@@ -685,16 +689,37 @@
 
         function updateGyroDisplay(quaternion, velocity) {
             let { x: qx, y: qy, z: qz, w: qw } = quaternion;
-            let quat = new THREE.Quaternion(qx, qz, -qy, qw).normalize();
+            
+            // First normalize the quaternion relative to home position
+            const normalizedQuat = orientationTransform.normalizeOrientation(quaternion);
+            
+            // The cube's axes are: X→Red, Y→White, Z→Green
+            // Three.js default is Y-up, so we need to map:
+            // Cube X (Red) → Three.js X
+            // Cube Y (White) → Three.js Y  
+            // Cube Z (Green) → Three.js -Z (since Three.js Z points towards viewer)
+            let quat = new THREE.Quaternion(
+                normalizedQuat.x,
+                normalizedQuat.y,
+                -normalizedQuat.z,
+                normalizedQuat.w
+            ).normalize();
+            
             if (!basis) {
-                basis = quat.clone().conjugate();
+                basis = new THREE.Quaternion(0, 0, 0, 1);
             }
-            cubeQuaternion.copy(quat.premultiply(basis).premultiply(HOME_ORIENTATION));
+            cubeQuaternion.copy(quat.premultiply(basis));
 
+            // Display the raw quaternion values from the cube
             $('#quatX').text(qx.toFixed(3));
             $('#quatY').text(qy.toFixed(3));
             $('#quatZ').text(qz.toFixed(3));
             $('#quatW').text(qw.toFixed(3));
+            
+            // Check if cube is at factory default orientation
+            if (orientationTransform.isFactoryDefault(quaternion)) {
+                console.log('Cube is at factory default orientation (impractical viewing angle)');
+            }
             
             if (velocity) {
                 $('#velocity').text(`x:${velocity.x.toFixed(2)}, y:${velocity.y.toFixed(2)}, z:${velocity.z.toFixed(2)}`);
@@ -702,12 +727,13 @@
         }
         
         function resetOrientation() {
-            basis = null;
+            // Reset to identity quaternion (white top, green front)
+            basis = new THREE.Quaternion(0, 0, 0, 1);
             
-            // Set current cube orientation as new reference (this is the key fix!)
+            // Set current cube orientation as new reference
             if (orientationState.currentQuaternion) {
                 orientationState.referenceOrientation = { ...orientationState.currentQuaternion };
-                logInput('New reference set to current cube position');
+                logInput('Orientation reset to home position (white top, green front)');
             } else {
                 orientationState.referenceOrientation = null;
                 logInput('Reference orientation cleared');

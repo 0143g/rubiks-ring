@@ -188,6 +188,110 @@ function smoothOrientationData(
   return result;
 }
 
+/**
+ * Standard face quaternions for cube orientation reference
+ * All measurements taken with cube flat on desk
+ */
+const FACE_QUATERNIONS = {
+  white_top_green_front: { x: -0.008, y: -0.011, z: 0.390, w: 0.921 },
+  yellow_top_green_front: { x: -0.397, y: 0.918, z: -0.012, w: -0.002 },
+  blue_top_white_front: { x: 0.662, y: 0.280, z: 0.275, w: 0.639 },
+  green_top_white_front: { x: 0.286, y: -0.661, z: 0.644, w: -0.260 },
+  red_top_white_front: { x: 0.666, y: -0.273, z: 0.645, w: 0.259 },
+  orange_top_white_front: { x: 0.257, y: 0.673, z: -0.265, w: 0.642 }
+};
+
+/**
+ * Multiply two quaternions (Hamilton product)
+ */
+function multiplyQuaternions(q1: Quaternion, q2: Quaternion): Quaternion {
+  return {
+    x: q1.w * q2.x + q1.x * q2.w + q1.y * q2.z - q1.z * q2.y,
+    y: q1.w * q2.y - q1.x * q2.z + q1.y * q2.w + q1.z * q2.x,
+    z: q1.w * q2.z + q1.x * q2.y - q1.y * q2.x + q1.z * q2.w,
+    w: q1.w * q2.w - q1.x * q2.x - q1.y * q2.y - q1.z * q2.z
+  };
+}
+
+/**
+ * Compute inverse/conjugate of a quaternion
+ */
+function inverseQuaternion(q: Quaternion): Quaternion {
+  const lengthSq = q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w;
+  if (lengthSq === 0) {
+    return { x: 0, y: 0, z: 0, w: 1 };
+  }
+  return {
+    x: -q.x / lengthSq,
+    y: -q.y / lengthSq,
+    z: -q.z / lengthSq,
+    w: q.w / lengthSq
+  };
+}
+
+/**
+ * CubeOrientationTransform handles coordinate system transformations
+ * The GAN cube's internal axes are:
+ * - X-axis: points toward RED face
+ * - Y-axis: points toward WHITE face (top in standard position)
+ * - Z-axis: points toward GREEN face (front in standard position)
+ * 
+ * The cube's factory default (0,0,0,-1) is impractical, so we use
+ * "white top, green front" as our effective identity orientation.
+ */
+class CubeOrientationTransform {
+  // The quaternion for our chosen "home" position (white top, green front)
+  private readonly HOME_QUATERNION: Quaternion = { x: -0.008, y: -0.011, z: 0.390, w: 0.921 };
+  private readonly HOME_QUATERNION_INVERSE: Quaternion;
+
+  constructor() {
+    this.HOME_QUATERNION_INVERSE = inverseQuaternion(this.HOME_QUATERNION);
+  }
+
+  /**
+   * Convert raw cube quaternion to normalized orientation
+   * where (0,0,0,1) means white top, green front
+   */
+  normalizeOrientation(rawQuat: Quaternion): Quaternion {
+    // Multiply by inverse of home quaternion to get relative rotation
+    return multiplyQuaternions(rawQuat, this.HOME_QUATERNION_INVERSE);
+  }
+
+  /**
+   * Convert normalized orientation back to raw cube quaternion
+   */
+  denormalizeOrientation(normalizedQuat: Quaternion): Quaternion {
+    // Multiply by home quaternion to get raw rotation
+    return multiplyQuaternions(normalizedQuat, this.HOME_QUATERNION);
+  }
+
+  /**
+   * Get reference quaternions for standard cube positions
+   */
+  getFaceQuaternions() {
+    return FACE_QUATERNIONS;
+  }
+
+  /**
+   * Check if cube is near factory default orientation
+   */
+  isFactoryDefault(quat: Quaternion): boolean {
+    return Math.abs(quat.w + 1) < 0.1; // w ≈ -1
+  }
+
+  /**
+   * Filter out sensor noise from quaternion values
+   */
+  filterNoise(quat: Quaternion, threshold: number = 0.02): Quaternion {
+    return {
+      x: Math.abs(quat.x) < threshold ? 0 : quat.x,
+      y: Math.abs(quat.y) < threshold ? 0 : quat.y,
+      z: Math.abs(quat.z) < threshold ? 0 : quat.z,
+      w: quat.w
+    };
+  }
+}
+
 export {
   now,
   toKociembaFacelets,
@@ -195,7 +299,11 @@ export {
   slerpQuaternions,
   normalizeQuaternion,
   quaternionAngularDistance,
-  smoothOrientationData
+  smoothOrientationData,
+  multiplyQuaternions,
+  inverseQuaternion,
+  CubeOrientationTransform,
+  FACE_QUATERNIONS
 };
 
 export type { Quaternion };
