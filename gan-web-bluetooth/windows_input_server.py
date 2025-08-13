@@ -114,6 +114,12 @@ class WindowsInputServer:
             elif move == "B":
                 self.gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_THUMB)
                 print("  ✅ Gamepad R3 (Right Stick Press) → Windows")
+            elif move == "F":
+                self.gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT)
+                print("  ✅ Gamepad D-Pad Right → Windows")
+            elif move == "F'":
+                self.gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT)
+                print("  ✅ Gamepad D-Pad Left → Windows")
                 
     def handle_orientation(self, data):
         """Handle cube orientation for analog joystick control"""

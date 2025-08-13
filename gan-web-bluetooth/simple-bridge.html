@@ -80,7 +80,7 @@
         </div>
         
         <div class="cube-3d-container">
-            <h3>visualization</h3>
+            <h3>visualization that doesn't even fucking work right anymore but whatever</h3>
             <div id="cube-twisty-player" class="cube-3d-viewer"></div>
         </div>
         
@@ -139,29 +139,25 @@
         </div>
         
         <div class="panel">
-            <h3>recent moves</h3>
+            <h3>feed</h3>
             <div id="log" class="log"></div>
         </div>
         
         <div class="panel">
             <h3>virtual xbox controller</h3>
             <div style="margin: 15px 0;">
-                <strong>Left Analog Stick:</strong><br>
-                <span style="color: #28a745;">Cube Tilt = Joystick Movement</span><br>
-                <small style="color: #666;">Tilt cube in any direction for smooth analog control</small>
+                <strong>left analog stick:</strong><br>
+                <span style="color: #28a745;">cube tilt = left joystick movement</span><br>
             </div>
             <div style="margin: 15px 0;">
-                <strong>Controller Buttons:</strong><br>
-                <span style="color: #007bff;">R = R1 (Right Bumper)</span> | 
-                <span style="color: #007bff;">R' = R2 (Right Trigger)</span><br>
+                <strong>controller buttons:</strong><br>
+                <span style="color: #007bff;">R = R1 (right bumper)</span> | 
+                <span style="color: #007bff;">R' = R2 (right trigger)</span><br>
                 <span style="color: #28a745;">L = B Button</span> | 
                 <span style="color: #28a745;">L' = B Button</span><br>
                 <span style="color: #ffc107;">D = X Button</span> | 
-                <span style="color: #6f42c1;">B = R3 (Right Stick Press)</span>
+                <span style="color: #6f42c1;">B = R3</span>
             </div>
-            <textarea id="testTextBox" 
-                placeholder="games will see this as a real xbox controller..."
-                style="width: 100%; height: 60px; padding: 10px; border: 2px solid #dee2e6; border-radius: 5px; font-family: monospace; font-size: 14px; resize: vertical;"></textarea>
             <div id="inputLog" style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 150px; overflow-y: auto;"></div>
         </div>
     </div>
@@ -219,7 +215,9 @@
             'L': { type: 'gamepad', action: 'B', description: 'B Button' },
             "L'": { type: 'gamepad', action: 'B', description: 'B Button' },
             'D': { type: 'gamepad', action: 'X', description: 'X Button' },
-            'B': { type: 'gamepad', action: 'R3', description: 'R3 (Right Stick Press)' }
+            'B': { type: 'gamepad', action: 'R3', description: 'R3 (Right Stick Press)' },
+            'F': { type: 'gamepad', action: 'DPAD_RIGHT', description: 'D-Pad Right' },
+            "F'": { type: 'gamepad', action: 'DPAD_LEFT', description: 'D-Pad Left' }
         };
         
         // Orientation-to-Input Mapping Configuration
