@@ -658,7 +658,7 @@
             // Left/right tilt should be around Y-axis (yaw)
             
             // Use small angle approximation: for small rotations, quat.x ≈ rotation_angle_x/2
-            let tiltX = Math.max(-1.0, Math.min(1.0, -relative.z * 4.0));  
+            let tiltX = Math.max(-1.0, Math.min(1.0, relative.z * 4.0));  
             let tiltY = Math.max(-1.0, Math.min(1.0, -relative.y * 4.0));
             
             // Debug output
@@ -750,7 +750,7 @@
                 basis = visualQuat.clone().invert().multiply(correction);
             }
             
-            cubeQuaternion.copy(visualQuat.multiply(basis));
+            cubeQuaternion.copy(visualQuat.clone().multiply(basis));
             
             if (velocity) {
                 $('#velocity').text(`x:${velocity.x.toFixed(2)}, y:${velocity.y.toFixed(2)}, z:${velocity.z.toFixed(2)}`);
