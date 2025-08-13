@@ -690,36 +690,29 @@
         function updateGyroDisplay(quaternion, velocity) {
             let { x: qx, y: qy, z: qz, w: qw } = quaternion;
             
-            // First normalize the quaternion relative to home position
-            const normalizedQuat = orientationTransform.normalizeOrientation(quaternion);
-            
-            // The cube's axes are: X→Red, Y→White, Z→Green
-            // Three.js default is Y-up, so we need to map:
-            // Cube X (Red) → Three.js X
-            // Cube Y (White) → Three.js Y  
-            // Cube Z (Green) → Three.js -Z (since Three.js Z points towards viewer)
-            let quat = new THREE.Quaternion(
-                normalizedQuat.x,
-                normalizedQuat.y,
-                -normalizedQuat.z,
-                normalizedQuat.w
-            ).normalize();
-            
-            if (!basis) {
-                basis = new THREE.Quaternion(0, 0, 0, 1);
-            }
-            cubeQuaternion.copy(quat.premultiply(basis));
-
-            // Display the raw quaternion values from the cube
+            // display raw values
             $('#quatX').text(qx.toFixed(3));
             $('#quatY').text(qy.toFixed(3));
             $('#quatZ').text(qz.toFixed(3));
             $('#quatW').text(qw.toFixed(3));
             
-            // Check if cube is at factory default orientation
-            if (orientationTransform.isFactoryDefault(quaternion)) {
-                console.log('Cube is at factory default orientation (impractical viewing angle)');
+            // for visualization, we need to map cube axes to twisty axes
+            // empirically: cube y-axis rotation → twisty z-axis rotation
+            // so swap the quaternion components
+            
+            let visualQuat = new THREE.Quaternion(
+                qx,  // cube x stays x
+                qz,  // cube z → visual y (up)
+                qy,  // cube y → visual z (forward)
+                qw
+            ).normalize();
+            
+            if (!basis) {
+                // capture current orientation as reference
+                basis = visualQuat.clone().invert();
             }
+            
+            cubeQuaternion.copy(visualQuat.multiply(basis));
             
             if (velocity) {
                 $('#velocity').text(`x:${velocity.x.toFixed(2)}, y:${velocity.y.toFixed(2)}, z:${velocity.z.toFixed(2)}`);
