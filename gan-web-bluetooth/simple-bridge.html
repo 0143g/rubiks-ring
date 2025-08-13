@@ -155,7 +155,9 @@
                 <span style="color: #007bff;">R = R1 (Right Bumper)</span> | 
                 <span style="color: #007bff;">R' = R2 (Right Trigger)</span><br>
                 <span style="color: #28a745;">L = B Button</span> | 
-                <span style="color: #28a745;">L' = B Button</span>
+                <span style="color: #28a745;">L' = B Button</span><br>
+                <span style="color: #ffc107;">D = X Button</span> | 
+                <span style="color: #6f42c1;">B = R3 (Right Stick Press)</span>
             </div>
             <textarea id="testTextBox" 
                 placeholder="games will see this as a real xbox controller..."
@@ -218,7 +220,9 @@
             'R': { type: 'gamepad', action: 'R1', description: 'R1 (Right Bumper)' },
             "R'": { type: 'gamepad', action: 'R2', description: 'R2 (Right Trigger)' },
             'L': { type: 'gamepad', action: 'B', description: 'B Button' },
-            "L'": { type: 'gamepad', action: 'B', description: 'B Button' }
+            "L'": { type: 'gamepad', action: 'B', description: 'B Button' },
+            'D': { type: 'gamepad', action: 'X', description: 'X Button' },
+            'B': { type: 'gamepad', action: 'R3', description: 'R3 (Right Stick Press)' }
         };
         
         // Orientation-to-Input Mapping Configuration
@@ -1034,6 +1038,7 @@
             logInput('Controller Button Mappings:');
             logInput('   R = R1 (Right Bumper) | R\' = R2 (Right Trigger)');
             logInput('   L = B Button | L\' = B Button');
+            logInput('   D = X Button | B = R3 (Right Stick Press)');
             logInput('Games will recognize this as a real Xbox controller');
             logInput('Connect cube and test in any game with controller support');
         }

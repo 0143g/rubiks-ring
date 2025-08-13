@@ -103,16 +103,21 @@ class WindowsInputServer:
                 self.gamepad_trigger_press('right')
                 print("  ✅ Gamepad R2 (Right Trigger) → Windows")
             elif move == "L":
-                self.gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_A)
-                print("  ✅ Gamepad X Button → Windows")
+                self.gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+                print("  ✅ Gamepad B Button → Windows")
             elif move == "L'":
                 self.gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
                 print("  ✅ Gamepad B Button → Windows")
+            elif move == "D":
+                self.gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_X)
+                print("  ✅ Gamepad X Button → Windows")
+            elif move == "B":
+                self.gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_THUMB)
+                print("  ✅ Gamepad R3 (Right Stick Press) → Windows")
                 
     def handle_orientation(self, data):
         """Handle cube orientation for analog joystick control"""
-        if not self.gamepad:
-            return  # No gamepad available
+        if not self.gamepad: return  # No gamepad available
             
         # Get tilt values from cube orientation
         tilt_x = data.get('tiltX', 0.0)  # Left/Right tilt
@@ -128,7 +133,7 @@ class WindowsInputServer:
         
         # Rate limit logging
         if abs(stick_x) > 1000 or abs(stick_y) > 1000:  # Only log significant movement
-            print(f"🕹️ Left Stick: X={stick_x}, Y={stick_y}")
+            print(f"Left Stick: X={stick_x}, Y={stick_y}")
             
     def handle_key_press(self, data):
         """Handle continuous key press"""
