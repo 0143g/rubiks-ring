@@ -1,5 +1,5 @@
 
-import { now, toKociembaFacelets } from './utils';
+import { now, toKociembaFacelets, smoothOrientationData, slerpQuaternions, Quaternion, cubeTimestampLinearFit } from './utils';
 import { GanCubeEncrypter } from './gan-cube-encrypter';
 import { Observable, Subject } from 'rxjs';
 
@@ -317,6 +317,101 @@ class GanGen2ProtocolDriver implements GanProtocolDriver {
     private lastSerial: number = -1;
     private lastMoveTimestamp: number = 0;
     private cubeTimestamp: number = 0;
+    
+    // Gyroscope smoothing system
+    private gyroBuffer: Array<{quaternion: Quaternion, timestamp: number}> = [];
+    private readonly GYRO_BUFFER_SIZE = 5;
+    private readonly GYRO_RATE_LIMIT_MS = 16; // 60 FPS max
+    private lastGyroEmit = 0;
+    
+    // Timestamp synchronization for gyro events
+    private gyroTimestampHistory: Array<{cubeTime: number, hostTime: number}> = [];
+    private readonly MAX_TIMESTAMP_HISTORY = 20;
+
+    /**
+     * Process and smooth gyroscope data for optimal performance
+     */
+    private processGyroData(quaternion: GanCubeOrientationQuaternion, timestamp: number, cubeTimestamp?: number): GanCubeEvent | null {
+        // Rate limiting - prevent overwhelming the stream
+        if (timestamp - this.lastGyroEmit < this.GYRO_RATE_LIMIT_MS) {
+            return null;
+        }
+
+        // Update timestamp synchronization if cube timestamp available
+        if (cubeTimestamp !== undefined) {
+            this.updateTimestampSync(cubeTimestamp, timestamp);
+        }
+
+        // Add to buffer
+        this.gyroBuffer.push({ quaternion, timestamp });
+        
+        // Maintain buffer size
+        if (this.gyroBuffer.length > this.GYRO_BUFFER_SIZE) {
+            this.gyroBuffer.shift();
+        }
+
+        // Apply smoothing if we have enough samples
+        const smoothedQuaternion = smoothOrientationData(this.gyroBuffer, Math.min(3, this.gyroBuffer.length));
+        
+        if (smoothedQuaternion) {
+            this.lastGyroEmit = timestamp;
+            return {
+                type: "GYRO",
+                timestamp: timestamp,
+                quaternion: smoothedQuaternion,
+                velocity: this.calculateAngularVelocity()
+            };
+        }
+
+        return null;
+    }
+
+    /**
+     * Update timestamp synchronization data for gyro events
+     */
+    private updateTimestampSync(cubeTime: number, hostTime: number): void {
+        this.gyroTimestampHistory.push({ cubeTime, hostTime });
+        
+        // Maintain history size
+        if (this.gyroTimestampHistory.length > this.MAX_TIMESTAMP_HISTORY) {
+            this.gyroTimestampHistory.shift();
+        }
+    }
+
+    /**
+     * Get synchronized timestamp using linear regression on gyro data
+     */
+    private getSynchronizedTimestamp(cubeTimestamp: number): number {
+        if (this.gyroTimestampHistory.length < 2) {
+            return now();
+        }
+
+        const fit = cubeTimestampLinearFit(this.gyroTimestampHistory);
+        return Math.round(fit.slope * cubeTimestamp + fit.intercept);
+    }
+
+    /**
+     * Calculate angular velocity from recent orientation changes
+     */
+    private calculateAngularVelocity(): GanCubeAngularVelocity | undefined {
+        if (this.gyroBuffer.length < 2) return undefined;
+
+        const recent = this.gyroBuffer.slice(-2);
+        const dt = (recent[1].timestamp - recent[0].timestamp) / 1000; // Convert to seconds
+        
+        if (dt <= 0) return undefined;
+
+        // Simplified angular velocity calculation
+        // In production, this could use more sophisticated quaternion differentiation
+        const q1 = recent[0].quaternion;
+        const q2 = recent[1].quaternion;
+        
+        return {
+            x: (q2.x - q1.x) / dt,
+            y: (q2.y - q1.y) / dt,
+            z: (q2.z - q1.z) / dt
+        };
+    }
 
     createCommandMessage(command: GanCubeCommand): Uint8Array | undefined {
         var msg: Uint8Array | undefined = new Uint8Array(20).fill(0);
@@ -349,32 +444,25 @@ class GanGen2ProtocolDriver implements GanProtocolDriver {
 
         if (eventType == 0x01) { // GYRO
 
-            // Orientation Quaternion
+            // Orientation Quaternion - parse raw data
             let qw = msg.getBitWord(4, 16);
             let qx = msg.getBitWord(20, 16);
             let qy = msg.getBitWord(36, 16);
             let qz = msg.getBitWord(52, 16);
 
-            // Angular Velocity
-            let vx = msg.getBitWord(68, 4);
-            let vy = msg.getBitWord(72, 4);
-            let vz = msg.getBitWord(76, 4);
+            // Convert to normalized quaternion
+            const rawQuaternion: GanCubeOrientationQuaternion = {
+                x: (1 - (qx >> 15) * 2) * (qx & 0x7FFF) / 0x7FFF,
+                y: (1 - (qy >> 15) * 2) * (qy & 0x7FFF) / 0x7FFF,
+                z: (1 - (qz >> 15) * 2) * (qz & 0x7FFF) / 0x7FFF,
+                w: (1 - (qw >> 15) * 2) * (qw & 0x7FFF) / 0x7FFF
+            };
 
-            cubeEvents.push({
-                type: "GYRO",
-                timestamp: timestamp,
-                quaternion: {
-                    x: (1 - (qx >> 15) * 2) * (qx & 0x7FFF) / 0x7FFF,
-                    y: (1 - (qy >> 15) * 2) * (qy & 0x7FFF) / 0x7FFF,
-                    z: (1 - (qz >> 15) * 2) * (qz & 0x7FFF) / 0x7FFF,
-                    w: (1 - (qw >> 15) * 2) * (qw & 0x7FFF) / 0x7FFF
-                },
-                velocity: {
-                    x: (1 - (vx >> 3) * 2) * (vx & 0x7),
-                    y: (1 - (vy >> 3) * 2) * (vy & 0x7),
-                    z: (1 - (vz >> 3) * 2) * (vz & 0x7)
-                }
-            });
+            // Process through smoothing system
+            const smoothedGyroEvent = this.processGyroData(rawQuaternion, timestamp);
+            if (smoothedGyroEvent) {
+                cubeEvents.push(smoothedGyroEvent);
+            }
 
         } else if (eventType == 0x02) { // MOVE
 
