@@ -50,7 +50,7 @@ class WindowsInputServer:
         if GAMEPAD_AVAILABLE:
             try:
                 self.gamepad = vg.VX360Gamepad()
-                print("🎮 Virtual Xbox controller created!")
+                print("Virtual Xbox controller created!")
                 print("   Games will see this as a real Xbox controller")
             except Exception as e:
                 print(f"⚠️ Could not create virtual gamepad: {e}")
@@ -103,25 +103,11 @@ class WindowsInputServer:
                 self.gamepad_trigger_press('right')
                 print("  ✅ Gamepad R2 (Right Trigger) → Windows")
             elif move == "L":
-                self.gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_X)
+                self.gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_A)
                 print("  ✅ Gamepad X Button → Windows")
             elif move == "L'":
                 self.gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
                 print("  ✅ Gamepad B Button → Windows")
-        else:
-            # Fallback to original keyboard/mouse
-            if move == "R":
-                self.mouse_click("left")
-                print("  ✅ Left Click → Windows")
-            elif move == "R'":
-                self.mouse_click("right")
-                print("  ✅ Right Click → Windows")
-            elif move == "L":
-                self.key_press("a")
-                print("  ✅ Key A → Windows")
-            elif move == "L'":
-                self.key_press("d")
-                print("  ✅ Key D → Windows")
                 
     def handle_orientation(self, data):
         """Handle cube orientation for analog joystick control"""

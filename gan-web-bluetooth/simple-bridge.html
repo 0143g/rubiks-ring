@@ -154,7 +154,7 @@
                 <strong>Controller Buttons:</strong><br>
                 <span style="color: #007bff;">R = R1 (Right Bumper)</span> | 
                 <span style="color: #007bff;">R' = R2 (Right Trigger)</span><br>
-                <span style="color: #28a745;">L = X Button</span> | 
+                <span style="color: #28a745;">L = B Button</span> | 
                 <span style="color: #28a745;">L' = B Button</span>
             </div>
             <textarea id="testTextBox" 
@@ -217,7 +217,7 @@
         const MOVE_MAPPINGS = {
             'R': { type: 'gamepad', action: 'R1', description: 'R1 (Right Bumper)' },
             "R'": { type: 'gamepad', action: 'R2', description: 'R2 (Right Trigger)' },
-            'L': { type: 'gamepad', action: 'X', description: 'X Button' },
+            'L': { type: 'gamepad', action: 'B', description: 'B Button' },
             "L'": { type: 'gamepad', action: 'B', description: 'B Button' }
         };
         
@@ -358,12 +358,24 @@
             logInput(`Detected move: ${move} = ${mapping.description}`);
             
             // Send move directly to controller bridge for processing
-            sendToControllerBridge({
-                type: 'MOVE',
-                move: move,
-                mapping: mapping,
-                timestamp: Date.now()
-            });
+            if (mapping.type === 'combo') {
+                // Handle combo moves (like L' = B + Forward)
+                sendToControllerBridge({
+                    type: 'COMBO_MOVE',
+                    move: move,
+                    mapping: mapping,
+                    timestamp: Date.now()
+                });
+                logInput(`🎮 COMBO: ${mapping.description}`);
+            } else {
+                // Handle regular single-button moves
+                sendToControllerBridge({
+                    type: 'MOVE',
+                    move: move,
+                    mapping: mapping,
+                    timestamp: Date.now()
+                });
+            }
             
             // Also do local simulation for visual feedback
             if (mapping.type === 'click') {
@@ -1021,7 +1033,7 @@
             logInput('Left Analog Stick = Cube Tilt (smooth analog control)');
             logInput('Controller Button Mappings:');
             logInput('   R = R1 (Right Bumper) | R\' = R2 (Right Trigger)');
-            logInput('   L = X Button | L\' = B Button');
+            logInput('   L = B Button | L\' = B Button');
             logInput('Games will recognize this as a real Xbox controller');
             logInput('Connect cube and test in any game with controller support');
         }
