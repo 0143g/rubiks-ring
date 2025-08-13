@@ -140,6 +140,22 @@
             <h3>recent moves</h3>
             <div id="log" class="log"></div>
         </div>
+        
+        <div class="panel">
+            <h3>cube controller test</h3>
+            <p>cube-to-input mapping below:</p>
+            <div style="margin: 15px 0;">
+                <strong>Current Mappings:</strong><br>
+                <span style="color: #007bff;">R = Left Click</span> | 
+                <span style="color: #007bff;">R' = Right Click</span> | 
+                <span style="color: #28a745;">L = Key 'A'</span> | 
+                <span style="color: #28a745;">L' = Key 'D'</span>
+            </div>
+            <textarea id="testTextBox" 
+                placeholder="rotate facelets to show inputs..."
+                style="width: 100%; height: 100px; padding: 10px; border: 2px solid #dee2e6; border-radius: 5px; font-family: monospace; font-size: 14px; resize: vertical;"></textarea>
+            <div id="inputLog" style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 150px; overflow-y: auto;"></div>
+        </div>
     </div>
 
     <script type="module">
@@ -178,6 +194,115 @@
         
         const statusDiv = document.getElementById('status');
         const logDiv = document.getElementById('log');
+        const inputLogDiv = document.getElementById('inputLog');
+        const testTextBox = document.getElementById('testTextBox');
+        
+        // Cube Controller Input Mapping System
+        const MOVE_MAPPINGS = {
+            'R': { type: 'click', action: 'left', description: 'Left Click' },
+            "R'": { type: 'click', action: 'right', description: 'Right Click' },
+            'L': { type: 'key', action: 'KeyA', char: 'A', description: 'Key A' },
+            "L'": { type: 'key', action: 'KeyD', char: 'D', description: 'Key D' }
+        };
+        
+        function logInput(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = `<div style="margin: 2px 0; color: #666;">[${timestamp}] ${message}</div>`;
+            inputLogDiv.innerHTML += entry;
+            inputLogDiv.scrollTop = inputLogDiv.scrollHeight;
+            
+            // Keep only last 20 entries
+            const entries = inputLogDiv.querySelectorAll('div');
+            if (entries.length > 20) {
+                entries[0].remove();
+            }
+        }
+        
+        function simulateMouseClick(clickType) {
+            try {
+                // Create and dispatch mouse event
+                const event = new MouseEvent(clickType, {
+                    view: window,
+                    bubbles: true,
+                    cancelable: true,
+                    button: clickType === 'click' ? 0 : 2 // 0 = left, 2 = right
+                });
+                
+                // Target the test text box for demonstration
+                testTextBox.dispatchEvent(event);
+                
+                // Visual feedback
+                testTextBox.style.borderColor = clickType === 'click' ? '#007bff' : '#dc3545';
+                setTimeout(() => {
+                    testTextBox.style.borderColor = '#dee2e6';
+                }, 200);
+                
+                logInput(`🖱️ Simulated ${clickType === 'click' ? 'LEFT' : 'RIGHT'} CLICK on test box`);
+                
+            } catch (error) {
+                logInput(`❌ Failed to simulate ${clickType}: ${error.message}`);
+            }
+        }
+        
+        function simulateKeyPress(keyCode, character) {
+            try {
+                // Create keyboard events
+                const keyDownEvent = new KeyboardEvent('keydown', {
+                    code: keyCode,
+                    key: character,
+                    bubbles: true,
+                    cancelable: true
+                });
+                
+                const keyUpEvent = new KeyboardEvent('keyup', {
+                    code: keyCode,
+                    key: character,
+                    bubbles: true,
+                    cancelable: true
+                });
+                
+                // Focus the text box and dispatch events
+                testTextBox.focus();
+                document.dispatchEvent(keyDownEvent);
+                
+                // Add character to text box
+                const currentValue = testTextBox.value;
+                const cursorPos = testTextBox.selectionStart || currentValue.length;
+                testTextBox.value = currentValue.slice(0, cursorPos) + character + currentValue.slice(cursorPos);
+                testTextBox.setSelectionRange(cursorPos + 1, cursorPos + 1);
+                
+                document.dispatchEvent(keyUpEvent);
+                
+                // Visual feedback
+                testTextBox.style.borderColor = '#28a745';
+                setTimeout(() => {
+                    testTextBox.style.borderColor = '#dee2e6';
+                }, 200);
+                
+                logInput(`⌨️ Simulated KEY PRESS: '${character}' (${keyCode})`);
+                
+            } catch (error) {
+                logInput(`❌ Failed to simulate key press '${character}': ${error.message}`);
+            }
+        }
+        
+        function processCubeMove(move) {
+            const mapping = MOVE_MAPPINGS[move];
+            
+            if (!mapping) {
+                logInput(`ℹ️ No mapping defined for move: ${move}`);
+                return;
+            }
+            
+            log(`🎮 CONTROLLER: ${move} → ${mapping.description}`);
+            logInput(`🎯 Detected move: ${move} → ${mapping.description}`);
+            
+            if (mapping.type === 'click') {
+                simulateMouseClick(mapping.action === 'left' ? 'click' : 'contextmenu');
+            } else if (mapping.type === 'key') {
+                simulateKeyPress(mapping.action, mapping.char);
+            }
+        }
         
         function log(message) {
             const timestamp = new Date().toLocaleTimeString();
@@ -327,6 +452,9 @@
                 updateCubeInfo('lastMove', event.move);
                 twistyPlayer.experimentalAddMove(event.move, { cancel: false });
                 
+                // Process cube move for controller input mapping
+                processCubeMove(event.move);
+                
                 if (shouldRelay) {
                     sendToWSL({
                         type: event.type,
@@ -435,7 +563,39 @@
         document.getElementById('resetOrientation').addEventListener('click', resetOrientation);
         document.getElementById('disconnect').addEventListener('click', disconnect);
         
+        // Initialize controller system
+        function initializeController() {
+            logInput('cube controller system initialized');
+            logInput('active mappings:');
+            Object.entries(MOVE_MAPPINGS).forEach(([move, mapping]) => {
+                logInput(`   ${move} = ${mapping.description}`);
+            });
+            logInput('perform mapped moves on your cube.');
+        }
+        
+        // Test function for manual verification
+        function testAllMappings() {
+            logInput('Testing all mappings...');
+            Object.keys(MOVE_MAPPINGS).forEach((move, index) => {
+                setTimeout(() => {
+                    logInput(`🔬 Testing: ${move}`);
+                    processCubeMove(move);
+                }, index * 1000);
+            });
+        }
+        
+        // Add test button
+        const testButton = document.createElement('button');
+        testButton.textContent = 'Test All Mappings';
+        testButton.style.cssText = 'margin: 10px 5px; padding: 8px 16px; background: #6f42c1; color: white; border: none; border-radius: 4px; cursor: pointer;';
+        testButton.addEventListener('click', testAllMappings);
+        document.querySelector('.header').appendChild(testButton);
+        
+        // Initialize on page load
+        setTimeout(initializeController, 500);
+        
         log('connect to wsl, then connect cube');
+        log('🎮 cube controller system ready - perform R, R\', L, L\' moves to test');
     </script>
 </body>
 </html>
