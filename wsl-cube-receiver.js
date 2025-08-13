@@ -111,7 +111,7 @@ class CubeReceiver {
             
         } else if (event.type === 'GYRO') {
             const now = Date.now();
-            if (now - this.lastGyroTime > 1000) {
+            if (now - this.lastGyroTime > 1000000) {
                 this.lastGyroTime = now;
                 console.log(`${colors.yellow}[${timestamp}] ${event.type}${colors.reset}`);
                 console.log(`${colors.white}    ↳ ${JSON.stringify(event)}${colors.reset}`);

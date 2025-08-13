@@ -372,6 +372,17 @@
                 simulateKeyPress(mapping.action, mapping.char);
             }
         }
+
+        // create a helper function for the axis transformation
+        function transformCubeQuaternion(rawQuat) {
+            // apply the axis swap that works for your cube
+            return new THREE.Quaternion(
+                rawQuat.x,  // cube x stays x
+                rawQuat.z,  // cube z → y (up)
+                rawQuat.y,  // cube y → z (forward)
+                rawQuat.w
+            ).normalize();
+        }
         
         // Convert quaternion to Euler angles (pitch, roll, yaw)
         function quaternionToEuler(q) {
@@ -605,30 +616,56 @@
         
         // Process orientation data for analog joystick control
         function processOrientation(quaternion) {
-            // Store current quaternion for reset functionality
-            orientationState.currentQuaternion = { ...quaternion };
+            // Use same transformation as visualization for consistency
+            const transformedQuat = new THREE.Quaternion(
+                -quaternion.x,  // cube x → -x (matches visualization)
+                quaternion.z,   // cube z → y (up)
+                quaternion.y,   // cube y → z (forward)
+                quaternion.w
+            ).normalize();
             
-            // Set reference orientation on first reading
+            // store transformed quaternion
+            orientationState.currentQuaternion = { 
+                x: transformedQuat.x,
+                y: transformedQuat.y,
+                z: transformedQuat.z,
+                w: transformedQuat.w
+            };
+            
+            // Set reference orientation on first reading or reset
             if (!orientationState.referenceOrientation) {
-                orientationState.referenceOrientation = { ...quaternion };
+                orientationState.referenceOrientation = { ...transformedQuat };
                 logInput('Reference orientation set');
                 return;
             }
             
-            // Calculate relative orientation from reference
-            const relative = {
-                x: quaternion.x - orientationState.referenceOrientation.x,
-                y: quaternion.y - orientationState.referenceOrientation.y,
-                z: quaternion.z - orientationState.referenceOrientation.z,
-                w: quaternion.w - orientationState.referenceOrientation.w
-            };
+            // Calculate relative quaternion from reference (proper quaternion math)
+            const refQuat = new THREE.Quaternion(
+                orientationState.referenceOrientation.x,
+                orientationState.referenceOrientation.y,
+                orientationState.referenceOrientation.z,
+                orientationState.referenceOrientation.w
+            );
             
-            // Convert to Euler angles
-            const euler = quaternionToEuler(relative);
+            // Relative = current * inverse(reference)
+            const relative = transformedQuat.clone().multiply(refQuat.clone().invert());
             
-            // Convert tilt to normalized joystick values (-1.0 to 1.0)
-            let tiltX = Math.max(-1.0, Math.min(1.0, euler.roll * 2.0));    // Left/Right tilt
-            let tiltY = Math.max(-1.0, Math.min(1.0, -euler.pitch * 2.0));  // Forward/Back tilt (inverted)
+            // Instead of Euler angles, use simpler approach: project quaternion to tilt axes
+            // Extract tilt from quaternion components directly for better isolation
+            
+            // For a quaternion representing small rotations around reference:
+            // Forward/back tilt should be around X-axis (pitch)
+            // Left/right tilt should be around Y-axis (yaw)
+            
+            // Use small angle approximation: for small rotations, quat.x ≈ rotation_angle_x/2
+            let tiltX = Math.max(-1.0, Math.min(1.0, -relative.z * 4.0));  
+            let tiltY = Math.max(-1.0, Math.min(1.0, -relative.y * 4.0));
+            
+            // Debug output
+            if (Math.random() < 0.1) {
+                logInput(`DEBUG Quat: x=${relative.x.toFixed(3)}, y=${relative.y.toFixed(3)}, z=${relative.z.toFixed(3)}, w=${relative.w.toFixed(3)}`);
+                logInput(`DEBUG Tilt: X=${tiltX.toFixed(3)}, Y=${tiltY.toFixed(3)}`);
+            }
             
             // Apply deadzone (much smaller for analog control)
             const deadzone = 0.1;
@@ -696,20 +733,21 @@
             $('#quatZ').text(qz.toFixed(3));
             $('#quatW').text(qw.toFixed(3));
             
-            // for visualization, we need to map cube axes to twisty axes
-            // empirically: cube y-axis rotation → twisty z-axis rotation
-            // so swap the quaternion components
-            
+            // map cube axes to twisty axes (your working axis swap)
             let visualQuat = new THREE.Quaternion(
-                qx,  // cube x stays x
+                -qx,  // cube x stays x
                 qz,  // cube z → visual y (up)
                 qy,  // cube y → visual z (forward)
                 qw
             ).normalize();
             
             if (!basis) {
-                // capture current orientation as reference
-                basis = visualQuat.clone().invert();
+                const correction = new THREE.Quaternion().setFromEuler(
+                    new THREE.Euler(0, 2*Math.PI, 0) // idk why i need to do this and not 0 but wahtever
+                );
+                
+                // combine: invert current orientation, then apply correction
+                basis = visualQuat.clone().invert().multiply(correction);
             }
             
             cubeQuaternion.copy(visualQuat.multiply(basis));
@@ -718,44 +756,40 @@
                 $('#velocity').text(`x:${velocity.x.toFixed(2)}, y:${velocity.y.toFixed(2)}, z:${velocity.z.toFixed(2)}`);
             }
         }
-        
+                
         function resetOrientation() {
-            // Reset to identity quaternion (white top, green front)
-            basis = new THREE.Quaternion(0, 0, 0, 1);
+            // clear basis to recalculate visualization reference
+            basis = null;
             
-            // Set current cube orientation as new reference
-            if (orientationState.currentQuaternion) {
-                orientationState.referenceOrientation = { ...orientationState.currentQuaternion };
-                logInput('Orientation reset to home position (white top, green front)');
+            // CRITICAL: reset the joystick reference to current TRANSFORMED orientation
+            if (ganCubeConnection && orientationState.currentQuaternion) {
+                // The currentQuaternion is already transformed, use it directly as reference
+                orientationState.referenceOrientation = {
+                    x: orientationState.currentQuaternion.x,
+                    y: orientationState.currentQuaternion.y,
+                    z: orientationState.currentQuaternion.z,
+                    w: orientationState.currentQuaternion.w
+                };
+                
+                logInput('orientation reset - current position is now neutral');
             } else {
                 orientationState.referenceOrientation = null;
-                logInput('Reference orientation cleared');
+                logInput('no cube connected or no orientation data yet');
             }
             
-            // Release all active keys
+            // release all active keys
             for (const key of orientationState.activeKeys) {
                 releaseKey(key);
             }
             orientationState.activeKeys.clear();
+            orientationState.mouseAccumulator = { x: 0, y: 0 };
             
-            // Reset displays to show relative values from new reference
-            $('#quatX').text('0.000');
-            $('#quatY').text('0.000');
-            $('#quatZ').text('0.000');
-            $('#quatW').text('1.000');
-            $('#velocity').text('x:0.00, y:0.00, z:0.00');
-            
-            // Reset cube visualization to standard orientation
-            cubeQuaternion.copy(HOME_ORIENTATION);
-            
-            // Reset the TwistyPlayer to show red face in front (desk orientation)
-            if (twistyPlayer) {
-                twistyPlayer.alg = 'y';  // Y rotation shows red in front
-            }
+            // don't fake the display values - let them show actual quaternion
+            // the visualization will update on next frame when basis is recalculated
             
             log('orientation reset! current position is now neutral');
         }
-        
+                
         function updateCubeInfo(key, value) {
             const element = document.getElementById(key);
             if (element) {
