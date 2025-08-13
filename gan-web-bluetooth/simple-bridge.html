@@ -672,7 +672,7 @@
             // Map to human orientation from ORIENTATION.txt: green front, white top cube (axes swapped + inverted)
             let rawTiltX = -relative.z * 4.0;  // Forward/back: knife/basketball rotation (inverted)
             let rawTiltY = -relative.x * 4.0;  // Left/right: clockwise/counterclockwise tilt (inverted)
-            let rawSpinZ = -relative.y * 2.5;   // Microwave spin axis - reduced sensitivity for camera control
+            let rawSpinZ = -relative.y * 1.5;   // Microwave spin axis - reduced sensitivity for camera control
             
             // Isolate primary axis to prevent diagonal movement
             let tiltX = 0, tiltY = 0;
