@@ -1,15 +1,354 @@
-[11:43:07 PM] DEBUG Quat: x=0.006, y=-0.751, z=0.021, w=-0.660
-[11:43:07 PM] DEBUG Tilt: X=0.024, Y=1.000
-[11:43:08 PM] DEBUG Quat: x=0.017, y=-0.983, z=0.008, w=0.185
-[11:43:08 PM] DEBUG Tilt: X=0.067, Y=1.000
-[11:43:08 PM] DEBUG Quat: x=0.019, y=-0.686, z=-0.005, w=0.727
-[11:43:08 PM] DEBUG Tilt: X=0.077, Y=1.000
-[11:43:09 PM] DEBUG Quat: x=0.006, y=0.056, z=-0.019, w=0.998
-[11:43:09 PM] DEBUG Tilt: X=0.025, Y=-0.222
-[11:43:09 PM] DEBUG Quat: x=0.006, y=0.076, z=-0.018, w=0.997
-[11:43:09 PM] DEBUG Tilt: X=0.022, Y=-0.304
-[11:43:10 PM] DEBUG Quat: x=-0.010, y=0.789, z=-0.020, w=0.613
-[11:43:10 PM] DEBUG Tilt: X=-0.040, Y=-1.000
-[11:43:12 PM] DEBUG Quat: x=-0.008, y=0.178, z=0.013, w=-0.984
-[11:43:12 PM] DEBUG Tilt: X=-0.033, Y=-0.711
-[11:43:12 PM] Left Stick: X=0.00, Y=-0.71
+current issue is that it seems to be connecting for a brief second, but then disconnects. i dont think we need to scan for bluetooth devices when we know the address of the thing we want to connect to.
+
+PS M:\mikerson\rubiks\windows-port> .\start-native-service.bat
+===============================================
+GAN Cube Native Windows Controller Service
+===============================================
+
+Node.js version:
+v18.16.0
+
+Installing dependencies...
+
+up to date, audited 185 packages in 326ms
+
+42 packages are looking for funding
+  run `npm fund` for details
+
+4 low severity vulnerabilities
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+
+Starting GAN Cube Native Service...
+
+Dashboard: http://localhost:3000
+WebSocket: ws://localhost:8080
+Input Bridge: ws://localhost:8082
+
+Press Ctrl+C to stop the service
+
+🚀 Starting GAN Cube Native Windows Service...
+📊 System Information:
+   - Node.js Version: v18.16.0
+   - Platform: win32
+   - Architecture: x64
+   - PID: 158048
+
+🌐 Starting Dashboard Server...
+[Dashboard] WebSocket server listening on port 8080
+[Dashboard] HTTP server listening on http://localhost:3000
+[Dashboard] WebSocket server listening on ws://localhost:8080
+✅ Dashboard server started successfully
+   - HTTP: http://localhost:3000
+   - WebSocket: ws://localhost:8080
+
+🎮 Starting Input Bridge...
+[Input Bridge] Server listening on port 8082
+✅ Input bridge started successfully
+   - Bridge Port: 8082
+
+📡 Initializing Bluetooth System...
+[GAN Cube] Bluetooth adapter state: poweredOn
+✅ Native Bluetooth initialized
+
+🎯 GAN Cube Native Service is READY!
+
+📋 Next Steps:
+   1. Open http://localhost:3000 in your browser
+   2. Click "Connect Cube" to find and connect your GAN cube
+   3. Click "Connect Controller Bridge" to enable gaming input
+   4. Start any game and enjoy cube-based gaming!
+
+🔧 Advanced:
+   - For Python bridge: python windows_input_server.py
+   - For AutoHotkey bridge: cube-controller.ahk
+
+Press Ctrl+C to stop the service
+[Dashboard] New WebSocket client connected
+[Dashboard] Received WebSocket message: PING
+[Dashboard] Received WebSocket message: CONNECT_CUBE
+[GAN Cube] 🎯 HARDCODED: Looking specifically for GANi39Jl at ab:12:34:62:bc:15
+[GAN Cube] Make sure your cube is charged and nearby
+[GAN Cube] Try twisting the cube a few times to wake it up
+[GAN Cube] 🔍 Starting MAXIMUM AGGRESSIVE scan...
+[GAN Cube] Scanning ALL devices with duplicates enabled...
+[GAN Cube] Started scanning for cubes...
+[GAN Cube] Named device: "Petkit_W4X" | a4:c1:38:a8:19:72 | -87dBm
+[GAN Cube] Named device: "ihoment_H6075_6C64" | 9c:04:a0:9f:6c:64 | -70dBm
+[GAN Cube] Named device: "ihoment_H6075_6C64" | 9c:04:a0:9f:6c:64 | -70dBm
+[GAN Cube] Named device: "ihoment_H6075_6C64" | 9c:04:a0:9f:6c:64 | -78dBm
+[GAN Cube] Named device: "ihoment_H6075_6C64" | 9c:04:a0:9f:6c:64 | -79dBm
+[GAN Cube] Named device: "Petkit_W4X" | a4:c1:38:a8:19:72 | -87dBm
+[GAN Cube] Strong unnamed device (NOT connecting): 69:b7:ec:26:54:9a | -54dBm
+[GAN Cube] Strong unnamed device (NOT connecting): 69:b7:ec:26:54:9a | -54dBm
+[GAN Cube] Named device: "GANi39Jl" | ab:12:34:62:bc:15 | -75dBm
+[GAN Cube] 🎲 FOUND GAN CUBE: "GANi39Jl" | ab:12:34:62:bc:15 | -75dBm
+🔍 Cube Found: GANi39Jl (ab:12:34:62:bc:15)
+[GAN Cube] 🎲 FOUND TARGET CUBE: GANi39Jl at ab:12:34:62:bc:15!
+[GAN Cube] 🛑 Stopping scan...
+[GAN Cube] Connecting to GANi39Jl (ab:12:34:62:bc:15)
+[GAN Cube] Connection attempt 1/3...
+[GAN Cube] Named device: "GANi39Jl" | ab:12:34:62:bc:15 | -76dBm
+[GAN Cube] 🎲 FOUND GAN CUBE: "GANi39Jl" | ab:12:34:62:bc:15 | -76dBm
+🔍 Cube Found: GANi39Jl (ab:12:34:62:bc:15)
+[GAN Cube] Stopped scanning for cubes
+[GAN Cube] ✅ Connect callback successful (error: null)
+[GAN Cube] ✅ Connected on attempt 1
+[GAN Cube] Connected to GANi39Jl
+[GAN Cube] Encryption initialized for Gen2
+[GAN Cube] Detected Gen2 cube with MAC: ab:12:34:62:bc:15
+[GAN Cube] Subscribed to state notifications
+📱 Cube Connected: GANi39Jl (Gen2)
+[GAN Cube] Raw data received: 20 bytes
+[GAN Cube] Decrypted message: 20 bytes, first 4 bytes: [0b, be, be, b2]
+[GAN Gen2] Raw message: 0b be be b2 e0 68 be 6a 06 d7 47 ee 5a 1c ba eb 5f d2 3d ad
+[GAN Gen2] Binary (first 32 bits): 00001011 10111110 10111110 10110010
+[GAN Gen2] Event type (first 4 bits): 0x0 (0)
+[GAN Gen2] Event type (first 8 bits): 0xb (11)
+[GAN Gen2] Unknown event type: 0x0 (0)
+[GAN Gen2] Full message bytes: 0b be be b2 e0 68 be 6a 06 d7 47 ee 5a 1c ba eb 5f d2 3d ad
+[GAN Cube] Generated 0 events
+[GAN Cube] Raw data received: 20 bytes
+[GAN Cube] Decrypted message: 20 bytes, first 4 bytes: [15, a7, 06, ac]
+[GAN Gen2] Raw message: 15 a7 06 ac d8 1f 75 07 f9 a4 67 da 56 7f f3 e9 21 3d 39 21
+[GAN Gen2] Binary (first 32 bits): 00010101 10100111 00000110 10101100
+[GAN Gen2] Event type (first 4 bits): 0x1 (1)
+[GAN Gen2] Event type (first 8 bits): 0x15 (21)
+[GAN Cube] Generated 0 events
+[GAN Cube] Raw data received: 20 bytes
+[GAN Cube] Decrypted message: 20 bytes, first 4 bytes: [08, ca, 6a, 17]
+[GAN Gen2] Raw message: 08 ca 6a 17 1d ca a0 5d 11 be 23 59 c2 af 92 4e f7 e5 6e d1
+[GAN Gen2] Binary (first 32 bits): 00001000 11001010 01101010 00010111
+[GAN Gen2] Event type (first 4 bits): 0x0 (0)
+[GAN Gen2] Event type (first 8 bits): 0x8 (8)
+[GAN Gen2] Unknown event type: 0x0 (0)
+[GAN Gen2] Full message bytes: 08 ca 6a 17 1d ca a0 5d 11 be 23 59 c2 af 92 4e f7 e5 6e d1
+[GAN Cube] Generated 0 events
+[GAN Cube] Raw data received: 20 bytes
+[GAN Cube] Decrypted message: 20 bytes, first 4 bytes: [67, cd, 6a, 21]
+[GAN Gen2] Raw message: 67 cd 6a 21 e9 c9 d1 86 de 0c 2c e1 1c 2f 29 36 fe c6 46 b2
+[GAN Gen2] Binary (first 32 bits): 01100111 11001101 01101010 00100001
+[GAN Gen2] Event type (first 4 bits): 0x6 (6)
+[GAN Gen2] Event type (first 8 bits): 0x67 (103)
+[GAN Gen2] Unknown event type: 0x6 (6)
+[GAN Gen2] Full message bytes: 67 cd 6a 21 e9 c9 d1 86 de 0c 2c e1 1c 2f 29 36 fe c6 46 b2
+[GAN Cube] Generated 0 events
+[GAN Cube] Raw data received: 20 bytes
+[GAN Cube] Decrypted message: 20 bytes, first 4 bytes: [c2, fe, da, 28]
+[GAN Gen2] Raw message: c2 fe da 28 1e 1f 14 46 fa ba 4f d6 80 cb 4f 8a 97 63 bb 2f
+[GAN Gen2] Binary (first 32 bits): 11000010 11111110 11011010 00101000
+[GAN Gen2] Event type (first 4 bits): 0xc (12)
+[GAN Gen2] Event type (first 8 bits): 0xc2 (194)
+[GAN Gen2] Unknown event type: 0xc (12)
+[GAN Gen2] Full message bytes: c2 fe da 28 1e 1f 14 46 fa ba 4f d6 80 cb 4f 8a 97 63 bb 2f
+[GAN Cube] Generated 0 events
+[GAN Cube] Raw data received: 20 bytes
+[GAN Cube] Decrypted message: 20 bytes, first 4 bytes: [46, c6, de, 8e]
+[GAN Gen2] Raw message: 46 c6 de 8e 42 c4 40 2b 2f 95 43 bd ec e0 d2 bf 06 14 94 10
+[GAN Gen2] Binary (first 32 bits): 01000110 11000110 11011110 10001110
+[GAN Gen2] Event type (first 4 bits): 0x4 (4)
+[GAN Gen2] Event type (first 8 bits): 0x46 (70)
+[GAN Gen2] FACELETS parsed: {
+  serial: 108,
+  cpLen: 8,
+  coLen: 8,
+  epLen: 12,
+  eoLen: 12,
+  cp: [ 3, 3, 3 ],
+  ep: [ 2, 0, 1 ],
+  cpSum: 26,
+  epSum: 70
+}
+[Utils] Invalid edge piece/orientation { i: 6, piece: 12, orientation: 1 }
+[Utils] Invalid edge piece/orientation { i: 10, piece: 13, orientation: 1 }
+[Utils] Invalid edge piece/orientation { i: 11, piece: -4, orientation: 1 }
+[GAN Cube] Generated 1 events
+[GAN Cube] Raw data received: 20 bytes
+[GAN Cube] Decrypted message: 20 bytes, first 4 bytes: [d1, d4, b2, 52]
+[GAN Gen2] Raw message: d1 d4 b2 52 59 8b b6 6e fe 25 0b 12 dd ea a8 e6 20 cd fc 15
+[GAN Gen2] Binary (first 32 bits): 11010001 11010100 10110010 01010010
+[GAN Gen2] Event type (first 4 bits): 0xd (13)
+[GAN Gen2] Event type (first 8 bits): 0xd1 (209)
+[GAN Cube] Generated 0 events
+[GAN Cube] Raw data received: 20 bytes
+[GAN Cube] Decrypted message: 20 bytes, first 4 bytes: [dc, b7, 0d, e2]
+[GAN Gen2] Raw message: dc b7 0d e2 ee 41 7d a0 dd b7 e2 b3 e6 c7 c6 99 72 b1 e2 cc
+[GAN Gen2] Binary (first 32 bits): 11011100 10110111 00001101 11100010
+[GAN Gen2] Event type (first 4 bits): 0xd (13)
+[GAN Gen2] Event type (first 8 bits): 0xdc (220)
+[GAN Cube] Generated 0 events
+[GAN Cube] Disconnected from GANi39Jl
+📱 Cube Disconnected
+📱 Cube Disconnected
+📱 Cube Disconnected
+[GAN Cube] Disconnected from GANi39Jl
+📱 Cube Disconnected
+[GAN Cube] Skipping initial state requests - cube disconnected
+[Dashboard] Received WebSocket message: CONNECT_CUBE
+[GAN Cube] 🎯 HARDCODED: Looking specifically for GANi39Jl at ab:12:34:62:bc:15
+[GAN Cube] Make sure your cube is charged and nearby
+[GAN Cube] Try twisting the cube a few times to wake it up
+[GAN Cube] 🔍 Starting MAXIMUM AGGRESSIVE scan...
+[GAN Cube] Scanning ALL devices with duplicates enabled...
+[GAN Cube] Started scanning for cubes...
+[GAN Cube] Strong unnamed device (NOT connecting): 69:b7:ec:26:54:9a | -55dBm
+[GAN Cube] Strong unnamed device (NOT connecting): 69:b7:ec:26:54:9a | -55dBm
+[GAN Cube] Named device: "ihoment_H6075_6C64" | 9c:04:a0:9f:6c:64 | -70dBm
+[GAN Cube] Named device: "Petkit_W4X" | a4:c1:38:a8:19:72 | -88dBm
+[GAN Cube] Strong unnamed device (NOT connecting): 69:b7:ec:26:54:9a | -58dBm
+[GAN Cube] Strong unnamed device (NOT connecting): 69:b7:ec:26:54:9a | -58dBm
+[GAN Cube] 🎲 FOUND GAN CUBE: "" | d4:9d:c0:84:04:d1 | -74dBm
+🔍 Cube Found: GAN Cube (d4:9d:c0:84:04:d1)
+[GAN Cube] 🎲 FOUND GAN CUBE: "" | 2c:99:75:bd:f3:9d | -84dBm
+🔍 Cube Found: GAN Cube (2c:99:75:bd:f3:9d)
+[GAN Cube] Named device: "Petkit_W4X" | a4:c1:38:a8:19:72 | -83dBm
+[GAN Cube] Named device: "Petkit_W4X" | a4:c1:38:a8:19:72 | -83dBm
+[GAN Cube] 🎲 FOUND GAN CUBE: "" | d4:9d:c0:84:04:d1 | -77dBm
+🔍 Cube Found: GAN Cube (d4:9d:c0:84:04:d1)
+[GAN Cube] Strong unnamed device (NOT connecting): 69:b7:ec:26:54:9a | -58dBm
+[GAN Cube] Strong unnamed device (NOT connecting): 69:b7:ec:26:54:9a | -58dBm
+[GAN Cube] Named device: "Petkit_W4X" | a4:c1:38:a8:19:72 | -83dBm
+[GAN Cube] Named device: "Petkit_W4X" | a4:c1:38:a8:19:72 | -82dBm
+[GAN Cube] Named device: "ihoment_H6075_6C64" | 9c:04:a0:9f:6c:64 | -70dBm
+[GAN Cube] Named device: "ihoment_H6075_6C64" | 9c:04:a0:9f:6c:64 | -70dBm
+[GAN Cube] Strong unnamed device (NOT connecting): 69:b7:ec:26:54:9a | -55dBm
+[GAN Cube] Strong unnamed device (NOT connecting): 69:b7:ec:26:54:9a | -55dBm
+[GAN Cube] Named device: "Petkit_W4X" | a4:c1:38:a8:19:72 | -83dBm
+[GAN Cube] Named device: "Petkit_W4X" | a4:c1:38:a8:19:72 | -84dBm
+[GAN Cube] 🎲 FOUND GAN CUBE: "" | d4:9d:c0:84:04:d1 | -74dBm
+🔍 Cube Found: GAN Cube (d4:9d:c0:84:04:d1)
+[GAN Cube] Named device: "Petkit_W4X" | a4:c1:38:a8:19:72 | -86dBm
+[GAN Cube] Named device: "Petkit_W4X" | a4:c1:38:a8:19:72 | -86dBm
+[GAN Cube] Named device: "ihoment_H6075_6C64" | 9c:04:a0:9f:6c:64 | -77dBm
+[GAN Cube] Named device: "ihoment_H6075_6C64" | 9c:04:a0:9f:6c:64 | -77dBm
+[GAN Cube] Named device: "Petkit_W4X" | a4:c1:38:a8:19:72 | -84dBm
+[GAN Cube] Named device: "Petkit_W4X" | a4:c1:38:a8:19:72 | -82dBm
+[GAN Cube] Named device: "Petkit_W4X" | a4:c1:38:a8:19:72 | -86dBm
+[GAN Cube] 🔄 Restarting scan to catch new advertisements...
+[GAN Cube] Stopped scanning for cubes
+[GAN Cube] Scan restarted
+[GAN Cube] Started scanning for cubes...
+[GAN Cube] Named device: "ihoment_H6075_6C64" | 9c:04:a0:9f:6c:64 | -70dBm
+[GAN Cube] Named device: "ihoment_H6075_6C64" | 9c:04:a0:9f:6c:64 | -70dBm
+[GAN Cube] Strong unnamed device (NOT connecting): 69:b7:ec:26:54:9a | -56dBm
+[GAN Cube] Strong unnamed device (NOT connecting): 69:b7:ec:26:54:9a | -56dBm
+[GAN Cube] Named device: "Petkit_W4X" | a4:c1:38:a8:19:72 | -82dBm
+[GAN Cube] Named device: "Petkit_W4X" | a4:c1:38:a8:19:72 | -83dBm
+[GAN Cube] Named device: "LE_WH-1000XM6" | 69:b7:ec:26:54:9a | -68dBm
+[GAN Cube] Named device: "ihoment_H6075_6C64" | 9c:04:a0:9f:6c:64 | -73dBm
+[GAN Cube] Named device: "ihoment_H6075_6C64" | 9c:04:a0:9f:6c:64 | -74dBm
+[GAN Cube] 🎲 FOUND GAN CUBE: "" | d4:9d:c0:84:04:d1 | -75dBm
+🔍 Cube Found: GAN Cube (d4:9d:c0:84:04:d1)
+[GAN Cube] Named device: "Petkit_W4X" | a4:c1:38:a8:19:72 | -83dBm
+[GAN Cube] Named device: "Petkit_W4X" | a4:c1:38:a8:19:72 | -82dBm
+[GAN Cube] Named device: "GANi39Jl" | ab:12:34:62:bc:15 | -79dBm
+[GAN Cube] 🎲 FOUND GAN CUBE: "GANi39Jl" | ab:12:34:62:bc:15 | -79dBm
+🔍 Cube Found: GANi39Jl (ab:12:34:62:bc:15)
+[GAN Cube] 🎲 FOUND TARGET CUBE: GANi39Jl at ab:12:34:62:bc:15!
+[GAN Cube] 🛑 Stopping scan...
+[GAN Cube] Connecting to GANi39Jl (ab:12:34:62:bc:15)
+[GAN Cube] Connection attempt 1/3...
+[GAN Cube] Named device: "GANi39Jl" | ab:12:34:62:bc:15 | -79dBm
+[GAN Cube] 🎲 FOUND GAN CUBE: "GANi39Jl" | ab:12:34:62:bc:15 | -79dBm
+🔍 Cube Found: GANi39Jl (ab:12:34:62:bc:15)
+[GAN Cube] Stopped scanning for cubes
+[GAN Cube] ✅ Connect callback successful (error: null)
+[GAN Cube] ✅ Connected on attempt 1
+[GAN Cube] Connected to GANi39Jl
+[GAN Cube] Encryption initialized for Gen2
+[GAN Cube] Detected Gen2 cube with MAC: ab:12:34:62:bc:15
+[GAN Cube] Subscribed to state notifications
+📱 Cube Connected: GANi39Jl (Gen2)
+[GAN Cube] Raw data received: 20 bytes
+[GAN Cube] Decrypted message: 20 bytes, first 4 bytes: [39, a1, 99, ae]
+[GAN Gen2] Raw message: 39 a1 99 ae ad 19 34 ab da 98 91 8b ab 28 9b 45 ee 4c 3d e3
+[GAN Gen2] Binary (first 32 bits): 00111001 10100001 10011001 10101110
+[GAN Gen2] Event type (first 4 bits): 0x3 (3)
+[GAN Gen2] Event type (first 8 bits): 0x39 (57)
+[GAN Gen2] Unknown event type: 0x3 (3)
+[GAN Gen2] Full message bytes: 39 a1 99 ae ad 19 34 ab da 98 91 8b ab 28 9b 45 ee 4c 3d e3
+[GAN Cube] Generated 0 events
+[GAN Cube] Raw data received: 20 bytes
+[GAN Cube] Decrypted message: 20 bytes, first 4 bytes: [71, 0f, 7e, 6a]
+[GAN Gen2] Raw message: 71 0f 7e 6a 64 9c 29 d3 a2 d1 f0 a5 a8 5a 40 2e 15 2a 01 c3
+[GAN Gen2] Binary (first 32 bits): 01110001 00001111 01111110 01101010
+[GAN Gen2] Event type (first 4 bits): 0x7 (7)
+[GAN Gen2] Event type (first 8 bits): 0x71 (113)
+[GAN Gen2] Unknown event type: 0x7 (7)
+[GAN Gen2] Full message bytes: 71 0f 7e 6a 64 9c 29 d3 a2 d1 f0 a5 a8 5a 40 2e 15 2a 01 c3
+[GAN Cube] Generated 0 events
+[GAN Cube] Raw data received: 20 bytes
+[GAN Cube] Decrypted message: 20 bytes, first 4 bytes: [0a, 9f, 14, ae]
+[GAN Gen2] Raw message: 0a 9f 14 ae 7b 62 f9 cf d0 a2 77 e9 57 87 10 e3 f5 c8 c8 b7
+[GAN Gen2] Binary (first 32 bits): 00001010 10011111 00010100 10101110
+[GAN Gen2] Event type (first 4 bits): 0x0 (0)
+[GAN Gen2] Event type (first 8 bits): 0xa (10)
+[GAN Gen2] Unknown event type: 0x0 (0)
+[GAN Gen2] Full message bytes: 0a 9f 14 ae 7b 62 f9 cf d0 a2 77 e9 57 87 10 e3 f5 c8 c8 b7
+[GAN Cube] Generated 0 events
+[GAN Cube] Raw data received: 20 bytes
+[GAN Cube] Decrypted message: 20 bytes, first 4 bytes: [94, 99, 60, 13]
+[GAN Gen2] Raw message: 94 99 60 13 c6 f4 04 69 e6 8c 04 2c f6 46 18 10 bd cc d9 69
+[GAN Gen2] Binary (first 32 bits): 10010100 10011001 01100000 00010011
+[GAN Gen2] Event type (first 4 bits): 0x9 (9)
+[GAN Gen2] Event type (first 8 bits): 0x94 (148)
+[GAN Cube] Generated 1 events
+[GAN Cube] Raw data received: 20 bytes
+[GAN Cube] Decrypted message: 20 bytes, first 4 bytes: [6b, f8, a9, 6f]
+[GAN Gen2] Raw message: 6b f8 a9 6f 57 14 2d 0b bf 3f e9 2a e4 a5 30 20 dc 5b 2e 0a
+[GAN Gen2] Binary (first 32 bits): 01101011 11111000 10101001 01101111
+[GAN Gen2] Event type (first 4 bits): 0x6 (6)
+[GAN Gen2] Event type (first 8 bits): 0x6b (107)
+[GAN Gen2] Unknown event type: 0x6 (6)
+[GAN Gen2] Full message bytes: 6b f8 a9 6f 57 14 2d 0b bf 3f e9 2a e4 a5 30 20 dc 5b 2e 0a
+[GAN Cube] Generated 0 events
+[GAN Cube] Raw data received: 20 bytes
+[GAN Cube] Decrypted message: 20 bytes, first 4 bytes: [cb, 15, 34, c5]
+[GAN Gen2] Raw message: cb 15 34 c5 00 bd 0d 79 6c a4 c8 14 d2 55 7f cc 61 8b 9d d0
+[GAN Gen2] Binary (first 32 bits): 11001011 00010101 00110100 11000101
+[GAN Gen2] Event type (first 4 bits): 0xc (12)
+[GAN Gen2] Event type (first 8 bits): 0xcb (203)
+[GAN Gen2] Unknown event type: 0xc (12)
+[GAN Gen2] Full message bytes: cb 15 34 c5 00 bd 0d 79 6c a4 c8 14 d2 55 7f cc 61 8b 9d d0
+[GAN Cube] Generated 0 events
+[GAN Cube] Raw data received: 20 bytes
+[GAN Cube] Decrypted message: 20 bytes, first 4 bytes: [13, d3, 24, cf]
+[GAN Gen2] Raw message: 13 d3 24 cf 0a f9 4c f7 82 c9 07 96 c7 00 ee 64 a7 71 57 aa
+[GAN Gen2] Binary (first 32 bits): 00010011 11010011 00100100 11001111
+[GAN Gen2] Event type (first 4 bits): 0x1 (1)
+[GAN Gen2] Event type (first 8 bits): 0x13 (19)
+[GAN Cube] Generated 0 events
+[GAN Cube] Raw data received: 20 bytes
+[GAN Cube] Decrypted message: 20 bytes, first 4 bytes: [09, ca, dd, 32]
+[GAN Gen2] Raw message: 09 ca dd 32 e8 87 73 48 79 cc 30 06 43 34 0a e6 d5 68 bb 26
+[GAN Gen2] Binary (first 32 bits): 00001001 11001010 11011101 00110010
+[GAN Gen2] Event type (first 4 bits): 0x0 (0)
+[GAN Gen2] Event type (first 8 bits): 0x9 (9)
+[GAN Gen2] Unknown event type: 0x0 (0)
+[GAN Gen2] Full message bytes: 09 ca dd 32 e8 87 73 48 79 cc 30 06 43 34 0a e6 d5 68 bb 26
+[GAN Cube] Generated 0 events
+[GAN Cube] Raw data received: 20 bytes
+[GAN Cube] Decrypted message: 20 bytes, first 4 bytes: [65, 12, 18, 0e]
+[GAN Gen2] Raw message: 65 12 18 0e 1c 42 c4 ce 60 db f6 78 4e cf 64 f8 de ef fa f4
+[GAN Gen2] Binary (first 32 bits): 01100101 00010010 00011000 00001110
+[GAN Gen2] Event type (first 4 bits): 0x6 (6)
+[GAN Gen2] Event type (first 8 bits): 0x65 (101)
+[GAN Gen2] Unknown event type: 0x6 (6)
+[GAN Gen2] Full message bytes: 65 12 18 0e 1c 42 c4 ce 60 db f6 78 4e cf 64 f8 de ef fa f4
+[GAN Cube] Generated 0 events
+[GAN Cube] Raw data received: 20 bytes
+[GAN Cube] Decrypted message: 20 bytes, first 4 bytes: [d5, 56, fe, d3]
+[GAN Gen2] Raw message: d5 56 fe d3 22 1f 5a d5 6b e6 c0 c1 99 59 22 48 c6 70 b7 2d
+[GAN Gen2] Binary (first 32 bits): 11010101 01010110 11111110 11010011
+[GAN Gen2] Event type (first 4 bits): 0xd (13)
+[GAN Gen2] Event type (first 8 bits): 0xd5 (213)
+[GAN Cube] Generated 0 events
+[GAN Cube] Disconnected from GANi39Jl
+📱 Cube Disconnected
+[GAN Cube] Disconnected from GANi39Jl
+📱 Cube Disconnected
+📱 Cube Disconnected
+[GAN Cube] Skipping initial state requests - cube disconnected

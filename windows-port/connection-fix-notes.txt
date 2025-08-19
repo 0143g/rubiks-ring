@@ -1,0 +1,33 @@
+GAN Cube Windows Bluetooth Connection Fix
+==========================================
+
+ISSUE IDENTIFIED:
+The connection was failing because our code incorrectly interpreted noble's success callback.
+
+In the @stoprocent/noble library:
+- peripheral.connect(callback) calls callback(error) 
+- When error is undefined/null = CONNECTION SUCCESS
+- When error is an object = CONNECTION FAILURE
+
+PROBLEM:
+Our code was treating 'undefined' as an error:
+  if (error) { reject(...) }  // This treated undefined as truthy!
+
+FIX APPLIED:
+Changed the condition to explicitly check:
+  if (error !== null && error !== undefined) { reject(...) }
+
+This should resolve the "Failed to connect: undefined" error.
+
+TEST STEPS:
+1. Copy this windows-port folder to Windows machine
+2. Run start-native-service.bat  
+3. Open http://localhost:3000
+4. Click "Connect Cube"
+5. Connection should now succeed instead of failing with "undefined"
+
+If you still get connection issues after this fix, it may be:
+- Windows Bluetooth service problems
+- Cube not in pairing mode
+- Driver/permission issues
+- Need to run as Administrator
