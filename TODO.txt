@@ -1,0 +1,25 @@
+**prompt**: "port my web bluetooth gan cube controller to native windows bluetooth while preserving the html dashboard. current setup: typescript lib + web bluetooth + wsl2 websocket bridge + html ui. goal: eliminate wsl2/web bluetooth bottlenecks for real-time gaming input."
+
+**context files to reference**:
+- `gan-web-bluetooth/src/` (protocol logic, encryption, move parsing)
+- `simple-bridge.html` (current dashboard ui)
+- `wsl-cube-receiver.js` (existing websocket patterns)
+
+**constraints**:
+- keep existing html dashboard functional
+- maintain protocol compatibility with gan cubes
+- minimize latency for elden ring controller use
+- reuse encryption/parsing logic where possible
+
+**deliverables**:
+1. native windows bluetooth service (node.js + noble)
+2. websocket server for dashboard communication
+3. modified html dashboard (ws:// instead of web bluetooth)
+4. input injection module for game control
+5. performance comparison vs current setup
+
+**success criteria**:
+- sub-10ms cube to game input latency
+- persistent bluetooth connections
+- dashboard shows real-time cube state
+- works with existing gan cube without re-pairing
