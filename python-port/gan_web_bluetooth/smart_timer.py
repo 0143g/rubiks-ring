@@ -5,10 +5,14 @@ import struct
 from typing import Optional, Callable, List, Dict, Any
 from dataclasses import dataclass
 from enum import IntEnum
-from bleak import BleakClient, BleakScanner
-from pyee import AsyncEventEmitter
+try:
+    from bleak import BleakClient, BleakScanner
+except ImportError:
+    BleakClient = BleakScanner = None
+from .event_emitter import EventEmitter
 
 from .definitions import GAN_TIMER_SERVICE
+from .platform_utils import is_bluetooth_available, print_bluetooth_help
 
 
 # Timer-specific UUIDs
@@ -95,7 +99,7 @@ class GanSmartTimer:
     def __init__(self):
         """Initialize GAN Smart Timer."""
         self._client: Optional[BleakClient] = None
-        self._event_emitter = AsyncEventEmitter()
+        self._event_emitter = EventEmitter()
         self._connected = False
         self._time_characteristic = None
         self._state_characteristic = None
@@ -138,6 +142,14 @@ class GanSmartTimer:
         """
         if self._connected:
             return
+        
+        # Check if Bluetooth is available on this platform
+        if not is_bluetooth_available():
+            print_bluetooth_help()
+            raise RuntimeError(
+                "Bluetooth not available on this platform. "
+                "See help above for setup instructions."
+            )
         
         # Find device if no address provided
         if not device_address:

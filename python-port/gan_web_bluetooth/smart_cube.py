@@ -4,10 +4,14 @@ import asyncio
 import struct
 from typing import Optional, Callable, List, Dict, Any, Union
 from dataclasses import dataclass
-from bleak import BleakClient, BleakScanner, BLEDevice
-from bleak.backends.device import BLEDevice
-from bleak.backends.scanner import AdvertisementData
-from pyee import AsyncEventEmitter
+try:
+    from bleak import BleakClient, BleakScanner, BLEDevice
+    from bleak.backends.device import BLEDevice
+    from bleak.backends.scanner import AdvertisementData
+except ImportError:
+    # Fallback for systems without proper Bluetooth support
+    BleakClient = BleakScanner = BLEDevice = AdvertisementData = None
+from .event_emitter import EventEmitter
 
 from . import definitions as defs
 from .protocols import (
@@ -19,6 +23,7 @@ from .encryption import (
     GanGen2CubeEncrypter, GanGen3CubeEncrypter, GanGen4CubeEncrypter
 )
 from .utils import now
+from .platform_utils import is_bluetooth_available, MockBleakScanner, MockBleakClient, print_bluetooth_help
 
 
 class GanSmartCube:
@@ -59,7 +64,7 @@ class GanSmartCube:
         """
         self._client: Optional[BleakClient] = None
         self._protocol: Optional[GanCubeProtocol] = None
-        self._event_emitter = AsyncEventEmitter()
+        self._event_emitter = EventEmitter()
         self._connected = False
         self._mac_provider = mac_address_provider
         self._command_char = None
@@ -108,6 +113,14 @@ class GanSmartCube:
         if self._connected:
             return
         
+        # Check if Bluetooth is available on this platform
+        if not is_bluetooth_available():
+            print_bluetooth_help()
+            raise RuntimeError(
+                "Bluetooth not available on this platform. "
+                "See help above for setup instructions."
+            )
+        
         # Find device if no address provided
         device = None
         mac_address = None
@@ -126,25 +139,36 @@ class GanSmartCube:
                 # Try to extract from manufacturer data during scan
                 mac_address = await self._get_mac_from_scan(device_address)
         
+        # If still no MAC, try using the device address as fallback
         if not mac_address:
-            raise RuntimeError("Unable to determine cube MAC address for encryption")
+            print(f"Warning: No MAC address found, using device address as fallback")
+            mac_address = device_address
         
         # Create encryption salt from MAC (reversed)
         mac_bytes = [int(x, 16) for x in mac_address.split(':')]
         salt = bytes(reversed(mac_bytes))
         
         # Connect to device
+        print(f"Connecting to device at {device_address}...")
         self._client = BleakClient(device_address)
         await self._client.connect()
+        print(f"Connected! Device is connected: {self._client.is_connected}")
         
         # Get services and detect protocol
-        services = await self._client.get_services()
+        print("Discovering services...")
+        services = self._client.services
+        service_list = list(services)
+        print(f"Found {len(service_list)} services:")
+        for service in service_list:
+            print(f"  Service: {service.uuid}")
         
         # Try to detect and setup protocol
         protocol_found = False
         
         # Check for Gen2 protocol
+        print(f"Looking for Gen2 service: {defs.GAN_GEN2_SERVICE}")
         if services.get_service(defs.GAN_GEN2_SERVICE):
+            print("✓ Found Gen2 service")
             service = services.get_service(defs.GAN_GEN2_SERVICE)
             self._command_char = service.get_characteristic(defs.GAN_GEN2_COMMAND_CHARACTERISTIC)
             self._state_char = service.get_characteristic(defs.GAN_GEN2_STATE_CHARACTERISTIC)
@@ -161,9 +185,11 @@ class GanSmartCube:
             )
             self._protocol = GanGen2Protocol(encrypter)
             protocol_found = True
+            print("✓ Gen2 protocol configured")
             
         # Check for Gen3 protocol
         elif services.get_service(defs.GAN_GEN3_SERVICE):
+            print("✓ Found Gen3 service")
             service = services.get_service(defs.GAN_GEN3_SERVICE)
             self._command_char = service.get_characteristic(defs.GAN_GEN3_COMMAND_CHARACTERISTIC)
             self._state_char = service.get_characteristic(defs.GAN_GEN3_STATE_CHARACTERISTIC)
@@ -181,6 +207,7 @@ class GanSmartCube:
             
         # Check for Gen4 protocol
         elif services.get_service(defs.GAN_GEN4_SERVICE):
+            print("✓ Found Gen4 service")
             service = services.get_service(defs.GAN_GEN4_SERVICE)
             self._command_char = service.get_characteristic(defs.GAN_GEN4_COMMAND_CHARACTERISTIC)
             self._state_char = service.get_characteristic(defs.GAN_GEN4_STATE_CHARACTERISTIC)
@@ -294,27 +321,26 @@ class GanSmartCube:
         Returns:
             Tuple of (device, mac_address)
         """
-        found_device = None
-        found_mac = None
+        print("Scanning for devices...")
         
-        def detection_callback(device: BLEDevice, advertisement_data: AdvertisementData):
-            nonlocal found_mac
-            
-            # Check for GAN cube by name
+        # First try a general scan to see what's available
+        devices = await BleakScanner.discover(timeout=10.0)
+        
+        print(f"Found {len(devices)} devices:")
+        for device in devices:
+            name = device.name or "Unknown"
+            print(f"  {device.address}: {name}")
+        
+        # Look for GAN cube by name
+        for device in devices:
             if device.name and any(
                 device.name.startswith(prefix)
                 for prefix in ["GAN", "MG", "AiCube"]
             ):
-                # Try to extract MAC from manufacturer data
-                if advertisement_data.manufacturer_data:
-                    found_mac = self._extract_mac_from_manufacturer_data(
-                        advertisement_data.manufacturer_data
-                    )
-                return True
-            return False
+                print(f"Found potential GAN cube: {device.name} at {device.address}")
+                return device, device.address
         
-        found_device = await BleakScanner.find_device_by_filter(detection_callback)
-        return found_device, found_mac
+        return None, None
     
     async def _get_mac_from_scan(self, device_address: str) -> Optional[str]:
         """

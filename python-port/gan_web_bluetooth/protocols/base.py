@@ -5,8 +5,6 @@ from dataclasses import dataclass
 from typing import Optional, List, Dict, Any, Callable
 from enum import Enum
 import asyncio
-from pyee import AsyncEventEmitter
-
 from ..utils import Quaternion
 
 
@@ -37,13 +35,13 @@ class GanCubeMove:
 @dataclass
 class GanCubeMoveEvent:
     """Move event from cube."""
-    type: str = "MOVE"
-    serial: int = 0  # 0-255, circular counter
-    face: int = 0
-    direction: int = 0
-    move: str = ""
+    serial: int  # 0-255, circular counter
+    face: int
+    direction: int
+    move: str
     local_timestamp: Optional[float] = None
     cube_timestamp: Optional[float] = None
+    type: str = "MOVE"
 
 
 @dataclass
@@ -58,10 +56,10 @@ class GanCubeState:
 @dataclass
 class GanCubeFaceletsEvent:
     """Facelets event from cube."""
-    type: str = "FACELETS"
-    serial: int = 0  # 0-255, circular counter
-    facelets: str = ""  # Kociemba notation
+    serial: int  # 0-255, circular counter
+    facelets: str  # Kociemba notation
     state: Optional[GanCubeState] = None
+    type: str = "FACELETS"
 
 
 @dataclass
@@ -75,9 +73,9 @@ class GanCubeAngularVelocity:
 @dataclass
 class GanCubeOrientationEvent:
     """Orientation event from cube."""
-    type: str = "ORIENTATION"
     quaternion: Quaternion
     angular_velocity: GanCubeAngularVelocity
+    type: str = "ORIENTATION"
     local_timestamp: Optional[float] = None
     cube_timestamp: Optional[float] = None
 
@@ -85,17 +83,17 @@ class GanCubeOrientationEvent:
 @dataclass
 class GanCubeBatteryEvent:
     """Battery event from cube."""
-    type: str = "BATTERY"
     percent: int  # 0-100
+    type: str = "BATTERY"
 
 
 @dataclass
 class GanCubeHardwareEvent:
     """Hardware information event."""
-    type: str = "HARDWARE"
     model: str
     firmware: str
     protocol: str
+    type: str = "HARDWARE"
 
 
 class GanCubeEvent:
@@ -116,7 +114,6 @@ class GanCubeProtocol(ABC):
             encrypter: Encryption implementation for this protocol
         """
         self._encrypter = encrypter
-        self._event_emitter = AsyncEventEmitter()
         self._last_serial = -1
         self._state = None
         self._orientation_buffer = []
@@ -158,38 +155,6 @@ class GanCubeProtocol(ABC):
         """Get the name of this protocol."""
         pass
     
-    def on(self, event: str, handler: Callable):
-        """
-        Register event handler.
-        
-        Args:
-            event: Event name ('move', 'facelets', 'orientation', 'battery', 'hardware')
-            handler: Async handler function
-        """
-        self._event_emitter.on(event, handler)
-    
-    def off(self, event: str, handler: Callable = None):
-        """
-        Unregister event handler.
-        
-        Args:
-            event: Event name
-            handler: Handler to remove, or None to remove all
-        """
-        if handler:
-            self._event_emitter.remove_listener(event, handler)
-        else:
-            self._event_emitter.remove_all_listeners(event)
-    
-    async def emit(self, event: str, data: Any):
-        """
-        Emit an event to registered handlers.
-        
-        Args:
-            event: Event name
-            data: Event data
-        """
-        self._event_emitter.emit(event, data)
     
     def _encrypt(self, data: bytes) -> bytes:
         """Encrypt data if encrypter is available."""

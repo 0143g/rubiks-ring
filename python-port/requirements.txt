@@ -2,7 +2,7 @@
 bleak>=0.21.0           # Bluetooth Low Energy platform-agnostic library
 cryptography>=41.0.0    # AES encryption and cryptographic operations
 numpy>=1.24.0          # Numerical operations for quaternions and linear algebra
-pyee>=11.0.0           # Event emitter for Observable-like patterns
+pyee                    # Event emitter (optional, fallback included)
 typing-extensions>=4.7.0  # Enhanced typing support for older Python versions
 dataclasses>=0.6       # Backport for Python < 3.7
 
