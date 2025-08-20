@@ -224,7 +224,7 @@ class CubeDashboardServer:
     
     def _handle_move_event(self, event: GanCubeMoveEvent):
         """Handle move event from cube."""
-        print(f"🎯 Move detected: {event.move} (Serial: {event.serial})")
+        print(f"🎯 Move: {event.move} (Serial: {event.serial})")
         
         move_data = {
             'move': event.move,

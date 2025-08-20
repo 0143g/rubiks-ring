@@ -55,38 +55,8 @@ def install_missing_packages(packages):
 
 def main():
     """Main launcher function."""
-    print("🎲 GAN Smart Cube Dashboard Launcher")
     print("=" * 40)
-    
-    # Check if core library is available
-    try:
-        import gan_web_bluetooth
-        print("✅ gan_web_bluetooth library found")
-    except ImportError:
-        print("❌ gan_web_bluetooth library not found!")
-        print("   Make sure you're running from the python-port directory")
-        return 1
-    
-    print("\n🔍 Checking dashboard dependencies...")
-    missing = check_dependencies()
-    
-    if missing:
-        print(f"\n⚠️  Missing {len(missing)} required packages")
-        install = input("Install missing packages? (y/N): ").lower().strip()
-        
-        if install == 'y':
-            if not install_missing_packages(missing):
-                print("❌ Failed to install dependencies")
-                return 1
-        else:
-            print("❌ Cannot start dashboard without required packages")
-            print("   Install manually with: pip install flask flask-socketio python-socketio")
-            return 1
-    
-    print("\n🚀 Starting GAN Smart Cube Dashboard...")
-    print("📍 Dashboard will be available at: http://localhost:5000")
-    print("🔗 Open that URL in your web browser to access the dashboard")
-    print("⏹️  Press Ctrl+C to stop the server\n")
+    print("Dashboard at: http://localhost:5000")
     
     try:
         # Import and start the dashboard

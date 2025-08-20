@@ -462,7 +462,7 @@
         let twistyScene;
         let twistyVantage;
         let cubeQuaternion = new THREE.Quaternion();
-        let targetQuaternion = new THREE.Quaternion();
+        let basis = null;  // Dynamic orientation basis like original
         
         // Solved state for cube initialization
         const SOLVED_STATE = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB";
@@ -481,15 +481,15 @@
             twistyPlayer = new TwistyPlayer({
                 puzzle: '3x3x3',
                 visualization: 'PG3D',
-                alg: "y2",                  // Rotate 180° to show green front (y2 = 180° from red to green)
+                alg: 'y',                   // Rotate to show red front (like original)
                 experimentalSetupAnchor: 'start',
                 background: 'none',
                 controlPanel: 'none',       // Hide controls
                 hintFacelets: 'none',       // Hide hint facelets
                 experimentalDragInput: 'none',
-                cameraLatitude: 0,          // Straight-on view (no vertical angle)
-                cameraLongitude: 180,       // Adjust to face green directly (opposite of red)
-                cameraLatitudeLimit: 90,
+                cameraLatitude: 0,          // Straight-on view (no angle)
+                cameraLongitude: 0,         // Direct frontal view of red face
+                cameraLatitudeLimit: 0,
                 cameraDistance: 5,
                 tempoScale: 3               // Animation speed
             });
@@ -516,9 +516,8 @@
             }
             
             if (twistyScene && twistyVantage) {
-                // Smooth quaternion interpolation for orientation
-                cubeQuaternion.slerp(targetQuaternion, 0.25);
-                twistyScene.quaternion.copy(cubeQuaternion);
+                // Apply quaternion directly to scene (like original)
+                twistyScene.quaternion.slerp(cubeQuaternion, 0.25);
                 twistyVantage.render();
             }
             
@@ -526,34 +525,45 @@
         }
         
         function update3DCubeOrientation(quaternion) {
-            // Apply axis mapping to match the cube's physical orientation
-            // This maps from the cube's coordinate system to the 3D visualization
-            targetQuaternion.set(
-                quaternion.x,   // cube x → visual x 
-                quaternion.z,  // cube z → visual y
-                quaternion.y,   // cube y → visual z (forward)
-                quaternion.w
-            );
+            // Apply the same axis mapping as the original simple-bridge.html
+            let { x: qx, y: qy, z: qz, w: qw } = quaternion;
+            
+            // Map cube axes to twisty axes (exact copy from original)
+            let visualQuat = new THREE.Quaternion(
+                qx,  // cube x stays x
+                qz,   // cube z → visual y (up)
+                -qy,   // cube y → visual z (forward)
+                qw
+            ).normalize();
+            
+            if (!basis) {
+                const correction = new THREE.Quaternion().setFromEuler(
+                    new THREE.Euler(0, 2*Math.PI, 0) // Same correction as original
+                );
+                
+                // Combine: invert current orientation, then apply correction
+                basis = visualQuat.clone().invert().multiply(correction);
+            }
+            
+            cubeQuaternion.copy(visualQuat.clone().multiply(basis));
         }
         
         function resetCubeOrientation() {
-            // Reset to default orientation: green front, white top
-            // This corresponds to the identity quaternion (no rotation)
-            targetQuaternion.set(0, 0, 0, 1);
-            cubeQuaternion.set(0, 0, 0, 1);
+            // Clear basis to recalculate visualization reference (like original)
+            basis = null;
             
-            // Also reset the twisty player to default viewing angle
+            // Reset camera to default position (like original)
             if (twistyPlayer) {
                 try {
-                    // Reset the cube visualization to show green front, white top
-                    twistyPlayer.cameraLatitude = 0;   // Straight-on view (no vertical angle)
-                    twistyPlayer.cameraLongitude = 180; // Face green directly (opposite of red)
-                    // Reset algorithm to y2 to ensure green is front (180° rotation)
-                    twistyPlayer.alg = "y2";
+                    twistyPlayer.cameraLatitude = 0;   // Straight-on view 
+                    twistyPlayer.cameraLongitude = 0;  // Direct frontal view
+                    twistyPlayer.alg = 'y';            // Show red front (original setting)
                 } catch (error) {
                     console.log('Error resetting cube orientation:', error);
                 }
             }
+            
+            showMessage('Orientation reset - current position is now neutral', 'success');
         }
         
         // Socket event handlers

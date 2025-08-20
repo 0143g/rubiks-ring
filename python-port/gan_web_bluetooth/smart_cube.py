@@ -325,7 +325,7 @@ class GanSmartCube:
         print("Scanning for devices...")
         
         # First try a general scan to see what's available
-        devices = await BleakScanner.discover(timeout=10.0)
+        devices = await BleakScanner.discover(timeout=3.0)
         
         print(f"Found {len(devices)} devices:")
         for device in devices:
