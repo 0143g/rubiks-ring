@@ -483,11 +483,13 @@
         });
         
         socket.on('move', (data) => {
+            // Handle moves immediately with highest priority
             handleMoveEvent(data);
         });
         
         socket.on('move_history', (data) => {
-            updateMoveHistory(data.moves);
+            // Use requestAnimationFrame for smooth DOM updates
+            requestAnimationFrame(() => updateMoveHistory(data.moves));
         });
         
         socket.on('facelets', (data) => {
@@ -495,7 +497,8 @@
         });
         
         socket.on('orientation', (data) => {
-            updateOrientation(data);
+            // Use requestAnimationFrame for smooth updates
+            requestAnimationFrame(() => updateOrientation(data));
         });
         
         socket.on('battery', (data) => {
@@ -602,10 +605,14 @@
         }
         
         function updateOrientation(data) {
-            document.getElementById('quatX').textContent = data.quaternion.x.toFixed(3);
-            document.getElementById('quatY').textContent = data.quaternion.y.toFixed(3);
-            document.getElementById('quatZ').textContent = data.quaternion.z.toFixed(3);
-            document.getElementById('quatW').textContent = data.quaternion.w.toFixed(3);
+            // Batch DOM updates for better performance
+            const quatElements = ['quatX', 'quatY', 'quatZ', 'quatW'];
+            const quatValues = ['x', 'y', 'z', 'w'];
+            
+            for (let i = 0; i < quatElements.length; i++) {
+                document.getElementById(quatElements[i]).textContent = 
+                    data.quaternion[quatValues[i]].toFixed(3);
+            }
         }
         
         function updateBattery(data) {

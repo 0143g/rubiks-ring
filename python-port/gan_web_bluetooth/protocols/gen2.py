@@ -88,7 +88,7 @@ class GanGen2Protocol(GanCubeProtocol):
         # Gyroscope smoothing
         self.gyro_buffer = []
         self.GYRO_BUFFER_SIZE = 5
-        self.GYRO_RATE_LIMIT_MS = 16  # 60 FPS max
+        self.GYRO_RATE_LIMIT_MS = 16  # 60 FPS max - let dashboard handle rate limiting
         self.last_gyro_emit = 0
         
         # Timestamp synchronization
@@ -175,7 +175,7 @@ class GanGen2Protocol(GanCubeProtocol):
     def _process_gyro_data(self, quaternion: Quaternion, timestamp: float, 
                           cube_timestamp: Optional[float] = None) -> Optional[GanCubeOrientationEvent]:
         """Process and smooth gyroscope data."""
-        # Rate limiting
+        # Rate limiting - increased to reduce WebSocket load
         if timestamp - self.last_gyro_emit < self.GYRO_RATE_LIMIT_MS:
             return None
         
