@@ -6,6 +6,7 @@ A Flask-based web dashboard for monitoring and controlling GAN Smart Cubes.
 
 import asyncio
 import json
+import os
 import threading
 import time
 import websockets
@@ -13,6 +14,7 @@ from typing import Optional, Dict, Any
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit
 import sys
+from pathlib import Path
 
 try:
     from gan_web_bluetooth import GanSmartCube
@@ -29,7 +31,7 @@ except ImportError as e:
 class CubeDashboardServer:
     """Web dashboard server for GAN Smart Cube."""
     
-    def __init__(self):
+    def __init__(self, config_path="controller_config.json"):
         self.app = Flask(__name__, template_folder='templates', static_folder='static')
         self.app.config['SECRET_KEY'] = 'gan-cube-dashboard-secret'
         self.socketio = SocketIO(self.app, cors_allowed_origins="*", async_mode='threading')
@@ -68,8 +70,43 @@ class CubeDashboardServer:
         self.last_orientation_emit = 0
         self.orientation_rate_limit = 16 # 60 FPS
         
+        # Configuration management
+        self.config_path = config_path
+        self.config = {}
+        self.config_mtime = 0.0
+        self._load_config()
+        
         self.setup_routes()
         self.setup_socketio_events()
+    
+    def _load_config(self):
+        """Load configuration from JSON file"""
+        try:
+            config_file = Path(self.config_path)
+            if config_file.exists():
+                with open(config_file, 'r') as f:
+                    self.config = json.load(f)
+                    self.config_mtime = os.path.getmtime(self.config_path)
+                    print(f"Loaded config from {self.config_path}")
+            else:
+                print(f"Config file {self.config_path} not found, using defaults")
+                self.config = {}
+        except Exception as e:
+            print(f"Error loading config: {e}")
+            self.config = {}
+    
+    def _check_and_reload_config(self):
+        """Check if config file has been modified and reload if necessary"""
+        try:
+            current_mtime = os.path.getmtime(self.config_path)
+            if current_mtime > self.config_mtime:
+                print(f"\n🔄 Dashboard config file changed, reloading...")
+                self._load_config()
+                print("✅ Dashboard config reloaded")
+        except (OSError, FileNotFoundError):
+            pass  # Config file may not exist
+        except Exception as e:
+            print(f"Error checking config: {e}")
     
     def setup_routes(self):
         """Setup Flask routes."""
@@ -556,10 +593,19 @@ class CubeDashboardServer:
             'w': curr['w']*ref_inv['w'] - curr['x']*ref_inv['x'] - curr['y']*ref_inv['y'] - curr['z']*ref_inv['z']
         }
         
+        # Check for config updates
+        self._check_and_reload_config()
+        
+        # Get sensitivity settings from config
+        sensitivity = self.config.get('sensitivity', {})
+        tilt_x_sens = sensitivity.get('tilt_x_sensitivity', 2.5)
+        tilt_y_sens = sensitivity.get('tilt_y_sensitivity', 2.5)
+        spin_z_sens = sensitivity.get('spin_z_sensitivity', 2.0)
+        
         # Extract tilt from quaternion components directly (lines 673-675)
-        raw_tilt_x = -relative['z'] * 4.0  # Forward/back: knife/basketball rotation (inverted)
-        raw_tilt_y = -relative['x'] * 4.0  # Left/right: clockwise/counterclockwise tilt (inverted)
-        raw_spin_z = -relative['y'] * 1.5  # Microwave spin axis - reduced sensitivity for camera control
+        raw_tilt_x = -relative['z'] * tilt_x_sens  # Forward/back: knife/basketball rotation (inverted)
+        raw_tilt_y = -relative['x'] * tilt_y_sens  # Left/right: clockwise/counterclockwise tilt (inverted)
+        raw_spin_z = -relative['y'] * spin_z_sens  # Microwave spin axis - reduced sensitivity for camera control
         
         # Isolate primary axis to prevent diagonal movement (lines 677-688)
         tilt_x = 0.0
@@ -577,9 +623,10 @@ class CubeDashboardServer:
         # Process spin axis for right stick (no axis isolation needed)
         spin_z = max(-1.0, min(1.0, raw_spin_z))
         
-        # Apply deadzone
-        deadzone = 0.1
-        spin_deadzone = 0.02
+        # Apply deadzone from config
+        deadzone_settings = self.config.get('deadzone', {})
+        deadzone = deadzone_settings.get('general_deadzone', 0.1)
+        spin_deadzone = deadzone_settings.get('spin_deadzone', 0.02)
         if abs(tilt_x) < deadzone:
             tilt_x = 0
         if abs(tilt_y) < deadzone:

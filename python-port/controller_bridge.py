@@ -11,8 +11,10 @@ import json
 import time
 import sys
 import platform
+import os
 from typing import Dict, Set, Any, Optional
 from dataclasses import dataclass
+from pathlib import Path
 
 # Platform-specific imports
 PLATFORM = platform.system()
@@ -60,12 +62,63 @@ else:
 class ControllerConfig:
     """Configuration for controller mappings and sensitivity"""
     mouse_sensitivity: float = 2.0
-    movement_sensitivity: float = 1.0
+    movement_sensitivity: float = 2.0
     deadzone: float = 0.1
     rate_limit_ms: int = 16  # 60 FPS
+    forward_tilt_threshold: float = 0.7
+    
+    # Dashboard sensitivity settings
+    tilt_x_sensitivity: float = 2.5
+    tilt_y_sensitivity: float = 2.5
+    spin_z_sensitivity: float = 2.0
+    spin_deadzone: float = 0.02
     
     # Move mappings
     move_mappings: Dict[str, str] = None
+    active_mapping: str = "move_mappings"
+    
+    @classmethod
+    def load_from_json(cls, config_path: str = "controller_config.json"):
+        """Load configuration from JSON file"""
+        config_file = Path(config_path)
+        if not config_file.exists():
+            print(f"Config file {config_path} not found, using defaults")
+            return cls()
+            
+        try:
+            with open(config_file, 'r') as f:
+                data = json.load(f)
+            
+            # Extract settings from JSON structure
+            sensitivity = data.get('sensitivity', {})
+            deadzone_settings = data.get('deadzone', {})
+            timing = data.get('timing', {})
+            
+            # Get active mapping
+            active_mapping = data.get('active_mapping', 'move_mappings')
+            if active_mapping in data:
+                move_mappings = data[active_mapping]
+            else:
+                move_mappings = data.get('move_mappings', {})
+            
+            return cls(
+                mouse_sensitivity=sensitivity.get('mouse_sensitivity', 2.0),
+                movement_sensitivity=sensitivity.get('movement_sensitivity', 2.0),
+                deadzone=deadzone_settings.get('bridge_deadzone', 0.1),
+                rate_limit_ms=timing.get('rate_limit_ms', 16),
+                forward_tilt_threshold=timing.get('forward_tilt_threshold', 0.7),
+                tilt_x_sensitivity=sensitivity.get('tilt_x_sensitivity', 2.5),
+                tilt_y_sensitivity=sensitivity.get('tilt_y_sensitivity', 2.5),
+                spin_z_sensitivity=sensitivity.get('spin_z_sensitivity', 2.0),
+                spin_deadzone=deadzone_settings.get('spin_deadzone', 0.02),
+                move_mappings=move_mappings,
+                active_mapping=active_mapping
+            )
+            
+        except Exception as e:
+            print(f"Error loading config from {config_path}: {e}")
+            print("Using default configuration")
+            return cls()
     
     def __post_init__(self):
         if self.move_mappings is None:
@@ -75,12 +128,12 @@ class ControllerConfig:
                 "L": "gamepad_b",       # B button
                 "L'": "gamepad_a",      # A button
                 "U": "gamepad_r1",      # R1 (light)
-                "U'": "gamepad_b",      # B button (roll)
-                "D": "gamepad_x",       # X button
-                "D'": "gamepad_x",      # X button
+                "U'": "gamepad_b",      # B button (rollRight)
+                "D": "gamepad_x",       # X button (heal)
+                "D'": "gamepad_b",      # B button (roll)
                 "F": "gamepad_dpad_right",  # D-pad right
                 "F'": "gamepad_dpad_left",  # D-pad left
-                "B": "gamepad_r3",      # Right stick press
+                "B": "gamepad_l2",      # Left trigger 
                 "B'": "gamepad_r3",     # Right stick press
                 "AUTO_B_PRESS": "gamepad_b_hold",    # Auto B button press (sprint)
                 "AUTO_B_RELEASE": "gamepad_b_release", # Auto B button release
@@ -89,15 +142,17 @@ class ControllerConfig:
 class CrossPlatformController:
     """Cross-platform gaming input controller"""
     
-    def __init__(self, config: ControllerConfig = None):
-        self.config = config or ControllerConfig()
+    def __init__(self, config: ControllerConfig = None, config_path: str = "controller_config.json"):
+        self.config_path = config_path
+        self.config = config or ControllerConfig.load_from_json(config_path)
+        self.config_mtime = self._get_config_mtime()
+        
         self.active_keys: Set[str] = set()
         self.last_input_time = 0
         self.connected_clients: Set = set()
         
         # Sprint/Roll management
         self.sprint_mode_active = False
-        self.forward_tilt_threshold = 0.7  # Threshold for auto-sprint activation
         self.b_button_held_by_sprint = False
         self.rolling_in_progress = False  # Track if we're currently performing a roll
         
@@ -111,9 +166,15 @@ class CrossPlatformController:
                 print(f"Could not create virtual gamepad: {e}")
                 
         print(f"Controller bridge initialized for {PLATFORM}")
+        print(f"Loaded config: {self.config.active_mapping} mapping with {len(self.config.move_mappings)} moves")
+        print(f"Sensitivities - Mouse: {self.config.mouse_sensitivity}, Movement: {self.config.movement_sensitivity}")
+        print(f"Deadzones - General: {self.config.deadzone}, Spin: {self.config.spin_deadzone}")
         
     async def handle_message(self, data: Dict[str, Any]):
         """Process incoming WebSocket message from cube dashboard"""
+        # Check for config file changes before processing messages
+        self._check_and_reload_config()
+        
         msg_type = data.get('type', '')
         
         if msg_type == 'CUBE_MOVE':
@@ -144,8 +205,9 @@ class CrossPlatformController:
             # DON'T set b_button_held_by_sprint = False here, let the normal action handle B release
             print(f"🚶 SPRINT MODE: OFF (dashboard triggered)")
         
-        # DEBUG: Check sprint state
-        print(f"DEBUG: move='{move}', sprint_mode_active={self.sprint_mode_active}, b_button_held_by_sprint={self.b_button_held_by_sprint}")
+        # DEBUG: Check sprint state (reduced frequency)
+        if move in ['U\'', 'AUTO_B_PRESS', 'AUTO_B_RELEASE']:  # Only debug important moves
+            print(f"DEBUG: move='{move}', sprint_mode_active={self.sprint_mode_active}, b_button_held_by_sprint={self.b_button_held_by_sprint}")
         
         # Special handling for U' (roll) when in sprint mode
         if move == "U'" and self.sprint_mode_active:
@@ -175,7 +237,7 @@ class CrossPlatformController:
             tilt_x = 0.0
         if abs(tilt_y) < self.config.deadzone:
             tilt_y = 0.0
-        if abs(spin_z) < self.config.deadzone:
+        if abs(spin_z) < self.config.spin_deadzone:
             spin_z = 0.0
         
         # Sprint mode management disabled - dashboard handles this via AUTO_B_PRESS/RELEASE
@@ -195,7 +257,7 @@ class CrossPlatformController:
         forward_tilt = -tilt_y  # Negative tilt_y is forward
         
         # Check if we should enter sprint mode
-        if forward_tilt >= self.forward_tilt_threshold and not self.sprint_mode_active:
+        if forward_tilt >= self.config.forward_tilt_threshold and not self.sprint_mode_active:
             self.sprint_mode_active = True
             if not self.b_button_held_by_sprint:  # Only hold if not already held
                 self.b_button_held_by_sprint = True
@@ -203,7 +265,7 @@ class CrossPlatformController:
                 print(f"SPRINT MODE: ON (forward tilt: {forward_tilt:.2f})")
         
         # Check if we should exit sprint mode
-        elif forward_tilt < (self.forward_tilt_threshold - 0.1) and self.sprint_mode_active:  # Hysteresis
+        elif forward_tilt < (self.config.forward_tilt_threshold - 0.1) and self.sprint_mode_active:  # Hysteresis
             self.sprint_mode_active = False
             if self.b_button_held_by_sprint:
                 self.b_button_held_by_sprint = False
@@ -322,6 +384,9 @@ class CrossPlatformController:
             elif action == "gamepad_r2":
                 await self._gamepad_trigger_press('right')
                 print(f"  Gamepad R2 (Right Trigger) → {move}")
+            elif action == "gamepad_l2":
+                await self._gamepad_trigger_press('left')
+                print(f"  Gamepad L2 (Left Trigger) → {move}")
             elif action == "gamepad_b":
                 await self._gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
                 print(f"  Gamepad B Button → {move}")
@@ -366,7 +431,8 @@ class CrossPlatformController:
             self.gamepad.right_joystick(x_value=right_stick_x, y_value=0)
             self.gamepad.update()
             
-            if abs(left_stick_x) > 1000 or abs(left_stick_y) > 1000 or abs(right_stick_x) > 1000:
+            # Reduce analog stick debug spam - only print significant movements
+            if abs(left_stick_x) > 5000 or abs(left_stick_y) > 5000 or abs(right_stick_x) > 5000:
                 print(f"Left: ({left_stick_x}, {left_stick_y}) | Right: ({right_stick_x}, 0)")
         else:
             # Fallback to WASD keys for movement
@@ -521,14 +587,15 @@ class CrossPlatformController:
         self.gamepad.press_button(button=button)
         self.gamepad.update()
         
-        # Schedule release
-        def release_button():
-            time.sleep(0.1)
-            self.gamepad.release_button(button=button)
-            self.gamepad.update()
+        # Schedule async release to avoid blocking
+        async def release_button():
+            await asyncio.sleep(0.1)
+            if self.gamepad:  # Check if gamepad still exists
+                self.gamepad.release_button(button=button)
+                self.gamepad.update()
         
-        import threading
-        threading.Thread(target=release_button, daemon=True).start()
+        # Schedule the release without waiting for it
+        asyncio.create_task(release_button())
     
     async def _gamepad_trigger_press(self, trigger_side: str):
         """Press and release a gamepad trigger"""
@@ -542,17 +609,18 @@ class CrossPlatformController:
         
         self.gamepad.update()
         
-        # Schedule release
-        def release_trigger():
-            time.sleep(0.1)
-            if trigger_side == 'right':
-                self.gamepad.right_trigger(value=0)
-            elif trigger_side == 'left':
-                self.gamepad.left_trigger(value=0)
-            self.gamepad.update()
+        # Schedule async release to avoid blocking  
+        async def release_trigger():
+            await asyncio.sleep(0.1)
+            if self.gamepad:  # Check if gamepad still exists
+                if trigger_side == 'right':
+                    self.gamepad.right_trigger(value=0)
+                elif trigger_side == 'left':
+                    self.gamepad.left_trigger(value=0)
+                self.gamepad.update()
         
-        import threading
-        threading.Thread(target=release_trigger, daemon=True).start()
+        # Schedule the release without waiting for it
+        asyncio.create_task(release_trigger())
     
     async def _gamepad_button_hold(self, button):
         """Press and hold a gamepad button (for continuous actions like sprint)"""
@@ -581,6 +649,32 @@ class CrossPlatformController:
         self.gamepad.release_button(button=button)
         self.gamepad.update()
         setattr(self, button_attr, False)
+    
+    def _get_config_mtime(self) -> float:
+        """Get modification time of config file"""
+        try:
+            return os.path.getmtime(self.config_path)
+        except (OSError, FileNotFoundError):
+            return 0.0
+    
+    def _check_and_reload_config(self):
+        """Check if config file has been modified and reload if necessary"""
+        try:
+            current_mtime = self._get_config_mtime()
+            if current_mtime > self.config_mtime:
+                print("\n🔄 Config file changed, reloading...")
+                old_mapping = self.config.active_mapping
+                self.config = ControllerConfig.load_from_json(self.config_path)
+                self.config_mtime = current_mtime
+                
+                if old_mapping != self.config.active_mapping:
+                    print(f"Mapping changed: {old_mapping} → {self.config.active_mapping}")
+                
+                print(f"✅ Config reloaded: {len(self.config.move_mappings)} moves")
+                print(f"Sensitivities - Mouse: {self.config.mouse_sensitivity}, Movement: {self.config.movement_sensitivity}")
+                print(f"Deadzones - General: {self.config.deadzone}, Spin: {self.config.spin_deadzone}")
+        except Exception as e:
+            print(f"Error reloading config: {e}")
     
     def _should_process_input(self) -> bool:
         """Check if we should process input based on rate limiting"""

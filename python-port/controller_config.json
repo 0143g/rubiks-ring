@@ -1,0 +1,36 @@
+{
+  "version": "1.0",
+  "description": "Elden Cube",
+  "sensitivity": {
+    "mouse_sensitivity": 2.0,
+    "movement_sensitivity": 2.0,
+    "tilt_x_sensitivity": 2.5,
+    "tilt_y_sensitivity": 2.5,
+    "spin_z_sensitivity": 1.5
+  },
+  "deadzone": {
+    "general_deadzone": 0.1,
+    "spin_deadzone": 0.1,
+    "bridge_deadzone": 0.1
+  },
+  "timing": {
+    "rate_limit_ms": 16,
+    "forward_tilt_threshold": 0.7
+  },
+  "move_mappings": {
+    "R": "gamepad_r1",
+    "R'": "gamepad_r2",
+    "L": "gamepad_b",
+    "L'": "gamepad_a",
+    "U": "gamepad_b",
+    "U'": "gamepad_b",
+    "D": "gamepad_x",
+    "D'": "gamepad_b",
+    "F": "gamepad_dpad_right",
+    "F'": "gamepad_dpad_left",
+    "B": "gamepad_l2",
+    "B'": "gamepad_r3",
+    "AUTO_B_PRESS": "gamepad_b_hold",
+    "AUTO_B_RELEASE": "gamepad_b_release"
+  }
+}
