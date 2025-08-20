@@ -541,11 +541,11 @@
             // Apply the same axis mapping as the original simple-bridge.html
             let { x: qx, y: qy, z: qz, w: qw } = quaternion;
             
-            // Map cube axes to twisty axes (exact copy from original)
+            // Map cube axes to twisty axes (exact copy from working original)
             let visualQuat = new THREE.Quaternion(
-                qx,  // cube x stays x
+                -qx,  // cube x → -x (matches working visualization)
                 qz,   // cube z → visual y (up)
-                -qy,   // cube y → visual z (forward)
+                qy,   // cube y → visual z (forward)
                 qw
             ).normalize();
             

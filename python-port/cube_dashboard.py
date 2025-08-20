@@ -345,18 +345,18 @@ class CubeDashboardServer:
                 # Convert quaternion to tilt values for controller
                 from gan_web_bluetooth.utils import quaternion_to_euler, Quaternion
                 
-                # Convert to Quaternion dataclass if needed
-                if hasattr(event.quaternion, 'x'):
-                    quat = Quaternion(
-                        x=event.quaternion.x,
-                        y=event.quaternion.y, 
-                        z=event.quaternion.z,
-                        w=event.quaternion.w
-                    )
-                else:
-                    quat = event.quaternion
+                # Apply the same axis transformation as working TypeScript implementation
+                raw_quat = event.quaternion
                 
-                euler = quaternion_to_euler(quat)
+                # Transform quaternion using same mapping as simple-bridge.html (line 630-636)
+                transformed_quat = Quaternion(
+                    x=-raw_quat.x,  # cube x → -x (matches working visualization)
+                    y=raw_quat.z,   # cube z → y (up)
+                    z=raw_quat.y,   # cube y → z (forward)
+                    w=raw_quat.w
+                )
+                
+                euler = quaternion_to_euler(transformed_quat)
                 
                 controller_data = {
                     'tiltX': euler[0] / 90.0,  # Normalize to -1 to 1 range
