@@ -579,7 +579,7 @@ class CubeDashboardServer:
         
         # Apply deadzone
         deadzone = 0.1
-        spin_deadzone = 0.05
+        spin_deadzone = 0.02
         if abs(tilt_x) < deadzone:
             tilt_x = 0
         if abs(tilt_y) < deadzone:

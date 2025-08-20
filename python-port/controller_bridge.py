@@ -74,8 +74,8 @@ class ControllerConfig:
                 "R'": "gamepad_r2",     # Right trigger  
                 "L": "gamepad_b",       # B button
                 "L'": "gamepad_a",      # A button
-                "U": "gamepad_y",       # Y button
-                "U'": "gamepad_y",      # Y button
+                "U": "gamepad_r1",      # R1 (light)
+                "U'": "gamepad_b",      # B button (roll)
                 "D": "gamepad_x",       # X button
                 "D'": "gamepad_x",      # X button
                 "F": "gamepad_dpad_right",  # D-pad right

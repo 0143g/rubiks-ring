@@ -15,312 +15,363 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
             min-height: 100vh;
+            line-height: 1.6;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 24px;
         }
 
         .header {
             text-align: center;
-            color: white;
-            margin-bottom: 30px;
+            margin-bottom: 32px;
+            padding: 24px 0;
         }
 
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-size: 2.2rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
         }
 
-        .status-bar {
-            background: rgba(255,255,255,0.95);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        .header p {
+            color: #888;
+            font-size: 0.9rem;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            grid-template-columns: 300px 1fr 300px;
+            gap: 24px;
+            min-height: calc(100vh - 200px);
         }
 
         .panel {
-            background: rgba(255,255,255,0.95);
+            background: #111;
+            border: 1px solid #222;
             border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: #1a1a1a;
+            padding: 16px 20px;
+            border-bottom: 1px solid #222;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .panel-content {
             padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
-        .panel h3 {
-            margin-bottom: 15px;
-            color: #4a5568;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 10px;
-        }
-
-        .controls {
+        /* Left Panel - Connection & Status */
+        .status-indicator {
             display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #666;
+            transition: all 0.3s ease;
+        }
+
+        .status-dot.connected {
+            background: #00ff88;
+            box-shadow: 0 0 12px rgba(0, 255, 136, 0.4);
+        }
+
+        .status-text {
+            font-size: 0.9rem;
+            color: #ccc;
         }
 
         .btn {
-            padding: 10px 20px;
-            border: none;
+            width: 100%;
+            padding: 12px 16px;
+            background: #333;
+            border: 1px solid #444;
             border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+            margin-bottom: 8px;
         }
 
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            background: #444;
+            border-color: #555;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+        .btn.primary {
+            background: #007aff;
+            border-color: #007aff;
         }
 
-        .btn-success {
-            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
-            color: white;
+        .btn.primary:hover {
+            background: #0056cc;
+            border-color: #0056cc;
         }
 
-        .btn-danger {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ffa8a8 100%);
-            color: white;
+        .btn.danger {
+            background: #ff3b30;
+            border-color: #ff3b30;
         }
 
-        .btn-secondary {
-            background: linear-gradient(135deg, #6c757d 0%, #adb5bd 100%);
-            color: white;
+        .btn.danger:hover {
+            background: #cc1f14;
+            border-color: #cc1f14;
         }
 
         .btn:disabled {
-            opacity: 0.6;
+            background: #222;
+            border-color: #222;
+            color: #666;
             cursor: not-allowed;
-            transform: none;
         }
 
-        .status-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
-
-        .status-connected { background: #28a745; }
-        .status-connecting { background: #ffc107; animation: pulse 1s infinite; }
-        .status-disconnected { background: #dc3545; }
-        .status-error { background: #dc3545; animation: flash 0.5s infinite; }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        @keyframes flash {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .info-item {
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 6px;
-            border-left: 4px solid #667eea;
-        }
-
-        .info-label {
-            font-size: 12px;
-            color: #6c757d;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .info-value {
-            font-size: 18px;
-            font-weight: 600;
-            color: #333;
-            margin-top: 2px;
-        }
-
-        .move-history {
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 10px;
-            background: #f8f9fa;
-        }
-
-        .move-item {
+        /* Center Panel - Cube Visualization */
+        .cube-container {
+            height: 500px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 8px 12px;
-            margin-bottom: 5px;
-            background: white;
-            border-radius: 4px;
-            border-left: 4px solid #667eea;
-        }
-
-        .move-notation {
-            font-family: 'Courier New', monospace;
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .move-time {
-            font-size: 12px;
-            color: #6c757d;
-        }
-
-        .cube-viewer {
-            width: 100%;
-            height: 300px;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            background: #f8f9fa;
-            position: relative;
-            overflow: hidden;
+            justify-content: center;
+            background: #0a0a0a;
+            border-radius: 8px;
+            margin-bottom: 20px;
         }
 
         .orientation-display {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-top: 15px;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 12px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 0.8rem;
         }
 
-        .quat-component {
+        .orientation-item {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 12px;
             text-align: center;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 6px;
         }
 
-        .quat-label {
-            font-size: 12px;
-            color: #6c757d;
-            margin-bottom: 5px;
+        .orientation-label {
+            color: #888;
+            font-size: 0.7rem;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .quat-value {
-            font-size: 16px;
+        .orientation-value {
+            color: #00ff88;
             font-weight: 600;
-            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
         }
 
-        .messages {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            width: 300px;
+        /* Right Panel - Activity & Info */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
         }
 
-        .message {
-            padding: 12px 16px;
-            margin-bottom: 10px;
+        .stat-item {
+            background: #1a1a1a;
+            border: 1px solid #333;
             border-radius: 6px;
-            color: white;
-            font-weight: 500;
-            opacity: 0;
-            transform: translateX(100%);
-            animation: slideIn 0.3s ease forwards;
+            padding: 12px;
+            text-align: center;
         }
 
-        .message.show {
-            opacity: 1;
-            transform: translateX(0);
+        .stat-value {
+            color: #fff;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 4px;
         }
 
-        .message-success { background: #28a745; }
-        .message-error { background: #dc3545; }
-        .message-warning { background: #ffc107; color: #333; }
-        .message-info { background: #17a2b8; }
-
-        @keyframes slideIn {
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+        .stat-label {
+            color: #888;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .facelets-display {
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            background: #f8f9fa;
-            padding: 15px;
+        .move-history {
+            background: #0a0a0a;
             border-radius: 6px;
-            border: 1px solid #e2e8f0;
-            margin-top: 10px;
-            word-wrap: break-word;
-            line-height: 1.4;
+            padding: 16px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'SF Mono', Monaco, monospace;
         }
 
-        .battery-indicator {
+        .move-item {
+            padding: 6px 0;
+            border-bottom: 1px solid #222;
+            font-size: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .move-item:last-child {
+            border-bottom: none;
+        }
+
+        .move-notation {
+            color: #00ff88;
+            font-weight: 600;
+        }
+
+        .move-time {
+            color: #666;
+            font-size: 0.7rem;
+        }
+
+        /* Controller section */
+        .controller-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #222;
+        }
+
+        .controller-toggle {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-top: 10px;
+            gap: 12px;
+            margin-bottom: 12px;
         }
 
-        .battery-bar {
-            flex: 1;
-            height: 20px;
-            background: #e2e8f0;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .battery-fill {
-            height: 100%;
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: #333;
+            border-radius: 12px;
+            cursor: pointer;
             transition: all 0.3s ease;
-            border-radius: 10px;
         }
 
-        .battery-text {
-            font-weight: 600;
-            color: #333;
+        .toggle-switch.active {
+            background: #007aff;
         }
 
-        @media (max-width: 768px) {
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active::after {
+            left: 22px;
+        }
+
+        .toggle-label {
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .connecting {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+
+        /* Messages */
+        .message {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+            border-left: 3px solid;
+        }
+
+        .message.success {
+            background: rgba(0, 255, 136, 0.1);
+            border-left-color: #00ff88;
+            color: #00ff88;
+        }
+
+        .message.error {
+            background: rgba(255, 59, 48, 0.1);
+            border-left-color: #ff3b30;
+            color: #ff3b30;
+        }
+
+        .message.info {
+            background: rgba(0, 122, 255, 0.1);
+            border-left-color: #007aff;
+            color: #007aff;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .grid {
+                grid-template-columns: 280px 1fr 280px;
+                gap: 16px;
+            }
+        }
+
+        @media (max-width: 900px) {
             .grid {
                 grid-template-columns: 1fr;
+                gap: 16px;
             }
             
-            .controls {
-                justify-content: center;
-            }
-            
-            .info-grid {
-                grid-template-columns: 1fr;
+            .cube-container {
+                height: 400px;
             }
         }
     </style>
@@ -328,220 +379,317 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎲 GAN Smart Cube Dashboard</h1>
+            <h1>GAN Smart Cube Dashboard</h1>
             <p>Real-time cube monitoring and control</p>
         </div>
 
-        <div class="status-bar">
-            <div class="controls">
-                <button id="connectBtn" class="btn btn-primary">🔗 Connect Cube</button>
-                <button id="disconnectBtn" class="btn btn-danger" disabled>🔌 Disconnect</button>
-                <button id="resetOrientationBtn" class="btn btn-secondary">🔄 Reset Orientation</button>
-                <button id="clearHistoryBtn" class="btn btn-secondary">🗑️ Clear History</button>
-                
-                <!-- Controller Bridge Controls -->
-                <button id="enableControllerBtn" class="btn btn-success">🎮 Enable Controller</button>
-                <button id="disableControllerBtn" class="btn btn-secondary" disabled>🎮 Disable Controller</button>
-            </div>
-            
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="info-label">Connection Status</div>
-                    <div class="info-value">
-                        <span id="connectionStatus" class="status-indicator status-disconnected"></span>
-                        <span id="connectionText">Disconnected</span>
-                    </div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Cube Model</div>
-                    <div class="info-value" id="cubeModel">Unknown</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Firmware</div>
-                    <div class="info-value" id="cubeFirmware">Unknown</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Total Moves</div>
-                    <div class="info-value" id="moveCount">0</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Controller Status</div>
-                    <div class="info-value">
-                        <span id="controllerStatus" class="status-indicator status-disconnected"></span>
-                        <span id="controllerText">Disabled</span>
-                    </div>
-                </div>
-            </div>
-
-            <div id="batteryContainer" class="battery-indicator" style="display: none;">
-                <span class="battery-text">Battery:</span>
-                <div class="battery-bar">
-                    <div id="batteryFill" class="battery-fill"></div>
-                </div>
-                <span id="batteryText" class="battery-text">--</span>
-            </div>
-        </div>
-
         <div class="grid">
+            <!-- Left Panel: Connection & Controls -->
             <div class="panel">
-                <h3>🎯 Move History</h3>
-                <div id="moveHistory" class="move-history">
-                    <div style="text-align: center; color: #6c757d; padding: 20px;">
-                        Make some moves on your cube to see them here!
+                <div class="panel-header">Connection</div>
+                <div class="panel-content">
+                    <div class="status-indicator">
+                        <div class="status-dot" id="statusDot"></div>
+                        <span class="status-text" id="statusText">Disconnected</span>
+                    </div>
+
+                    <button class="btn primary" id="connectBtn">Connect Cube</button>
+                    <button class="btn danger" id="disconnectBtn" disabled>Disconnect</button>
+                    <button class="btn" id="resetOrientationBtn">Reset Orientation</button>
+                    <button class="btn" id="clearHistoryBtn">Clear History</button>
+
+                    <div class="controller-section">
+                        <div class="controller-toggle">
+                            <div class="toggle-switch" id="controllerToggle"></div>
+                            <span class="toggle-label">Controller Mode</span>
+                        </div>
+                        <button class="btn" id="connectControllerBtn">Connect Bridge</button>
+                    </div>
+
+                    <div id="messageArea"></div>
+                </div>
+            </div>
+
+            <!-- Center Panel: Cube Visualization -->
+            <div class="panel">
+                <div class="panel-header">Cube Visualization</div>
+                <div class="panel-content">
+                    <div class="cube-container" id="cubeContainer">
+                        <twisty-player 
+                            id="twistyPlayer"
+                            puzzle="3x3x3"
+                            alg=""
+                            background="none"
+                            control-panel="none"
+                            style="width: 100%; height: 100%;">
+                        </twisty-player>
+                    </div>
+
+                    <div class="orientation-display">
+                        <div class="orientation-item">
+                            <div class="orientation-label">Quat X</div>
+                            <div class="orientation-value" id="orientX">0.000</div>
+                        </div>
+                        <div class="orientation-item">
+                            <div class="orientation-label">Quat Y</div>
+                            <div class="orientation-value" id="orientY">0.000</div>
+                        </div>
+                        <div class="orientation-item">
+                            <div class="orientation-label">Quat Z</div>
+                            <div class="orientation-value" id="orientZ">0.000</div>
+                        </div>
+                        <div class="orientation-item">
+                            <div class="orientation-label">Quat W</div>
+                            <div class="orientation-value" id="orientW">1.000</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Right Panel: Stats & History -->
             <div class="panel">
-                <h3>🌐 Cube Orientation</h3>
-                <div class="orientation-display">
-                    <div class="quat-component">
-                        <div class="quat-label">X</div>
-                        <div id="quatX" class="quat-value">0.000</div>
+                <div class="panel-header">Statistics</div>
+                <div class="panel-content">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="moveCount">0</div>
+                            <div class="stat-label">Total Moves</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="batteryLevel">-</div>
+                            <div class="stat-label">Battery</div>
+                        </div>
                     </div>
-                    <div class="quat-component">
-                        <div class="quat-label">Y</div>
-                        <div id="quatY" class="quat-value">0.000</div>
-                    </div>
-                    <div class="quat-component">
-                        <div class="quat-label">Z</div>
-                        <div id="quatZ" class="quat-value">0.000</div>
-                    </div>
-                    <div class="quat-component">
-                        <div class="quat-label">W</div>
-                        <div id="quatW" class="quat-value">1.000</div>
-                    </div>
-                </div>
-                <div id="cubeViewer" class="cube-viewer"></div>
-            </div>
 
-            <div class="panel">
-                <h3>📋 Cube State</h3>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Serial Number</div>
-                        <div class="info-value" id="stateSerial">--</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Last Update</div>
-                        <div class="info-value" id="stateTime">Never</div>
-                    </div>
-                </div>
-                <div class="facelets-display" id="faceletsDisplay">
-                    No state received yet. Connect to cube and request state.
-                </div>
-            </div>
-
-            <div class="panel">
-                <h3>📊 Statistics</h3>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Moves This Session</div>
-                        <div class="info-value" id="sessionMoves">0</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Last Move</div>
-                        <div class="info-value" id="lastMove">None</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Connection Time</div>
-                        <div class="info-value" id="connectionTime">--</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Protocol</div>
-                        <div class="info-value" id="protocolVersion">Unknown</div>
+                    <div class="panel-header" style="margin: 20px -20px 16px -20px; padding: 12px 20px;">Move History</div>
+                    <div class="move-history" id="moveHistory">
+                        <div style="color: #666; text-align: center; padding: 20px; font-size: 0.8rem;">
+                            No moves recorded yet
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="messages" class="messages"></div>
-
-    <script type="module">
-        import { TwistyPlayer } from 'https://cdn.cubing.net/v0/js/cubing/twisty';
-        
+    <script>
         // WebSocket connection
         const socket = io();
         
-        // State variables
-        let moveCount = 0;
-        let connectionStartTime = null;
-        
-        // 3D cube variables (twisty-player)
-        let twistyPlayer;
-        let twistyScene;
-        let twistyVantage;
-        let cubeQuaternion = new THREE.Quaternion();
-        let basis = null;  // Dynamic orientation basis like original
-        
-        // Solved state for cube initialization
-        const SOLVED_STATE = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB";
-        
-        // DOM elements
+        // UI elements
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
         const connectBtn = document.getElementById('connectBtn');
         const disconnectBtn = document.getElementById('disconnectBtn');
         const resetOrientationBtn = document.getElementById('resetOrientationBtn');
         const clearHistoryBtn = document.getElementById('clearHistoryBtn');
-        const enableControllerBtn = document.getElementById('enableControllerBtn');
-        const disableControllerBtn = document.getElementById('disableControllerBtn');
-        
-        // Initialize 3D cube visualization with twisty-player
-        function init3DCube() {
-            const container = document.getElementById('cubeViewer');
+        const controllerToggle = document.getElementById('controllerToggle');
+        const connectControllerBtn = document.getElementById('connectControllerBtn');
+        const messageArea = document.getElementById('messageArea');
+        const twistyPlayer = document.getElementById('twistyPlayer');
+        const moveHistory = document.getElementById('moveHistory');
+        const moveCount = document.getElementById('moveCount');
+        const batteryLevel = document.getElementById('batteryLevel');
+        const orientX = document.getElementById('orientX');
+        const orientY = document.getElementById('orientY');
+        const orientZ = document.getElementById('orientZ');
+        const orientW = document.getElementById('orientW');
+
+        // State
+        let isConnected = false;
+        let controllerEnabled = false;
+        let totalMoves = 0;
+        let basis = null;
+
+        // Socket event handlers
+        socket.on('connect', () => {
+            console.log('Connected to dashboard');
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from dashboard');
+        });
+
+        socket.on('status', (data) => {
+            isConnected = data.connected;
+            updateConnectionStatus(data.status);
             
-            // Create twisty player
-            twistyPlayer = new TwistyPlayer({
-                puzzle: '3x3x3',
-                visualization: 'PG3D',
-                alg: 'y',                   // Rotate to show red front (like original)
-                experimentalSetupAnchor: 'start',
-                background: 'none',
-                controlPanel: 'none',       // Hide controls
-                hintFacelets: 'none',       // Hide hint facelets
-                experimentalDragInput: 'none',
-                cameraLatitude: 0,          // Straight-on view (no angle)
-                cameraLongitude: 0,         // Direct frontal view of red face
-                cameraLatitudeLimit: 0,
-                cameraDistance: 5,
-                tempoScale: 3               // Animation speed
-            });
+            if (data.hardware_info && data.hardware_info.modelName) {
+                statusText.textContent = `Connected - ${data.hardware_info.modelName}`;
+            }
+        });
+
+        socket.on('battery', (data) => {
+            batteryLevel.textContent = data.percent + '%';
+        });
+
+        socket.on('move', (data) => {
+            totalMoves++;
+            moveCount.textContent = totalMoves;
+            addMoveToHistory(data.move, data.timestamp);
             
-            // Add player to container
-            container.appendChild(twistyPlayer);
-            
-            // Start orientation animation loop
-            animateCubeOrientation();
-        }
-        
-        // Animate cube orientation using twisty-player
-        async function animateCubeOrientation() {
-            if (!twistyScene || !twistyVantage) {
+            // Update twisty player with the move
+            if (twistyPlayer && twistyPlayer.experimentalAddMove) {
+                twistyPlayer.experimentalAddMove(data.move);
+            } else if (twistyPlayer) {
+                const currentAlg = twistyPlayer.alg || '';
+                twistyPlayer.alg = currentAlg + ' ' + data.move;
+            }
+        });
+
+        socket.on('move_history', (data) => {
+            totalMoves = data.total_count;
+            moveCount.textContent = totalMoves;
+            updateMoveHistory(data.moves);
+        });
+
+        socket.on('orientation', (data) => {
+            updateOrientation(data.quaternion);
+            updateOrientationDisplay(data.quaternion);
+        });
+
+        socket.on('facelets', (data) => {
+            // Update cube state visualization if available
+            if (twistyPlayer && data.facelets) {
                 try {
-                    const vantageList = await twistyPlayer.experimentalCurrentVantages();
-                    twistyVantage = [...vantageList][0];
-                    if (twistyVantage && twistyVantage.scene) {
-                        twistyScene = await twistyVantage.scene.scene();
-                    }
-                } catch (error) {
-                    // Ignore errors during initialization
+                    // Convert Kociemba facelets to twisty player format if needed
+                    twistyPlayer.experimentalSetCubieCube(data.facelets);
+                } catch (e) {
+                    console.log('Could not set cube state:', e);
                 }
             }
+        });
+
+        socket.on('message', (data) => {
+            showMessage(data.text, data.type);
+        });
+
+        // UI functions
+        function updateConnectionStatus(status) {
+            statusDot.className = 'status-dot';
+            connectBtn.disabled = false;
+            disconnectBtn.disabled = true;
             
-            if (twistyScene && twistyVantage) {
-                // Apply quaternion directly to scene (like original)
-                twistyScene.quaternion.slerp(cubeQuaternion, 0.25);
-                twistyVantage.render();
+            switch (status) {
+                case 'connected':
+                    statusDot.classList.add('connected');
+                    statusText.textContent = 'Connected';
+                    connectBtn.disabled = true;
+                    disconnectBtn.disabled = false;
+                    break;
+                case 'connecting':
+                    statusDot.classList.add('connecting');
+                    statusText.textContent = 'Connecting...';
+                    connectBtn.disabled = true;
+                    break;
+                default:
+                    statusText.textContent = 'Disconnected';
+            }
+        }
+
+        function showMessage(text, type = 'info') {
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            messageArea.appendChild(message);
+            
+            setTimeout(() => {
+                message.remove();
+            }, 5000);
+        }
+
+        function addMoveToHistory(move, timestamp) {
+            const moveItem = document.createElement('div');
+            moveItem.className = 'move-item';
+            
+            const time = new Date(timestamp).toLocaleTimeString();
+            moveItem.innerHTML = `
+                <span class="move-notation">${move}</span>
+                <span class="move-time">${time}</span>
+            `;
+            
+            // Remove placeholder text
+            if (moveHistory.children.length === 1 && moveHistory.children[0].style.color === 'rgb(102, 102, 102)') {
+                moveHistory.innerHTML = '';
             }
             
-            requestAnimationFrame(animateCubeOrientation);
+            moveHistory.insertBefore(moveItem, moveHistory.firstChild);
+            
+            // Keep only last 50 moves
+            while (moveHistory.children.length > 50) {
+                moveHistory.removeChild(moveHistory.lastChild);
+            }
         }
-        
+
+        function updateMoveHistory(moves) {
+            moveHistory.innerHTML = '';
+            
+            if (moves.length === 0) {
+                moveHistory.innerHTML = '<div style="color: #666; text-align: center; padding: 20px; font-size: 0.8rem;">No moves recorded yet</div>';
+                return;
+            }
+            
+            moves.slice().reverse().forEach(move => {
+                addMoveToHistory(move.move, move.timestamp);
+            });
+        }
+
+        function updateOrientation(quaternion) {
+            if (!twistyPlayer) return;
+            
+            update3DCubeOrientation(quaternion);
+        }
+
+        function updateOrientationDisplay(quaternion) {
+            // Display raw quaternion values
+            orientX.textContent = quaternion.x.toFixed(3);
+            orientY.textContent = quaternion.y.toFixed(3);
+            orientZ.textContent = quaternion.z.toFixed(3);
+            orientW.textContent = quaternion.w.toFixed(3);
+        }
+
+        // 3D Cube orientation tracking
+        let twistyScene = null;
+        let twistyVantage = null;
+        let cubeQuaternion = new THREE.Quaternion();
+        let isInitialized = false;
+
+        function initializeTwistyPlayer() {
+            if (!twistyPlayer || isInitialized) return;
+            
+            // Keep trying to get the scene
+            const tryInit = setInterval(() => {
+                try {
+                    // Access the internal 3D scene
+                    if (twistyPlayer.experimentalModel && 
+                        twistyPlayer.experimentalModel.twistySceneModel &&
+                        twistyPlayer.experimentalModel.twistySceneModel.twistyScene) {
+                        
+                        twistyScene = twistyPlayer.experimentalModel.twistySceneModel.twistyScene;
+                        twistyVantage = twistyPlayer.experimentalModel.viewerElems[0];
+                        
+                        if (twistyScene && twistyVantage) {
+                            console.log('Twisty 3D scene initialized');
+                            isInitialized = true;
+                            clearInterval(tryInit);
+                            animateCubeOrientation();
+                        }
+                    }
+                } catch (e) {
+                    // Keep trying
+                }
+            }, 100);
+            
+            // Stop trying after 5 seconds
+            setTimeout(() => clearInterval(tryInit), 5000);
+        }
+
         function update3DCubeOrientation(quaternion) {
-            // Apply the same axis mapping as the original simple-bridge.html
+            if (!quaternion) return;
+            
             let { x: qx, y: qy, z: qz, w: qw } = quaternion;
             
-            // Map cube axes to twisty axes (exact copy from working original)
+            // Apply the same axis mapping as the original simple-bridge.html
             let visualQuat = new THREE.Quaternion(
                 -qx,  // cube x → -x (matches working visualization)
                 qz,   // cube z → visual y (up)
@@ -554,328 +702,65 @@
                     new THREE.Euler(0, 2*Math.PI, 0) // Same correction as original
                 );
                 
-                // Combine: invert current orientation, then apply correction
-                basis = visualQuat.clone().invert().multiply(correction);
+                basis = visualQuat.clone().multiply(correction).invert();
+                console.log('Set orientation basis');
             }
             
-            cubeQuaternion.copy(visualQuat.clone().multiply(basis));
+            const relativeQuat = visualQuat.clone().multiply(basis);
+            cubeQuaternion.copy(relativeQuat);
         }
-        
+
         function resetCubeOrientation() {
-            // Clear basis to recalculate visualization reference (like original)
             basis = null;
-            
-            // Reset camera to default position (like original)
-            if (twistyPlayer) {
-                try {
-                    twistyPlayer.cameraLatitude = 0;   // Straight-on view 
-                    twistyPlayer.cameraLongitude = 0;  // Direct frontal view
-                    twistyPlayer.alg = 'y';            // Show red front (original setting)
-                } catch (error) {
-                    console.log('Error resetting cube orientation:', error);
-                }
+            console.log('Reset cube orientation');
+        }
+
+        function animateCubeOrientation() {
+            if (twistyScene && twistyVantage) {
+                // Smoothly interpolate to target orientation
+                twistyScene.quaternion.slerp(cubeQuaternion, 0.25);
+                twistyVantage.render();
             }
             
-            showMessage('Orientation reset - current position is now neutral', 'success');
+            requestAnimationFrame(animateCubeOrientation);
         }
-        
-        // Socket event handlers
-        socket.on('connect', () => {
-            showMessage('Connected to dashboard server', 'success');
-        });
-        
-        socket.on('message', (data) => {
-            showMessage(data.text, data.type);
-        });
-        
-        socket.on('status', (data) => {
-            updateConnectionStatus(data);
-        });
-        
-        socket.on('move', (data) => {
-            // Handle moves immediately with highest priority
-            handleMoveEvent(data);
-        });
-        
-        socket.on('move_history', (data) => {
-            // Use requestAnimationFrame for smooth DOM updates
-            requestAnimationFrame(() => updateMoveHistory(data.moves));
-        });
-        
-        socket.on('facelets', (data) => {
-            updateCubeState(data);
-        });
-        
-        socket.on('orientation', (data) => {
-            // Use requestAnimationFrame for smooth updates
-            requestAnimationFrame(() => updateOrientation(data));
-        });
-        
-        socket.on('battery', (data) => {
-            updateBattery(data);
-        });
-        
-        socket.on('hardware', (data) => {
-            updateHardwareInfo(data);
-        });
-        
-        // Button event handlers
+
+        // Event listeners
         connectBtn.addEventListener('click', () => {
             socket.emit('connect_cube');
         });
-        
+
         disconnectBtn.addEventListener('click', () => {
             socket.emit('disconnect_cube');
         });
-        
+
         resetOrientationBtn.addEventListener('click', () => {
             resetCubeOrientation();
-            socket.emit('reset_orientation');  // Also reset controller orientation 
+            socket.emit('reset_orientation');
             showMessage('Cube and controller orientation reset', 'success');
         });
-        
+
         clearHistoryBtn.addEventListener('click', () => {
             socket.emit('clear_history');
-            moveCount = 0;
-            updateMoveCount();
+            totalMoves = 0;
+            moveCount.textContent = '0';
         });
-        
-        enableControllerBtn.addEventListener('click', () => {
-            socket.emit('enable_controller', { enable: true });
-            updateControllerStatus(true);
-            showMessage('Controller mode enabled! Start controller bridge server if not running.', 'success');
+
+        controllerToggle.addEventListener('click', () => {
+            controllerEnabled = !controllerEnabled;
+            controllerToggle.classList.toggle('active', controllerEnabled);
+            socket.emit('enable_controller', { enable: controllerEnabled });
         });
-        
-        disableControllerBtn.addEventListener('click', () => {
-            socket.emit('enable_controller', { enable: false });
-            updateControllerStatus(false);
-            showMessage('Controller mode disabled', 'info');
+
+        connectControllerBtn.addEventListener('click', () => {
+            socket.emit('connect_controller_bridge');
         });
-        
-        // Helper functions
-        function showMessage(text, type = 'info') {
-            const messagesContainer = document.getElementById('messages');
-            const message = document.createElement('div');
-            message.className = `message message-${type}`;
-            message.textContent = text;
-            
-            messagesContainer.appendChild(message);
-            
-            // Trigger animation
-            setTimeout(() => message.classList.add('show'), 10);
-            
-            // Remove after 5 seconds
-            setTimeout(() => {
-                message.style.animation = 'slideIn 0.3s ease reverse';
-                setTimeout(() => messagesContainer.removeChild(message), 300);
-            }, 5000);
-        }
-        
-        function updateConnectionStatus(data) {
-            const statusIndicator = document.getElementById('connectionStatus');
-            const statusText = document.getElementById('connectionText');
-            
-            statusIndicator.className = `status-indicator status-${data.status}`;
-            statusText.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
-            
-            // Update button states
-            const isConnected = data.connected;
-            connectBtn.disabled = isConnected;
-            disconnectBtn.disabled = !isConnected;
-            
-            if (isConnected && data.connection_info) {
-                connectionStartTime = data.connection_info.connected_at;
-                updateConnectionTime();
-            }
-        }
-        
-        function handleMoveEvent(data) {
-            moveCount++;
-            updateMoveCount();
-            document.getElementById('lastMove').textContent = data.move;
-            document.getElementById('sessionMoves').textContent = moveCount;
-            
-            // Animate the move on the 3D cube using twisty-player
-            if (twistyPlayer) {
-                animateCubeMove(data.move);
-            }
-        }
-        
-        function animateCubeMove(move) {
-            try {
-                // Add the move to twisty-player for animation
-                twistyPlayer.experimentalAddMove(move, { cancel: false });
-                
-                // Show move indicator as well
-                showMoveIndicator(move);
-            } catch (error) {
-                console.log('Error animating move:', error);
-                // Fallback to just showing the indicator
-                showMoveIndicator(move);
-            }
-        }
-        
-        function showMoveIndicator(move) {
-            // Create a visual feedback indicator for moves
-            const moveIndicator = document.createElement('div');
-            moveIndicator.style.position = 'absolute';
-            moveIndicator.style.top = '10px';
-            moveIndicator.style.right = '10px';
-            moveIndicator.style.background = 'rgba(102, 126, 234, 0.9)';
-            moveIndicator.style.color = 'white';
-            moveIndicator.style.padding = '8px 12px';
-            moveIndicator.style.borderRadius = '6px';
-            moveIndicator.style.fontSize = '16px';
-            moveIndicator.style.fontWeight = 'bold';
-            moveIndicator.style.zIndex = '1000';
-            moveIndicator.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
-            moveIndicator.style.transition = 'all 0.3s ease';
-            moveIndicator.textContent = move;
-            
-            const cubeViewer = document.getElementById('cubeViewer');
-            cubeViewer.style.position = 'relative';
-            cubeViewer.appendChild(moveIndicator);
-            
-            // Animate in
-            setTimeout(() => {
-                moveIndicator.style.transform = 'translateY(-5px)';
-            }, 10);
-            
-            // Remove indicator after animation
-            setTimeout(() => {
-                moveIndicator.style.opacity = '0';
-                moveIndicator.style.transform = 'translateY(-15px)';
-                setTimeout(() => {
-                    if (moveIndicator.parentNode) {
-                        moveIndicator.parentNode.removeChild(moveIndicator);
-                    }
-                }, 300);
-            }, 1500);
-        }
-        
-        function updateMoveHistory(moves) {
-            const historyContainer = document.getElementById('moveHistory');
-            
-            if (moves.length === 0) {
-                historyContainer.innerHTML = `
-                    <div style="text-align: center; color: #6c757d; padding: 20px;">
-                        Make some moves on your cube to see them here!
-                    </div>
-                `;
-                return;
-            }
-            
-            historyContainer.innerHTML = moves.slice().reverse().map(move => `
-                <div class="move-item">
-                    <span class="move-notation">${move.move}</span>
-                    <span class="move-time">${formatTime(move.timestamp)}</span>
-                </div>
-            `).join('');
-        }
-        
-        function updateCubeState(data) {
-            document.getElementById('stateSerial').textContent = data.serial;
-            document.getElementById('stateTime').textContent = formatTime(data.timestamp);
-            document.getElementById('faceletsDisplay').textContent = data.facelets;
-            
-            // Update twisty-player with cube state if it's not solved
-            if (twistyPlayer && data.facelets && data.facelets !== SOLVED_STATE) {
-                try {
-                    twistyPlayer.alg = data.facelets;
-                } catch (error) {
-                    console.log('Error setting cube state:', error);
-                }
-            }
-        }
-        
-        function updateOrientation(data) {
-            // Batch DOM updates for better performance
-            const quatElements = ['quatX', 'quatY', 'quatZ', 'quatW'];
-            const quatValues = ['x', 'y', 'z', 'w'];
-            
-            for (let i = 0; i < quatElements.length; i++) {
-                document.getElementById(quatElements[i]).textContent = 
-                    data.quaternion[quatValues[i]].toFixed(3);
-            }
-            
-            // Update 3D cube orientation using twisty-player
-            if (twistyPlayer) {
-                update3DCubeOrientation(data.quaternion);
-            }
-        }
-        
-        function updateBattery(data) {
-            const container = document.getElementById('batteryContainer');
-            const fill = document.getElementById('batteryFill');
-            const text = document.getElementById('batteryText');
-            
-            container.style.display = 'flex';
-            fill.style.width = data.percent + '%';
-            text.textContent = data.percent + '%';
-            
-            // Color based on battery level
-            if (data.percent > 60) {
-                fill.style.background = 'linear-gradient(90deg, #28a745, #20c997)';
-            } else if (data.percent > 30) {
-                fill.style.background = 'linear-gradient(90deg, #ffc107, #fd7e14)';
-            } else {
-                fill.style.background = 'linear-gradient(90deg, #dc3545, #e74c3c)';
-            }
-        }
-        
-        function updateHardwareInfo(data) {
-            document.getElementById('cubeModel').textContent = data.model || 'Unknown';
-            document.getElementById('cubeFirmware').textContent = data.firmware || 'Unknown';
-            document.getElementById('protocolVersion').textContent = data.protocol || 'Unknown';
-        }
-        
-        function updateMoveCount() {
-            document.getElementById('moveCount').textContent = moveCount;
-        }
-        
-        function updateControllerStatus(enabled) {
-            const statusIndicator = document.getElementById('controllerStatus');
-            const statusText = document.getElementById('controllerText');
-            
-            if (enabled) {
-                statusIndicator.className = 'status-indicator status-connected';
-                statusText.textContent = 'Enabled';
-                enableControllerBtn.disabled = true;
-                disableControllerBtn.disabled = false;
-            } else {
-                statusIndicator.className = 'status-indicator status-disconnected';
-                statusText.textContent = 'Disabled';
-                enableControllerBtn.disabled = false;
-                disableControllerBtn.disabled = true;
-            }
-        }
-        
-        function updateConnectionTime() {
-            if (!connectionStartTime) return;
-            
-            const elapsed = Date.now() - connectionStartTime;
-            const seconds = Math.floor(elapsed / 1000) % 60;
-            const minutes = Math.floor(elapsed / 60000) % 60;
-            const hours = Math.floor(elapsed / 3600000);
-            
-            let timeString = '';
-            if (hours > 0) timeString += hours + 'h ';
-            if (minutes > 0) timeString += minutes + 'm ';
-            timeString += seconds + 's';
-            
-            document.getElementById('connectionTime').textContent = timeString;
-        }
-        
-        function formatTime(timestamp) {
-            return new Date(timestamp).toLocaleTimeString();
-        }
-        
-        // Update connection time every second
-        setInterval(updateConnectionTime, 1000);
-        
-        // Initialize 3D cube when page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            init3DCube();
+
+        // Initialize when twisty player loads
+        setTimeout(initializeTwistyPlayer, 500);
+        // Try again after page fully loads
+        window.addEventListener('load', () => {
+            setTimeout(initializeTwistyPlayer, 100);
         });
     </script>
 </body>
