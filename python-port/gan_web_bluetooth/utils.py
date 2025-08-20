@@ -376,3 +376,45 @@ class CubeOrientationTransform:
             z=0 if abs(quat.z) < threshold else quat.z,
             w=quat.w
         )
+
+
+def quaternion_to_euler(quat: Quaternion) -> Tuple[float, float, float]:
+    """
+    Convert quaternion to Euler angles (roll, pitch, yaw) in degrees.
+    
+    Args:
+        quat: Input quaternion
+        
+    Returns:
+        Tuple of (roll, pitch, yaw) in degrees
+    """
+    # Normalize quaternion first
+    norm = math.sqrt(quat.x*quat.x + quat.y*quat.y + quat.z*quat.z + quat.w*quat.w)
+    if norm == 0:
+        return (0.0, 0.0, 0.0)
+    
+    x, y, z, w = quat.x/norm, quat.y/norm, quat.z/norm, quat.w/norm
+    
+    # Roll (x-axis rotation)
+    sinr_cosp = 2 * (w * x + y * z)
+    cosr_cosp = 1 - 2 * (x * x + y * y)
+    roll = math.atan2(sinr_cosp, cosr_cosp)
+    
+    # Pitch (y-axis rotation)
+    sinp = 2 * (w * y - z * x)
+    if abs(sinp) >= 1:
+        pitch = math.copysign(math.pi / 2, sinp)  # Use 90 degrees if out of range
+    else:
+        pitch = math.asin(sinp)
+    
+    # Yaw (z-axis rotation)
+    siny_cosp = 2 * (w * z + x * y)
+    cosy_cosp = 1 - 2 * (y * y + z * z)
+    yaw = math.atan2(siny_cosp, cosy_cosp)
+    
+    # Convert to degrees
+    roll_deg = math.degrees(roll)
+    pitch_deg = math.degrees(pitch)
+    yaw_deg = math.degrees(yaw)
+    
+    return (roll_deg, pitch_deg, yaw_deg)

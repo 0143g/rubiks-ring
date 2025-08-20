@@ -343,8 +343,20 @@ class CubeDashboardServer:
             # Forward to controller bridge if enabled and connected
             if self.enable_controller and self.bridge_connected:
                 # Convert quaternion to tilt values for controller
-                from gan_web_bluetooth.utils import quaternion_to_euler
-                euler = quaternion_to_euler(event.quaternion)
+                from gan_web_bluetooth.utils import quaternion_to_euler, Quaternion
+                
+                # Convert to Quaternion dataclass if needed
+                if hasattr(event.quaternion, 'x'):
+                    quat = Quaternion(
+                        x=event.quaternion.x,
+                        y=event.quaternion.y, 
+                        z=event.quaternion.z,
+                        w=event.quaternion.w
+                    )
+                else:
+                    quat = event.quaternion
+                
+                euler = quaternion_to_euler(quat)
                 
                 controller_data = {
                     'tiltX': euler[0] / 90.0,  # Normalize to -1 to 1 range
