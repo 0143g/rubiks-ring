@@ -630,7 +630,8 @@
         
         resetOrientationBtn.addEventListener('click', () => {
             resetCubeOrientation();
-            showMessage('Cube orientation reset to default (green front, white top)', 'success');
+            socket.emit('reset_orientation');  // Also reset controller orientation 
+            showMessage('Cube and controller orientation reset', 'success');
         });
         
         clearHistoryBtn.addEventListener('click', () => {

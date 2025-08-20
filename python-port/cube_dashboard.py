@@ -48,6 +48,13 @@ class CubeDashboardServer:
         self.hardware_info = {}
         self.connection_info = {}
         
+        # Orientation processing state (like simple-bridge.html)
+        self.orientation_state = {
+            'reference_orientation': None,
+            'current_quaternion': None,
+            'last_quaternion': None
+        }
+        
         # Debug output rate limiting (for terminal only)
         
         # Controller bridge connection
@@ -136,6 +143,11 @@ class CubeDashboardServer:
                     self.connect_to_controller_bridge(host, port),
                     self.cube_loop
                 )
+        
+        @self.socketio.on('reset_orientation')
+        def handle_reset_orientation(data=None):
+            """Reset controller orientation reference."""
+            self.reset_controller_orientation()
     
     def connect_to_cube(self, device_address: Optional[str] = None):
         """Connect to GAN Smart Cube."""
@@ -342,29 +354,10 @@ class CubeDashboardServer:
             
             # Forward to controller bridge if enabled and connected
             if self.enable_controller and self.bridge_connected:
-                # Convert quaternion to tilt values for controller
-                from gan_web_bluetooth.utils import quaternion_to_euler, Quaternion
-                
-                # Apply the same axis transformation as working TypeScript implementation
-                raw_quat = event.quaternion
-                
-                # Transform quaternion using same mapping as simple-bridge.html (line 630-636)
-                transformed_quat = Quaternion(
-                    x=-raw_quat.x,  # cube x → -x (matches working visualization)
-                    y=raw_quat.z,   # cube z → y (up)
-                    z=raw_quat.y,   # cube y → z (forward)
-                    w=raw_quat.w
-                )
-                
-                euler = quaternion_to_euler(transformed_quat)
-                
-                controller_data = {
-                    'tiltX': euler[0] / 90.0,  # Normalize to -1 to 1 range
-                    'tiltY': euler[1] / 90.0,
-                    'spinZ': euler[2] / 180.0,
-                    'timestamp': current_time
-                }
-                self._forward_to_controller_bridge('CUBE_ORIENTATION', controller_data)
+                # Process orientation using exact same logic as working simple-bridge.html
+                controller_data = self._process_orientation_for_controller(event.quaternion, current_time)
+                if controller_data:
+                    self._forward_to_controller_bridge('CUBE_ORIENTATION', controller_data)
                 
         except Exception as e:
             # Only print errors occasionally to avoid spam
@@ -494,6 +487,113 @@ class CubeDashboardServer:
                 self.cube_loop
             )
     
+    def _process_orientation_for_controller(self, quaternion, current_time):
+        """Process orientation data for analog joystick control (exact copy of simple-bridge.html logic)"""
+        import math
+        
+        # Apply same transformation as working TypeScript (line 631-636)
+        transformed_quat = {
+            'x': -quaternion.x,  # cube x → -x (matches visualization)
+            'y': quaternion.z,   # cube z → y (up)
+            'z': quaternion.y,   # cube y → z (forward)
+            'w': quaternion.w
+        }
+        
+        # Store current quaternion
+        self.orientation_state['current_quaternion'] = transformed_quat.copy()
+        
+        # Set reference orientation on first reading or reset
+        if not self.orientation_state['reference_orientation']:
+            self.orientation_state['reference_orientation'] = transformed_quat.copy()
+            print("Reference orientation set for controller")
+            return None
+        
+        # Calculate relative quaternion from reference (proper quaternion math)
+        ref = self.orientation_state['reference_orientation']
+        curr = transformed_quat
+        
+        # Relative = current * inverse(reference)
+        # inverse(q) = (-x, -y, -z, w) / (x² + y² + z² + w²)
+        ref_norm_sq = ref['x']**2 + ref['y']**2 + ref['z']**2 + ref['w']**2
+        ref_inv = {
+            'x': -ref['x'] / ref_norm_sq,
+            'y': -ref['y'] / ref_norm_sq, 
+            'z': -ref['z'] / ref_norm_sq,
+            'w': ref['w'] / ref_norm_sq
+        }
+        
+        # Quaternion multiplication: relative = curr * ref_inv
+        relative = {
+            'x': curr['w']*ref_inv['x'] + curr['x']*ref_inv['w'] + curr['y']*ref_inv['z'] - curr['z']*ref_inv['y'],
+            'y': curr['w']*ref_inv['y'] - curr['x']*ref_inv['z'] + curr['y']*ref_inv['w'] + curr['z']*ref_inv['x'],
+            'z': curr['w']*ref_inv['z'] + curr['x']*ref_inv['y'] - curr['y']*ref_inv['x'] + curr['z']*ref_inv['w'],
+            'w': curr['w']*ref_inv['w'] - curr['x']*ref_inv['x'] - curr['y']*ref_inv['y'] - curr['z']*ref_inv['z']
+        }
+        
+        # Extract tilt from quaternion components directly (lines 673-675)
+        raw_tilt_x = -relative['z'] * 4.0  # Forward/back: knife/basketball rotation (inverted)
+        raw_tilt_y = -relative['x'] * 4.0  # Left/right: clockwise/counterclockwise tilt (inverted)
+        raw_spin_z = -relative['y'] * 1.5  # Microwave spin axis - reduced sensitivity for camera control
+        
+        # Isolate primary axis to prevent diagonal movement (lines 677-688)
+        tilt_x = 0.0
+        tilt_y = 0.0
+        abs_x = abs(raw_tilt_x)
+        abs_y = abs(raw_tilt_y)
+        
+        # Only use the dominant axis, ignore the weaker one to prevent diagonal drift
+        if abs_x > abs_y and abs_x > 0.15:
+            tilt_x = max(-1.0, min(1.0, raw_tilt_x))  # Forward/back only
+        elif abs_y > abs_x and abs_y > 0.15:
+            tilt_y = max(-1.0, min(1.0, raw_tilt_y))  # Left/right only
+        # If both are weak or equal, send zero (neutral position)
+        
+        # Process spin axis for right stick (no axis isolation needed)
+        spin_z = max(-1.0, min(1.0, raw_spin_z))
+        
+        # Apply deadzone (lines 700-704)
+        deadzone = 0.1
+        spin_deadzone = 0.1
+        if abs(tilt_x) < deadzone:
+            tilt_x = 0
+        if abs(tilt_y) < deadzone:
+            tilt_y = 0
+        if abs(spin_z) < spin_deadzone:
+            spin_z = 0
+        
+        # Debug output (rate limited)
+        if hasattr(self, 'last_controller_debug') and current_time - self.last_controller_debug > 1000:
+            if abs(tilt_x) > 0.1 or abs(tilt_y) > 0.1 or abs(spin_z) > 0.1:
+                print(f"🎮 Left Stick: X={tilt_x:.2f}, Y={tilt_y:.2f} | Right Stick: X={spin_z:.2f}")
+                self.last_controller_debug = current_time
+        elif not hasattr(self, 'last_controller_debug'):
+            self.last_controller_debug = current_time
+        
+        return {
+            'tiltX': tilt_x,
+            'tiltY': tilt_y, 
+            'spinZ': spin_z,
+            'timestamp': current_time
+        }
+    
+    def reset_controller_orientation(self):
+        """Reset the controller orientation reference (like resetOrientation in simple-bridge.html)"""
+        if self.orientation_state['current_quaternion']:
+            # Reset reference to current transformed orientation
+            self.orientation_state['reference_orientation'] = self.orientation_state['current_quaternion'].copy()
+            print("🎮 Controller orientation reset - current position is now neutral")
+            
+            self.socketio.emit('message', {
+                'type': 'success', 
+                'text': 'Controller orientation reset - current position is now neutral'
+            })
+        else:
+            print("⚠️ No orientation data yet - connect cube first")
+            self.socketio.emit('message', {
+                'type': 'warning',
+                'text': 'No orientation data yet - connect cube first'
+            })
+
     async def _send_to_bridge(self, message: Dict[str, Any]):
         """Send message to controller bridge WebSocket."""
         try:
