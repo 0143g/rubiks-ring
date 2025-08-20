@@ -481,15 +481,16 @@
             twistyPlayer = new TwistyPlayer({
                 puzzle: '3x3x3',
                 visualization: 'PG3D',
-                alg: '',                    // Start with solved cube
+                alg: "y2",                  // Rotate 180° to show green front (y2 = 180° from red to green)
                 experimentalSetupAnchor: 'start',
                 background: 'none',
                 controlPanel: 'none',       // Hide controls
                 hintFacelets: 'none',       // Hide hint facelets
-                cameraLatitude: 20,         // Nice viewing angle
-                cameraLongitude: 30,
-                cameraDistance: 5,
+                experimentalDragInput: 'none',
+                cameraLatitude: 0,          // Straight-on view (no vertical angle)
+                cameraLongitude: 180,       // Adjust to face green directly (opposite of red)
                 cameraLatitudeLimit: 90,
+                cameraDistance: 5,
                 tempoScale: 3               // Animation speed
             });
             
@@ -528,8 +529,8 @@
             // Apply axis mapping to match the cube's physical orientation
             // This maps from the cube's coordinate system to the 3D visualization
             targetQuaternion.set(
-                -quaternion.x,  // cube x stays x
-                quaternion.z,   // cube z → visual y (up)
+                quaternion.x,   // cube x → visual x 
+                quaternion.z,  // cube z → visual y
                 quaternion.y,   // cube y → visual z (forward)
                 quaternion.w
             );
@@ -545,8 +546,10 @@
             if (twistyPlayer) {
                 try {
                     // Reset the cube visualization to show green front, white top
-                    twistyPlayer.cameraLatitude = 20;
-                    twistyPlayer.cameraLongitude = 30;
+                    twistyPlayer.cameraLatitude = 0;   // Straight-on view (no vertical angle)
+                    twistyPlayer.cameraLongitude = 180; // Face green directly (opposite of red)
+                    // Reset algorithm to y2 to ensure green is front (180° rotation)
+                    twistyPlayer.alg = "y2";
                 } catch (error) {
                     console.log('Error resetting cube orientation:', error);
                 }
