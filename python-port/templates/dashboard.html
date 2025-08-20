@@ -338,6 +338,10 @@
                 <button id="disconnectBtn" class="btn btn-danger" disabled>🔌 Disconnect</button>
                 <button id="resetOrientationBtn" class="btn btn-secondary">🔄 Reset Orientation</button>
                 <button id="clearHistoryBtn" class="btn btn-secondary">🗑️ Clear History</button>
+                
+                <!-- Controller Bridge Controls -->
+                <button id="enableControllerBtn" class="btn btn-success">🎮 Enable Controller</button>
+                <button id="disableControllerBtn" class="btn btn-secondary" disabled>🎮 Disable Controller</button>
             </div>
             
             <div class="info-grid">
@@ -359,6 +363,13 @@
                 <div class="info-item">
                     <div class="info-label">Total Moves</div>
                     <div class="info-value" id="moveCount">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Controller Status</div>
+                    <div class="info-value">
+                        <span id="controllerStatus" class="status-indicator status-disconnected"></span>
+                        <span id="controllerText">Disabled</span>
+                    </div>
                 </div>
             </div>
 
@@ -472,6 +483,8 @@
         const disconnectBtn = document.getElementById('disconnectBtn');
         const resetOrientationBtn = document.getElementById('resetOrientationBtn');
         const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+        const enableControllerBtn = document.getElementById('enableControllerBtn');
+        const disableControllerBtn = document.getElementById('disableControllerBtn');
         
         // Initialize 3D cube visualization with twisty-player
         function init3DCube() {
@@ -624,6 +637,18 @@
             socket.emit('clear_history');
             moveCount = 0;
             updateMoveCount();
+        });
+        
+        enableControllerBtn.addEventListener('click', () => {
+            socket.emit('enable_controller', { enable: true });
+            updateControllerStatus(true);
+            showMessage('Controller mode enabled! Start controller bridge server if not running.', 'success');
+        });
+        
+        disableControllerBtn.addEventListener('click', () => {
+            socket.emit('enable_controller', { enable: false });
+            updateControllerStatus(false);
+            showMessage('Controller mode disabled', 'info');
         });
         
         // Helper functions
@@ -805,6 +830,23 @@
         
         function updateMoveCount() {
             document.getElementById('moveCount').textContent = moveCount;
+        }
+        
+        function updateControllerStatus(enabled) {
+            const statusIndicator = document.getElementById('controllerStatus');
+            const statusText = document.getElementById('controllerText');
+            
+            if (enabled) {
+                statusIndicator.className = 'status-indicator status-connected';
+                statusText.textContent = 'Enabled';
+                enableControllerBtn.disabled = true;
+                disableControllerBtn.disabled = false;
+            } else {
+                statusIndicator.className = 'status-indicator status-disconnected';
+                statusText.textContent = 'Disabled';
+                enableControllerBtn.disabled = false;
+                disableControllerBtn.disabled = true;
+            }
         }
         
         function updateConnectionTime() {

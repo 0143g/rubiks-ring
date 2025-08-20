@@ -8,6 +8,7 @@ import asyncio
 import json
 import threading
 import time
+import websockets
 from typing import Optional, Dict, Any
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit
@@ -48,6 +49,11 @@ class CubeDashboardServer:
         self.connection_info = {}
         
         # Debug output rate limiting (for terminal only)
+        
+        # Controller bridge connection
+        self.controller_bridge_ws = None
+        self.bridge_connected = False
+        self.enable_controller = False
         self.last_orientation_debug = 0
         self.orientation_debug_limit = 1000  # Print orientation to terminal once per second
         
@@ -104,6 +110,32 @@ class CubeDashboardServer:
             """Clear move history."""
             self.move_history.clear()
             self.emit_move_history()
+        
+        @self.socketio.on('enable_controller')
+        def handle_enable_controller(data=None):
+            """Enable/disable controller bridge forwarding."""
+            enable = data.get('enable', False) if data else False
+            self.enable_controller = enable
+            print(f"🎮 Controller {'enabled' if enable else 'disabled'}")
+            
+            # Try to connect to bridge if enabling
+            if enable and not self.bridge_connected and self.cube_loop:
+                asyncio.run_coroutine_threadsafe(
+                    self.connect_to_controller_bridge(),
+                    self.cube_loop
+                )
+        
+        @self.socketio.on('connect_controller_bridge')
+        def handle_connect_controller_bridge(data=None):
+            """Connect to controller bridge server."""
+            host = data.get('host', 'localhost') if data else 'localhost'
+            port = data.get('port', 8083) if data else 8083
+            
+            if self.cube_loop:
+                asyncio.run_coroutine_threadsafe(
+                    self.connect_to_controller_bridge(host, port),
+                    self.cube_loop
+                )
     
     def connect_to_cube(self, device_address: Optional[str] = None):
         """Connect to GAN Smart Cube."""
@@ -246,6 +278,11 @@ class CubeDashboardServer:
         try:
             self.socketio.emit('move', move_data)
             self.emit_move_history()
+            
+            # Forward to controller bridge if enabled and connected
+            if self.enable_controller and self.bridge_connected:
+                self._forward_to_controller_bridge('CUBE_MOVE', move_data)
+                
         except Exception as e:
             print(f"❌ Error emitting move event: {e}")
     
@@ -302,6 +339,21 @@ class CubeDashboardServer:
         try:
             self.socketio.emit('orientation', self.current_orientation)
             self.last_orientation_emit = current_time
+            
+            # Forward to controller bridge if enabled and connected
+            if self.enable_controller and self.bridge_connected:
+                # Convert quaternion to tilt values for controller
+                from gan_web_bluetooth.utils import quaternion_to_euler
+                euler = quaternion_to_euler(event.quaternion)
+                
+                controller_data = {
+                    'tiltX': euler[0] / 90.0,  # Normalize to -1 to 1 range
+                    'tiltY': euler[1] / 90.0,
+                    'spinZ': euler[2] / 180.0,
+                    'timestamp': current_time
+                }
+                self._forward_to_controller_bridge('CUBE_ORIENTATION', controller_data)
+                
         except Exception as e:
             # Only print errors occasionally to avoid spam
             if current_time - getattr(self, 'last_emit_error', 0) > 5000:
@@ -384,6 +436,66 @@ class CubeDashboardServer:
             'moves': self.move_history[-20:],  # Last 20 moves
             'total_count': len(self.move_history)
         })
+    
+    async def connect_to_controller_bridge(self, host='localhost', port=8083):
+        """Connect to the controller bridge WebSocket server."""
+        try:
+            uri = f"ws://{host}:{port}"
+            print(f"🎮 Connecting to controller bridge at {uri}")
+            self.controller_bridge_ws = await websockets.connect(uri)
+            self.bridge_connected = True
+            print("✅ Connected to controller bridge")
+            
+            # Start background task to maintain connection
+            asyncio.create_task(self._maintain_bridge_connection())
+            
+        except Exception as e:
+            print(f"⚠️ Could not connect to controller bridge: {e}")
+            self.bridge_connected = False
+    
+    async def _maintain_bridge_connection(self):
+        """Maintain WebSocket connection to controller bridge."""
+        try:
+            if self.controller_bridge_ws:
+                await self.controller_bridge_ws.wait_closed()
+        except Exception as e:
+            print(f"⚠️ Controller bridge connection lost: {e}")
+        finally:
+            self.bridge_connected = False
+            self.controller_bridge_ws = None
+            print("🔌 Disconnected from controller bridge")
+    
+    def _forward_to_controller_bridge(self, msg_type: str, data: Dict[str, Any]):
+        """Forward message to controller bridge (non-blocking)."""
+        if not self.bridge_connected or not self.controller_bridge_ws:
+            return
+        
+        message = {
+            'type': msg_type,
+            **data
+        }
+        
+        # Send message asynchronously without blocking
+        if self.cube_loop:
+            asyncio.run_coroutine_threadsafe(
+                self._send_to_bridge(message),
+                self.cube_loop
+            )
+    
+    async def _send_to_bridge(self, message: Dict[str, Any]):
+        """Send message to controller bridge WebSocket."""
+        try:
+            if self.controller_bridge_ws and not self.controller_bridge_ws.closed:
+                await self.controller_bridge_ws.send(json.dumps(message))
+        except Exception as e:
+            if hasattr(self, 'last_bridge_error_time'):
+                current_time = time.time() * 1000
+                if current_time - self.last_bridge_error_time > 5000:  # Rate limit error messages
+                    print(f"⚠️ Error sending to controller bridge: {e}")
+                    self.last_bridge_error_time = current_time
+            else:
+                print(f"⚠️ Error sending to controller bridge: {e}")
+                self.last_bridge_error_time = time.time() * 1000
     
     def run(self, host='localhost', port=5000, debug=False):
         """Run the dashboard server."""

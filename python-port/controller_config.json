@@ -1,0 +1,56 @@
+{
+  "controller_settings": {
+    "mouse_sensitivity": 2.0,
+    "movement_sensitivity": 1.0,
+    "deadzone": 0.1,
+    "rate_limit_ms": 16
+  },
+  "move_mappings": {
+    "R": "gamepad_r1",
+    "R'": "gamepad_r2", 
+    "L": "gamepad_b",
+    "L'": "gamepad_b",
+    "U": "gamepad_y",
+    "U'": "gamepad_y",
+    "D": "gamepad_x",
+    "D'": "gamepad_x",
+    "F": "gamepad_dpad_right",
+    "F'": "gamepad_dpad_left",
+    "B": "gamepad_r3",
+    "B'": "gamepad_r3"
+  },
+  "alternative_mappings": {
+    "fps_keyboard": {
+      "R": "mouse_left",
+      "R'": "mouse_right",
+      "L": "key_e",
+      "L'": "key_q",
+      "U": "key_space",
+      "D": "key_c",
+      "F": "key_f",
+      "B": "key_r"
+    },
+    "racing": {
+      "R": "gamepad_a",
+      "R'": "gamepad_b", 
+      "L": "gamepad_x",
+      "L'": "gamepad_y",
+      "U": "gamepad_dpad_up",
+      "D": "gamepad_dpad_down",
+      "F": "gamepad_r1",
+      "B": "gamepad_l1"
+    }
+  },
+  "supported_actions": [
+    "gamepad_a", "gamepad_b", "gamepad_x", "gamepad_y",
+    "gamepad_r1", "gamepad_r2", "gamepad_l1", "gamepad_l2",
+    "gamepad_r3", "gamepad_l3",
+    "gamepad_dpad_up", "gamepad_dpad_down", "gamepad_dpad_left", "gamepad_dpad_right",
+    "mouse_left", "mouse_right", "mouse_middle",
+    "key_a", "key_b", "key_c", "key_d", "key_e", "key_f", "key_g", "key_h",
+    "key_i", "key_j", "key_k", "key_l", "key_m", "key_n", "key_o", "key_p",
+    "key_q", "key_r", "key_s", "key_t", "key_u", "key_v", "key_w", "key_x",
+    "key_y", "key_z", "key_space", "key_shift", "key_ctrl", "key_alt",
+    "key_tab", "key_enter", "key_escape"
+  ]
+}
