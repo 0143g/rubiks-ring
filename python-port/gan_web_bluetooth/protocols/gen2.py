@@ -88,7 +88,7 @@ class GanGen2Protocol(GanCubeProtocol):
         # Gyroscope smoothing
         self.gyro_buffer = []
         self.GYRO_BUFFER_SIZE = 5
-        self.GYRO_RATE_LIMIT_MS = 16  # 60 FPS max - let dashboard handle rate limiting
+        self.GYRO_RATE_LIMIT_MS = 1  # Maximum responsiveness for gaming controller
         self.last_gyro_emit = 0
         
         # Timestamp synchronization

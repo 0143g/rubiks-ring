@@ -66,7 +66,7 @@ class CubeDashboardServer:
         
         # Dashboard gets all data with minimal rate limiting
         self.last_orientation_emit = 0
-        self.orientation_rate_limit = 16  # 60 FPS for dashboard responsiveness
+        self.orientation_rate_limit = 1  # Maximum responsiveness for controller bridge
         
         self.setup_routes()
         self.setup_socketio_events()
@@ -358,6 +358,32 @@ class CubeDashboardServer:
                 controller_data = self._process_orientation_for_controller(event.quaternion, current_time)
                 if controller_data:
                     self._forward_to_controller_bridge('CUBE_ORIENTATION', controller_data)
+                    
+                    # Handle automatic B button press/release
+                    auto_b_button = controller_data.get('auto_b_button', False)
+                    if auto_b_button != getattr(self, '_last_auto_b_state', False):
+                        if auto_b_button:
+                            # Send B button press
+                            b_move_data = {
+                                'move': 'AUTO_B_PRESS',
+                                'face': 'AUTO',
+                                'direction': 'PRESS',
+                                'timestamp': current_time,
+                                'auto_generated': True
+                            }
+                            self._forward_to_controller_bridge('CUBE_MOVE', b_move_data)
+                        else:
+                            # Send B button release  
+                            b_move_data = {
+                                'move': 'AUTO_B_RELEASE',
+                                'face': 'AUTO', 
+                                'direction': 'RELEASE',
+                                'timestamp': current_time,
+                                'auto_generated': True
+                            }
+                            self._forward_to_controller_bridge('CUBE_MOVE', b_move_data)
+                        
+                        self._last_auto_b_state = auto_b_button
                 
         except Exception as e:
             # Only print errors occasionally to avoid spam
@@ -561,10 +587,19 @@ class CubeDashboardServer:
         if abs(spin_z) < spin_deadzone:
             spin_z = 0
         
+        # Check for maximum stick input to trigger B button (sprint/run modifier)
+        max_stick_threshold = 0.95  # 95% of max stick range triggers B button
+        auto_b_button = False
+        
+        # If either forward/back (tilt_y) OR left/right (tilt_x) is near maximum, auto-press B button
+        if abs(tilt_x) >= max_stick_threshold or abs(tilt_y) >= max_stick_threshold:
+            auto_b_button = True
+        
         # Debug output (rate limited)
         if hasattr(self, 'last_controller_debug') and current_time - self.last_controller_debug > 1000:
             if abs(tilt_x) > 0.1 or abs(tilt_y) > 0.1 or abs(spin_z) > 0.1:
-                print(f"🎮 Left Stick: X={tilt_x:.2f}, Y={tilt_y:.2f} | Right Stick: X={spin_z:.2f}")
+                b_status = " + B BUTTON" if auto_b_button else ""
+                print(f"🎮 Left Stick: X={tilt_x:.2f}, Y={tilt_y:.2f} | Right Stick: X={spin_z:.2f}{b_status}")
                 self.last_controller_debug = current_time
         elif not hasattr(self, 'last_controller_debug'):
             self.last_controller_debug = current_time
@@ -573,6 +608,7 @@ class CubeDashboardServer:
             'tiltX': tilt_x,
             'tiltY': tilt_y, 
             'spinZ': spin_z,
+            'auto_b_button': auto_b_button,  # New field for automatic B button
             'timestamp': current_time
         }
     

@@ -129,11 +129,26 @@ class WindowsInputServer:
         tilt_x = data.get('tiltX', 0.0)  # Left/Right tilt
         tilt_y = data.get('tiltY', 0.0)  # Forward/Back tilt
         spin_z = data.get('spinZ', 0.0)  # Spin rotation (microwave/ballerina axis)
+        auto_b_button = data.get('auto_b_button', False)  # Automatic B button when stick is maxed
         
         # Convert to joystick range (-32768 to 32767)
         left_stick_x = max(-32768, min(32767, int(tilt_x * 32767)))
         left_stick_y = max(-32768, min(32767, int(tilt_y * 32767)))
         right_stick_x = max(-32768, min(32767, int(spin_z * 32767)))
+        
+        # Handle automatic B button for sprinting/running
+        if auto_b_button:
+            if not hasattr(self, 'b_button_pressed') or not self.b_button_pressed:
+                # Press B button
+                self.gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+                self.b_button_pressed = True
+                print("🏃 AUTO B BUTTON: PRESSED (sprint mode)")
+        else:
+            if hasattr(self, 'b_button_pressed') and self.b_button_pressed:
+                # Release B button
+                self.gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+                self.b_button_pressed = False
+                print("🚶 AUTO B BUTTON: RELEASED (normal mode)")
         
         # Set analog stick positions
         self.gamepad.left_joystick(x_value=left_stick_x, y_value=left_stick_y)
@@ -142,7 +157,8 @@ class WindowsInputServer:
         
         # Rate limit logging
         if abs(left_stick_x) > 1000 or abs(left_stick_y) > 1000 or abs(right_stick_x) > 1000:
-            print(f"Left Stick: X={left_stick_x}, Y={left_stick_y} | Right Stick: X={right_stick_x}")
+            b_status = " + B" if auto_b_button else ""
+            print(f"Left Stick: X={left_stick_x}, Y={left_stick_y} | Right Stick: X={right_stick_x}{b_status}")
             
     def handle_key_press(self, data):
         """Handle continuous key press"""
@@ -262,6 +278,12 @@ class WindowsInputServer:
         
         # Reset gamepad to neutral state
         if self.gamepad:
+            # Make sure auto B button is released
+            if hasattr(self, 'b_button_pressed') and self.b_button_pressed:
+                self.gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+                self.b_button_pressed = False
+                print("🔄 Auto B button released")
+            
             self.gamepad.reset()
             self.gamepad.update()
             print("🔄 All keys and gamepad reset")
