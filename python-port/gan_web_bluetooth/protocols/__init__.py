@@ -11,8 +11,7 @@ from .base import (
     GanCubeOrientationEvent,
     GanCubeBatteryEvent,
     GanCubeHardwareEvent,
-    GanCubeAngularVelocity,
-    Quaternion
+    GanCubeAngularVelocity
 )
 from .gen2 import GanGen2Protocol
 

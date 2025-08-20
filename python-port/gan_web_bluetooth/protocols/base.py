@@ -168,6 +168,11 @@ class GanCubeProtocol(ABC):
             return self._encrypter.decrypt(data)
         return data
     
+    @property
+    def encrypter(self):
+        """Get the encrypter instance."""
+        return self._encrypter
+    
     @staticmethod
     def _move_to_string(face: int, direction: int) -> str:
         """

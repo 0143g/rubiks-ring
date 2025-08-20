@@ -44,3 +44,51 @@ GAN_TIMER_CHARACTERISTIC = "0000fff1-0000-1000-8000-00805f9b34fb"
 
 # Common manufacturer IDs
 GAN_MANUFACTURER_ID = 0x4D43  # "MC" in hex
+
+
+def extract_mac_from_manufacturer_data(manufacturer_data: Dict[int, bytes]) -> str:
+    """
+    Extract MAC address from manufacturer data using GAN CIC list.
+    
+    Args:
+        manufacturer_data: Dictionary of manufacturer ID to data bytes
+        
+    Returns:
+        MAC address string in format "XX:XX:XX:XX:XX:XX" or empty string if not found
+    """
+    mac_bytes = []
+    
+    # Check all known GAN Company Identifier Codes
+    for cic in GAN_CIC_LIST:
+        if cic in manufacturer_data:
+            data = manufacturer_data[cic]
+            # MAC is in last 6 bytes of first 9 bytes
+            if len(data) >= 6:
+                # Extract last 6 bytes and reverse order for MAC format
+                mac_bytes = list(data[:9])[-6:]
+                mac_bytes.reverse()
+                break
+    
+    if mac_bytes:
+        # Format as MAC address string
+        return ":".join(f"{byte:02X}" for byte in mac_bytes)
+    
+    return ""
+
+
+def get_manufacturer_data_bytes(manufacturer_data: Dict[int, bytes]) -> bytes:
+    """
+    Get manufacturer data bytes for GAN cubes.
+    
+    Args:
+        manufacturer_data: Manufacturer data from advertisement
+        
+    Returns:
+        First 9 bytes of manufacturer data or empty bytes
+    """
+    for cic in GAN_CIC_LIST:
+        if cic in manufacturer_data:
+            data = manufacturer_data[cic]
+            return data[:9] if len(data) >= 9 else data
+    
+    return b""

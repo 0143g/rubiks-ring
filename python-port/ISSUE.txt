@@ -1,466 +1,957 @@
-PS M:\mikerson\rubiks\python-port> python .\test_raw_stream.py
-Raw Data Stream Configuration:
-  Cube Address: ab:12:34:62:bc:15
+PS M:\mikerson\rubiks\python-port> python .\debug_cube_stream.py
+🧪 GAN Smart Cube Data Stream Debugger
+==================================================
+This tool shows all raw encrypted and decrypted data
+coming from your cube in real-time.
 
-This will show ALL raw data from your cube!
+🔍 Scanning for devices...
+Found 30 devices:
+  48:5F:99:76:E8:36: Unknown
+  49:CC:76:A0:01:33: Unknown
+  46:FE:92:1D:6D:2E: Unknown
+  9C:04:A0:9F:6C:64: ihoment_H6075_6C64
+  D4:9D:C0:84:04:D1: Unknown
+  F8:84:D8:89:3D:3D: Unknown
+  46:79:06:EF:8D:9E: Unknown
+  6B:91:F5:6E:EC:3C: Unknown
+  4B:FD:00:B1:E7:2B: Unknown
+  6E:1B:E6:4C:30:71: Unknown
+  A4:C1:38:A8:19:72: Petkit_W4X
+  46:F8:EF:22:C9:E8: Unknown
+  58:16:66:A6:AD:0B: Unknown
+  DC:6C:E0:F4:FB:AD: Unknown
+  38:74:0C:1B:D1:B2: Unknown
+  6B:B4:C4:D0:6E:B7: Unknown
+  49:F4:BF:B8:FF:E7: Unknown
+  F8:64:B5:20:90:2D: Unknown
+  7C:70:57:5F:75:E9: Unknown
+  61:28:47:22:61:2F: Unknown
+  AB:12:34:62:BC:15: GANi39Jl
+✅ Found GAN cube: GANi39Jl at AB:12:34:62:BC:15
+🔍 Connecting to cube at AB:12:34:62:BC:15...
+🔑 Using MAC address: AB:12:34:62:BC:15
+🧂 Encryption salt: 15bc623412ab
+✅ Connected! Device is connected: True
+🔍 Discovering services...
+✅ Found Gen2 service
+✅ Gen2 protocol configured with encryption
+📡 Starting data stream monitoring...
+
+📦 Packet #1 at 1755654500044ms
+📥 Raw encrypted data (20 bytes): 0afbc053b2ce589fdf3b2a02be1a94c4e7dbd003
+🔓 Decrypted data: 4357af08c0a162c70a4e15200064000000000000
+🔢 Bit representation: 0100001101010111101011110000100011000000101000010110001011000111000010100100111000010101001000000000000001100100000000000000000000000000000000000000000000000000
+📋 Event type: 0x3
+   Type: UNKNOWN (0x3)
+✅ Decoded 1 events:
+   Event 1: GanCubeFaceletsEvent(serial=53, facelets='LBDUUULDDURLURBBRURBFFFRDBLFLDDDFFLFBLBFLLRRBRUUDBDRFU', state=GanCubeState(CP=[3, 6, 5, 7, 0, 2, 1, 4], CO=[2, 0, 0, 1, 1, 0, 0, 2], EP=[11, 1, 6, 3, 8, 5, 2, 7, 0, 10, 9, 4], EO=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), type='FACELETS')
+
+🚀 Sending initial commands...
+📤 Sending command: 05
+   Raw: 0500000000000000000000000000000000000000
+   Encrypted: aae8049b848d8c38d9bf7ae303f5ebd9f5798b63
+
+📦 Packet #2 at 1755654500284ms
+📥 Raw encrypted data (20 bytes): 821af89e47dbd5677c45715e493cdadd2a40fa34
+🔓 Decrypted data: 1deea97bb8039d287088de919956817fd26f088a
+🔢 Bit representation: 0001110111101110101010010111101110111000000000111001110100101000011100001000100011011110100100011001100101010110100000010111111111010010011011110000100010001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+⚠️ No events decoded
+
+📦 Packet #3 at 1755654500463ms
+📥 Raw encrypted data (20 bytes): 3d657f0f19de1a61073d2c1a7aa370cf1797eab4
+🔓 Decrypted data: 500001074c47414e6933394a6cc0000000000000
+🔢 Bit representation: 0101000000000000000000010000011101001100010001110100000101001110011010010011001100111001010010100110110011000000000000000000000000000000000000000000000000000000
+📋 Event type: 0x0
+   Type: UNKNOWN (0x0)
+✅ Decoded 1 events:
+   Event 1: GanCubeHardwareEvent(model='GANi39Jl', firmware='7.76', protocol='GEN2', type='HARDWARE')
+
+📦 Packet #4 at 1755654500463ms
+📥 Raw encrypted data (20 bytes): 9cee97ddab1862218043b809a421678edfa01977
+🔓 Decrypted data: 1de499abe828ad24a088de0d9c02836dd21a088a
+🔢 Bit representation: 0001110111100100100110011010101111101000001010001010110100100100101000001000100011011110000011011001110000000010100000110110110111010010000110100000100010001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.20893117027473235, y=-0.019837169248988613, z=-0.6429073959987602, w=-0.736630391019751), angular_velocity=GanCubeAngularVelocity(x=-0.13117070960181224, y=-0.10088745887662084, z=0.010377967945149572), type='ORIENTATION', local_timestamp=1755654500463.4048, cube_timestamp=None)
+
+📦 Packet #5 at 1755654500464ms
+📥 Raw encrypted data (20 bytes): 3d855b295f4480ee7a730973502101ef78beaf46
+🔓 Decrypted data: 1ddd99d27843dd1e6088ddd99d27843dd1e6088a
+🔢 Bit representation: 0001110111011101100110011101001001111000010000111101110100011110011000001000100011011101110110011001110100100111100001000011110111010001111001100000100010001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+⚠️ No events decoded
+
+📦 Packet #6 at 1755654500466ms
+📥 Raw encrypted data (20 bytes): c862a463b7465a0e60581253bea9c4b51b9fd25e
+🔓 Decrypted data: 1ddc69ccf8545d20b880ddd09c7b84f3d222880a
+🔢 Bit representation: 0001110111011100011010011100110011111000010101000101110100100000101110001000000011011101110100001001110001111011100001001111001111010010001000101000100000001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+⚠️ No events decoded
+
+📦 Packet #7 at 1755654500523ms
+📥 Raw encrypted data (20 bytes): 09a036ff65545370c29217292aec7e3bb759fe2b
+🔓 Decrypted data: 1ddd89c3084acd237880ddde9be88474d24b880a
+🔢 Bit representation: 0001110111011101100010011100001100001000010010101100110100100011011110001000000011011101110111101001101111101000100001000111010011010010010010111000100000001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.22022156437879575, y=-0.036500137333292645, z=-0.6423230689413129, w=-0.7331766716513566), angular_velocity=GanCubeAngularVelocity(x=-0.18804138606081913, y=-0.27748809943028957, z=0.00965617928420579), type='ORIENTATION', local_timestamp=1755654500523.4546, cube_timestamp=None)
+
+📦 Packet #8 at 1755654500643ms
+📥 Raw encrypted data (20 bytes): 7ace731175e1112a343bc156fe802379d1c80006
+🔓 Decrypted data: 1dde39ba18443d260800dde79b568411d278800a
+🔢 Bit representation: 0001110111011110001110011011101000011000010001000011110100100110000010000000000011011101111001111001101101010110100001000001000111010010011110001000000000001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.2158648274245004, y=-0.03329683680476883, z=-0.6435964202923603, w=-0.7335375550894765), angular_velocity=GanCubeAngularVelocity(x=0.03637506896982222, y=0.026708966726093197, z=-0.01042921557876081), type='ORIENTATION', local_timestamp=1755654500643.431, cube_timestamp=None)
+
+📦 Packet #9 at 1755654500703ms
+📥 Raw encrypted data (20 bytes): 0d7f7fd410eda3fed5d289dbc6100ddbae09911f
+🔓 Decrypted data: 1dde89b0283d9d295800dde99aa3839bd2b5800a
+🔢 Bit representation: 0001110111011110100010011011000000101000001111011001110100101001010110000000000011011101111010011001101010100011100000111001101111010010101101011000000000001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.21100882524857778, y=-0.030061280426648698, z=-0.6452035832485078, w=-0.7336783568087663), angular_velocity=GanCubeAngularVelocity(x=0.08140202385006856, y=0.054268015900045666, z=-0.027134007950022077), type='ORIENTATION', local_timestamp=1755654500703.0417, cube_timestamp=None)
+📤 Sending command: 09
+   Raw: 0900000000000000000000000000000000000000
+   Encrypted: 55433f667e38c954ba1fe4297c34ee00864fe718
+
+📦 Packet #10 at 1755654501303ms
+📥 Raw encrypted data (20 bytes): 2f2a8ae45097c1d54d60d59133cc133950cfeadb
+🔓 Decrypted data: 1ddee9a408358d2d2800ddf299df8314d2ee800a
+🔢 Bit representation: 0001110111011110111010011010010000001000001101011000110100101101001010000000000011011101111100101001100111011111100000110001010011010010111011101000000000001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.20508918138423723, y=-0.02612445524775403, z=-0.6470685749566366, w=-0.7338652463638942), angular_velocity=GanCubeAngularVelocity(x=0.009867912389388061, y=0.006561653083665257, z=-0.003102797194601498), type='ORIENTATION', local_timestamp=1755654501303.026, cube_timestamp=None)
+
+📦 Packet #11 at 1755654501304ms
+📥 Raw encrypted data (20 bytes): 2c755716d053aed7dedff4c9da92672c9ba7cb88
+🔓 Decrypted data: 1ddf7998082d5d308800ddfd992682a4d31f800a
+🔢 Bit representation: 0001110111011111011110011001100000001000001011010101110100110000100010000000000011011101111111011001100100100110100000101010010011010011000111111000000000001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+⚠️ No events decoded
+
+📦 Packet #12 at 1755654501304ms
+📥 Raw encrypted data (20 bytes): 7abeda0fd153a7515216bbc1b9c366c096999fb8
+🔓 Decrypted data: 1de0b989a8277d33b800de0b989a8277d33b800a
+🔢 Bit representation: 0001110111100000101110011000100110101000001001110111110100110011101110000000000011011110000010111001100010011010100000100111011111010011001110111000000000001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+⚠️ No events decoded
+
+📦 Packet #13 at 1755654501304ms
+📥 Raw encrypted data (20 bytes): 06002d13b46395a8576b1cb185bf0402bbe68a80
+🔓 Decrypted data: 1dfb30b511ceacf1e880df970c1d1d85cee9880a
+🔢 Bit representation: 0001110111111011001100001011010100010001110011101010110011110001111010001000000011011111100101110000110000011101000111011000010111001110111010011000100000001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+⚠️ No events decoded
+
+📦 Packet #14 at 1755654501363ms
+📥 Raw encrypted data (20 bytes): ed6f9b99dda37049d58e6b184225ac6292eb4cba
+🔓 Decrypted data: 1df780d021e2aceab800df550e051edcce64800a
+🔢 Bit representation: 0001110111110111100000001101000000100001111000101010110011101010101110000000000011011111010101010000111000000101000111101101110011001110011001001000000000001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=0.10162663655507068, y=0.2356639301736503, z=-0.6146122623371073, w=-0.7458723715933713), angular_velocity=GanCubeAngularVelocity(x=5.079729974354582, y=4.335713802986429, z=0.5372888520138243), type='ORIENTATION', local_timestamp=1755654501363.4053, cube_timestamp=None)
+
+📦 Packet #15 at 1755654501363ms
+📥 Raw encrypted data (20 bytes): 39fa13cdbaf79c281804759e20c86d2d1ef18b57
+🔓 Decrypted data: 1df550e051edcce64800e18c84070af5d20b008a
+🔢 Bit representation: 0001110111110101010100001110000001010001111011011100110011100110010010000000000011100001100011001000010000000111000010101111010111010010000010110000000010001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+⚠️ No events decoded
+
+📦 Packet #16 at 1755654501363ms
+📥 Raw encrypted data (20 bytes): ce200b5c1d7238fd80c32ebedcc295aefc10a08f
+🔓 Decrypted data: 1e18f857c0970d222008e18f857c0970d222008a
+🔢 Bit representation: 0001111000011000111110000101011111000000100101110000110100100010001000000000100011100001100011111000010101111100000010010111000011010010001000100000000010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+⚠️ No events decoded
+
+📦 Packet #17 at 1755654501423ms
+📥 Raw encrypted data (20 bytes): ce200b5c1d7238fd80c32ebedcc295aefc10a08f
+🔓 Decrypted data: 1e18f857c0970d222008e18f857c0970d222008a
+🔢 Bit representation: 0001111000011000111110000101011111000000100101110000110100100010001000000000100011100001100011111000010101111100000010010111000011010010001000100000000010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.04284798730430006, y=0.07373271889400922, z=-0.6416821802423169, w=-0.7621997741630299), angular_velocity=GanCubeAngularVelocity(x=-2.40690164574573, y=-2.6977228838882223, z=-0.4509762906160674), type='ORIENTATION', local_timestamp=1755654501423.4304, cube_timestamp=None)
+
+📦 Packet #18 at 1755654501423ms
+📥 Raw encrypted data (20 bytes): e904a2688b1450f8eff0ecf0075f1e7a20b85c7f
+🔓 Decrypted data: 1e18d870807d7d231008e18388b00630d238008a
+🔢 Bit representation: 0001111000011000110110000111000010000000011111010111110100100011000100000000100011100001100000111000100010110000000001100011000011010010001110000000000010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+⚠️ No events decoded
+
+📦 Packet #19 at 1755654501424ms
+📥 Raw encrypted data (20 bytes): bfb3f74b1bc5699d6b4c9163db33eff2b5445219
+🔓 Decrypted data: 9064000000000000000000000000000000000000
+🔢 Bit representation: 1001000001100100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+📋 Event type: 0x0
+   Type: UNKNOWN (0x0)
+✅ Decoded 1 events:
+   Event 1: GanCubeBatteryEvent(percent=100, type='BATTERY')
+
+📦 Packet #20 at 1755654501424ms
+📥 Raw encrypted data (20 bytes): 4cd9a5e0f3921c5c93d5e597283f83195cc69f29
+🔓 Decrypted data: 1e16d8a6d0486d23b008e1478c3502dbd23c008a
+🔢 Bit representation: 0001111000010110110110001010011011010000010010000110110100100011101100000000100011100001010001111000110000110101000000101101101111010010001111000000000010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+⚠️ No events decoded
+
+📦 Packet #21 at 1755654501483ms
+📥 Raw encrypted data (20 bytes): e82658232f41f92c2002ebe821e8991989108d14
+🔓 Decrypted data: 1e1128e04012dd23a008e0d18fd58085d235008a
+🔢 Bit representation: 0001111000010001001010001110000001000000000100101101110100100011101000000000100011100000110100011000111111010101100000001000010111010010001101010000000010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.10950041199987792, y=0.009186071352275138, z=-0.6424146244697407, w=-0.7583849604785301), angular_velocity=GanCubeAngularVelocity(x=-1.1091046652194048, y=-1.074064270576484, z=-0.012187963354059049), type='ORIENTATION', local_timestamp=1755654501483.5261, cube_timestamp=None)
+
+📦 Packet #22 at 1755654501484ms
+📥 Raw encrypted data (20 bytes): 94ac9cae40ea76c34618dcde31d2be700b64842b
+🔓 Decrypted data: 1e08791a48241d227008e03493718405d20d008a
+🔢 Bit representation: 0001111000001000011110010001101001001000001001000001110100100010011100000000100011100000001101001001001101110001100001000000010111010010000011010000000010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+⚠️ No events decoded
+
+📦 Packet #23 at 1755654501603ms
+📥 Raw encrypted data (20 bytes): a1c79d34ae1d7dae3859532c8d1d9035dfb2daa1
+🔓 Decrypted data: 1dfdf954085c8d1e4008df8497178784d1aa008a
+🔢 Bit representation: 0001110111111101111110010101010000001000010111001000110100011110010000000000100011011111100001001001011100010111100001111000010011010001101010100000000010001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.16602069154942473, y=-0.045167394024475845, z=-0.6397900326548052, w=-0.7490157780693991), angular_velocity=GanCubeAngularVelocity(x=-0.47174519004728255, y=-0.45365992628197094, z=0.021906094138264116), type='ORIENTATION', local_timestamp=1755654501603.3372, cube_timestamp=None)
+
+📦 Packet #24 at 1755654501663ms
+📥 Raw encrypted data (20 bytes): 068b0c42ceb80141e1bdc6a98de3b118866048ae
+🔓 Decrypted data: 1df2198f4892bd166088deb69acd8ab6d11d088a
+🔢 Bit representation: 0001110111110010000110011000111101001000100100101011110100010110011000001000100011011110101101101001101011001101100010101011011011010001000111010000100010001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.19495223853267007, y=-0.07162694174016541, z=-0.6359447004608295, w=-0.7432172612689596), angular_velocity=GanCubeAngularVelocity(x=-0.4816437020133838, y=-0.440490600891987, z=0.06401593507772824), type='ORIENTATION', local_timestamp=1755654501663.4055, cube_timestamp=None)
+
+📦 Packet #25 at 1755654501723ms
+📥 Raw encrypted data (20 bytes): 975429d780f78d29ed59e5510936e464c325dc64
+🔓 Decrypted data: 1de449c9a8c24d0d0088ddce9e648d7bd07b088a
+🔢 Bit representation: 0001110111100100010010011100100110101000110000100100110100001101000000001000100011011101110011101001111001100100100011010111101111010000011110110000100010001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.22345652638325145, y=-0.09485152745139927, z=-0.63136692403943, w=-0.7364726706747643), angular_velocity=GanCubeAngularVelocity(x=-0.4761156794727258, y=-0.38792722920636435, z=0.0764639742193882), type='ORIENTATION', local_timestamp=1755654501723.274, cube_timestamp=None)
+
+📦 Packet #26 at 1755654501783ms
+📥 Raw encrypted data (20 bytes): fb34cb08285e29019535ab2635e2c3a450001307
+🔓 Decrypted data: 1dd54a0318ec8d01c088dccda1f79015cfbd088a
+🔢 Bit representation: 0001110111010101010010100000001100011000111011001000110100000001110000001000100011011100110011011010000111110111100100000001010111001111101111010000100010001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.2515030365916929, y=-0.11548203985717338, z=-0.6258735923337504, w=-0.729148228400525), angular_velocity=GanCubeAngularVelocity(x=-0.46714150982756886, y=-0.3436209582627167, z=0.0914967048628546), type='ORIENTATION', local_timestamp=1755654501783.3125, cube_timestamp=None)
+
+📦 Packet #27 at 1755654501843ms
+📥 Raw encrypted data (20 bytes): 2efff3f2d087e80a88347cf9c962c4879ac68a3b
+🔓 Decrypted data: 1dc3aa394914fcf72080db26a6159348cf12080a
+🔢 Bit representation: 0001110111000011101010100011100101001001000101001111110011110111001000001000000011011011001001101010011000010101100100110100100011001111000100100000100000001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.2779625843073824, y=-0.13522751548814355, z=-0.6206854457228309, w=-0.7205420087282937), angular_velocity=GanCubeAngularVelocity(x=-0.44315812316645203, y=-0.33070738833759455, z=0.08689374964048027), type='ORIENTATION', local_timestamp=1755654501843.0193, cube_timestamp=None)
+📤 Sending command: 04
+   Raw: 0400000000000000000000000000000000000000
+   Encrypted: a158c0414b0139a616b8de27d09f2031eec9b9f3
+
+📦 Packet #28 at 1755654501963ms
+📥 Raw encrypted data (20 bytes): 29a411ff580ead8663f7c55163a9ecadce4c82a6
+🔓 Decrypted data: 1db26a6159348cf12080dcd0a0a19312cf9f888a
+🔢 Bit representation: 0001110110110010011010100110000101011001001101001000110011110001001000001000000011011100110100001010000010100001100100110001001011001111100111111000100010001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.2975249488814966, y=-0.15063936277352213, z=-0.6177556688131352, w=-0.7121189001129185), angular_velocity=GanCubeAngularVelocity(x=-0.1627458790153525, y=-0.12821633214158043, z=0.024373797793251155), type='ORIENTATION', local_timestamp=1755654501963.2212, cube_timestamp=None)
+
+📦 Packet #29 at 1755654501963ms
+📥 Raw encrypted data (20 bytes): 6db5fcebb7847a44812cd03648b42625352fbdb8
+🔓 Decrypted data: 1dd4b9f5991f1cfd6888ddc69e0b90b5d00b888a
+🔢 Bit representation: 0001110111010100101110011111010110011001000111110001110011111101011010001000100011011101110001101001111000001011100100001011010111010000000010111000100010001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+⚠️ No events decoded
 
 ============================================================
-               GAN SMART CUBE RAW DATA STREAM
+📊 LIVE DATA STREAM (make moves on your cube!)
 ============================================================
-Starting test at 2025-08-19 18:23:30
-Cube Address: ab:12:34:62:bc:15
-
-Connecting to cube...
-✓ Connected!
-
-Discovering services and characteristics...
-
-Service: 00001800-0000-1000-8000-00805f9b34fb
-  Characteristic: 00002a00-0000-1000-8000-00805f9b34fb
-    Properties: ['read']
-    ✗ No notifications
-  Characteristic: 00002a01-0000-1000-8000-00805f9b34fb
-    Properties: ['read']
-    ✗ No notifications
-  Characteristic: 00002a04-0000-1000-8000-00805f9b34fb
-    Properties: ['read']
-    ✗ No notifications
-  Characteristic: 00002ac9-0000-1000-8000-00805f9b34fb
-    Properties: ['read']
-    ✗ No notifications
-
-Service: 00001801-0000-1000-8000-00805f9b34fb
-  Characteristic: 00002a05-0000-1000-8000-00805f9b34fb
-    Properties: ['read', 'indicate']
-    ✗ No notifications
-
-Service: f95a48e6-a721-11e9-a2a3-022ae2dbcce4
-  Characteristic: f95a4b66-a721-11e9-a2a3-022ae2dbcce4
-    Properties: ['read']
-    ✗ No notifications
-  Characteristic: f95a5034-a721-11e9-a2a3-022ae2dbcce4
-    Properties: ['write']
-    ✗ No notifications
-  Characteristic: ec4cff6d-81fc-4e5b-91e0-8103885c9ae3
-    Properties: ['read', 'notify']
-    ✓ Supports notifications
-
-Service: 6e400001-b5a3-f393-e0a9-e50e24dc4179
-  Characteristic: 28be4a4a-cd67-11e9-a32f-2a2ae2dbcce4
-    Properties: ['write-without-response', 'write']
-    ✗ No notifications
-  Characteristic: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4
-    Properties: ['notify']
-    ✓ Supports notifications
-
-Subscribing to all notification characteristics...
-  ✗ Failed to subscribe to ec4cff6d-81fc-4e5b-91e0-8103885c9ae3: [WinError -2140864511] The attribute handle given was not valid on this server
-
-[18:23:43.758] RAW DATA #1
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: db ff b2 6e 9c d6 1f b0 0d 36 a2 c7 a4 8d 2a 39 7c 1e 93 b8
-6*9|'II: 'n
-  Bytes: [219, 255, 178, 110, 156, 214, 31, 176, 13, 54, 162, 199, 164, 141, 42, 57, 124, 30, 147, 184]
-  ✓ Subscribed to 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4
-
-Subscribed to 1 characteristics
-
-Sending test commands...
-Found command characteristic: 28be4a4a-cd67-11e9-a32f-2a2ae2dbcce4
-Sending battery request: 09 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-[18:23:43.819] RAW DATA #2
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: e5 64 7e fd 68 80 b8 46 7b 4a 3c 61 d7 26 fe 39 89 2b 6e 70
-  ASCII: 'd~hF{J<a&9+np'
-  Bytes: [229, 100, 126, 253, 104, 128, 184, 70, 123, 74, 60, 97, 215, 38, 254, 57, 137, 43, 110, 112]
-
-[18:23:43.877] RAW DATA #3
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: d2 f8 05 27 2c f1 e6 32 7b 68 c3 16 3b 28 11 6c 60 b5 5d f2
-  ASCII: '',2{h;(l`]'
-  Bytes: [210, 248, 5, 39, 44, 241, 230, 50, 123, 104, 195, 22, 59, 40, 17, 108, 96, 181, 93, 242]
-
-[18:23:43.938] RAW DATA #4
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: ed 42 2d af 84 a3 a8 dd 2f 54 82 cf 8f 5c 86 93 49 a5 f9 c8
-  ASCII: 'B-/T\I'
-  Bytes: [237, 66, 45, 175, 132, 163, 168, 221, 47, 84, 130, 207, 143, 92, 134, 147, 73, 165, 249, 200]
-
-[18:23:43.998] RAW DATA #5
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 0e b7 f1 50 81 41 7c eb 04 27 8b 1c 59 12 81 ba 41 d0 38 fe
-  ASCII: 'PA|'YA8'
-  Bytes: [14, 183, 241, 80, 129, 65, 124, 235, 4, 39, 139, 28, 89, 18, 129, 186, 65, 208, 56, 254]
-
-[18:23:44.057] RAW DATA #6
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 0c ca 80 7b 34 b4 c8 1d 64 88 65 9e 2b 7b 4e c9 46 72 d2 04
-  ASCII: '
-          {4de+{NFr'
-  Bytes: [12, 202, 128, 123, 52, 180, 200, 29, 100, 136, 101, 158, 43, 123, 78, 201, 70, 114, 210, 4]
-
-[18:23:44.117] RAW DATA #7
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: da 6e 6b 6e 60 c9 f2 c6 bd 58 76 ad 8b 14 61 ad f7 72 f9 69
-  ASCII: 'nkn`Xvari'
-  Bytes: [218, 110, 107, 110, 96, 201, 242, 198, 189, 88, 118, 173, 139, 20, 97, 173, 247, 114, 249, 105]
-
-[18:23:44.238] RAW DATA #8
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: e6 37 ed 3e f3 b3 49 f3 c5 fa 1e d1 7f 20 95 0f 8e ec 44 34
-  ASCII: '7>I D4'
-  Bytes: [230, 55, 237, 62, 243, 179, 73, 243, 197, 250, 30, 209, 127, 32, 149, 15, 142, 236, 68, 52]
-
-[18:23:44.417] RAW DATA #9
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 0b d3 4d db 68 ab d4 11 35 05 e6 1e 4c e9 f1 02 3e fa 57 16
-  ASCII: '
-          Mh5L>W'
-  Bytes: [11, 211, 77, 219, 104, 171, 212, 17, 53, 5, 230, 30, 76, 233, 241, 2, 62, 250, 87, 22]
-Sending hardware request: 05 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-[18:23:44.478] RAW DATA #10
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 79 a0 0d 5d 5f 6b 69 01 48 8f 48 67 ac 69 da 35 6e 28 00 b1
-]_kiHHgi5n('
-  Bytes: [121, 160, 13, 93, 95, 107, 105, 1, 72, 143, 72, 103, 172, 105, 218, 53, 110, 40, 0, 177]
-
-[18:23:44.478] RAW DATA #11
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 22 aa d5 87 59 91 ef 67 7f c6 bc ad 23 31 53 8c 2e 27 80 07
-  ASCII: '"Yg#1S.''
-  Bytes: [34, 170, 213, 135, 89, 145, 239, 103, 127, 198, 188, 173, 35, 49, 83, 140, 46, 39, 128, 7]
-
-[18:23:44.479] RAW DATA #12
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 04 b5 23 73 c2 a0 7d 38 90 fe d2 9b 73 ef a5 76 f2 c2 43 ce
-  ASCII: '#s}8svC'
-  Bytes: [4, 181, 35, 115, 194, 160, 125, 56, 144, 254, 210, 155, 115, 239, 165, 118, 242, 194, 67, 206]
-
-[18:23:44.537] RAW DATA #13
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 53 09 19 bc 26 79 19 01 98 af a3 b8 3e 8f e0 d6 b5 18 0e 34
-  ASCII: 'S     &y>4'
-  Bytes: [83, 9, 25, 188, 38, 121, 25, 1, 152, 175, 163, 184, 62, 143, 224, 214, 181, 24, 14, 52]
-
-[18:23:44.597] RAW DATA #14
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 35 5b 90 30 f0 75 e2 d1 61 94 20 fc 3a a2 93 80 43 04 18 b0
-  ASCII: '5[0ua :C'
-  Bytes: [53, 91, 144, 48, 240, 117, 226, 209, 97, 148, 32, 252, 58, 162, 147, 128, 67, 4, 24, 176]
-
-[18:23:44.718] RAW DATA #15
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: fe 35 b5 dc ab 91 b5 52 7c 39 88 28 8a 79 53 dd ea 08 3b d5
-  ASCII: '5R|9(y;'
-  Bytes: [254, 53, 181, 220, 171, 145, 181, 82, 124, 57, 136, 40, 138, 121, 83, 221, 234, 8, 59, 213]
-
-[18:23:44.777] RAW DATA #16
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 0d 83 1f 26 30 27 2c 6b 16 66 9f 6f 79 3e 24 79 a1 d2 47 13
-&0',kfoy>$yG'
-  Bytes: [13, 131, 31, 38, 48, 39, 44, 107, 22, 102, 159, 111, 121, 62, 36, 121, 161, 210, 71, 19]
-
-[18:23:44.837] RAW DATA #17
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: cd 9e a4 bd e6 db 46 d8 04 ce 97 01 2c b5 88 69 e4 22 2d 34
-  ASCII: 'F,i"-4'
-  Bytes: [205, 158, 164, 189, 230, 219, 70, 216, 4, 206, 151, 1, 44, 181, 136, 105, 228, 34, 45, 52]
-
-[18:23:44.897] RAW DATA #18
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 17 3c 72 8f 95 e0 db 6f 15 bc 00 32 76 25 42 e9 b5 21 93 13
-  ASCII: '<ro2v%B!'
-  Bytes: [23, 60, 114, 143, 149, 224, 219, 111, 21, 188, 0, 50, 118, 37, 66, 233, 181, 33, 147, 19]
-
-[18:23:44.957] RAW DATA #19
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 58 07 94 3d bf fe 12 c1 eb 47 4f 14 df d3 e2 64 62 d2 4f 37
-  ASCII: 'X=GOdbO7'
-  Bytes: [88, 7, 148, 61, 191, 254, 18, 193, 235, 71, 79, 20, 223, 211, 226, 100, 98, 210, 79, 55]
-
-[18:23:45.017] RAW DATA #20
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: db eb 36 cb 79 8d 50 b8 66 c5 b7 8a 16 99 75 8f c0 80 94 b2
-  ASCII: '6yPfu'
-  Bytes: [219, 235, 54, 203, 121, 141, 80, 184, 102, 197, 183, 138, 22, 153, 117, 143, 192, 128, 148, 178]
-Sending facelets request: 04 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-[18:23:45.137] RAW DATA #21
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 8a 26 ec 9f 79 19 3f 1c 60 a5 1e 1f a3 48 fa 84 49 99 a3 17
-  ASCII: '&y?`HI'
-  Bytes: [138, 38, 236, 159, 121, 25, 63, 28, 96, 165, 30, 31, 163, 72, 250, 132, 73, 153, 163, 23]
-
-[18:23:45.198] RAW DATA #22
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: d5 a6 fd e1 b1 2f 07 79 20 a5 61 5e 0c f6 b7 0e eb 81 dc 26
-  ASCII: '/y a^
-               &'
-  Bytes: [213, 166, 253, 225, 177, 47, 7, 121, 32, 165, 97, 94, 12, 246, 183, 14, 235, 129, 220, 38]
-
-[18:23:45.377] RAW DATA #23
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 32 50 e0 b8 92 9c 36 94 22 91 5e 89 37 35 f5 c6 d9 8d 65 0d
-' ASCII: '2P6"^75e
-  Bytes: [50, 80, 224, 184, 146, 156, 54, 148, 34, 145, 94, 137, 55, 53, 245, 198, 217, 141, 101, 13]
-
-[18:23:45.378] RAW DATA #24
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: d2 30 19 8d 4f d5 59 cf fd e9 9a 8d 1c 55 83 2b a0 38 4f e0
-  ASCII: '0OYU+8O'
-  Bytes: [210, 48, 25, 141, 79, 213, 89, 207, 253, 233, 154, 141, 28, 85, 131, 43, 160, 56, 79, 224]
-
-[18:23:45.378] RAW DATA #25
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: e2 4c 33 9d 31 4a 62 7f ab 69 8b f5 60 d1 11 2b 60 d9 82 84
-  ASCII: 'L31Jbi`+`'
-  Bytes: [226, 76, 51, 157, 49, 74, 98, 127, 171, 105, 139, 245, 96, 209, 17, 43, 96, 217, 130, 132]
-
-[18:23:45.437] RAW DATA #26
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 64 72 5a a1 63 62 a5 5c 81 e5 3f dc 14 b7 e0 3e 8e 02 61 b3
-  ASCII: 'drZcb\?>a'
-  Bytes: [100, 114, 90, 161, 99, 98, 165, 92, 129, 229, 63, 220, 20, 183, 224, 62, 142, 2, 97, 179]
-
-[18:23:45.497] RAW DATA #27
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 68 b8 79 42 86 98 c3 4d 88 ab 9f 1c db 35 78 3f 8d 59 7e 48
-  ASCII: 'hyBM5x?Y~H'
-  Bytes: [104, 184, 121, 66, 134, 152, 195, 77, 136, 171, 159, 28, 219, 53, 120, 63, 141, 89, 126, 72]
-
-[18:23:45.618] RAW DATA #28
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 49 36 ae 6a 80 29 39 48 a4 32 f8 ba 17 48 81 c5 62 e3 27 6a
-  ASCII: 'I6j)9H2Hb'j'
-  Bytes: [73, 54, 174, 106, 128, 41, 57, 72, 164, 50, 248, 186, 23, 72, 129, 197, 98, 227, 39, 106]
-
-[18:23:45.677] RAW DATA #29
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: dc ff 67 3d 1e 0f 17 e6 e8 69 c6 8b c2 bd 9e 8c 1d a2 d6 b8
-  ASCII: 'g=i'
-  Bytes: [220, 255, 103, 61, 30, 15, 23, 230, 232, 105, 198, 139, 194, 189, 158, 140, 29, 162, 214, 184]
-
-STREAMING RAW DATA
-Make moves on the cube or try rotating it!
-Press Ctrl+C to stop...
-
-[18:23:45.737] RAW DATA #30
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 3f 97 bb 6d 70 89 0e 8f c7 e4 1e b0 bf c3 c3 77 16 70 f7 5d
-  ASCII: '?mpwp]'
-  Bytes: [63, 151, 187, 109, 112, 137, 14, 143, 199, 228, 30, 176, 191, 195, 195, 119, 22, 112, 247, 93]
-
-[18:23:45.797] RAW DATA #31
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 3d c8 2c 11 4e 2b e5 53 1d 63 d9 5d ac 77 1f 58 99 de 1e a9
-  ASCII: '=,N+Sc]wX'
-  Bytes: [61, 200, 44, 17, 78, 43, 229, 83, 29, 99, 217, 93, 172, 119, 31, 88, 153, 222, 30, 169]
-
-[18:23:45.857] RAW DATA #32
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: a0 a0 28 68 4b 5f 88 7f a2 da 82 14 94 b2 5e f2 4e fc 7c 30
-  ASCII: '(hK_^N|0'
-  Bytes: [160, 160, 40, 104, 75, 95, 136, 127, 162, 218, 130, 20, 148, 178, 94, 242, 78, 252, 124, 48]
-
-[18:23:45.917] RAW DATA #33
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 84 cc ae da ae 38 71 c2 bb 33 ff 53 e3 71 cc 20 3d 5e e7 2d
-  ASCII: '8q3Sq =^-'
-  Bytes: [132, 204, 174, 218, 174, 56, 113, 194, 187, 51, 255, 83, 227, 113, 204, 32, 61, 94, 231, 45]
-
-[18:23:45.977] RAW DATA #34
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 72 86 d0 13 28 b2 f7 c7 8d c5 70 a7 50 57 05 3c 2b 21 e7 c5
-  ASCII: 'r(pPW<+!'
-  Bytes: [114, 134, 208, 19, 40, 178, 247, 199, 141, 197, 112, 167, 80, 87, 5, 60, 43, 33, 231, 197]
-
-[18:23:46.097] RAW DATA #35
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 30 5c d0 78 d0 7d 60 b0 54 2a bb 58 9e 6e 37 99 4e 8f 0d bf
-' ASCII: '0\x}`T*Xn7N
-  Bytes: [48, 92, 208, 120, 208, 125, 96, 176, 84, 42, 187, 88, 158, 110, 55, 153, 78, 143, 13, 191]
-
-[18:23:46.158] RAW DATA #36
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: da 7f 39 5e 4c 4d b8 85 37 51 7f cb 27 1d 09 b0 64 64 a4 04
-  ASCII: '9^LM7Q'       dd'
-  Bytes: [218, 127, 57, 94, 76, 77, 184, 133, 55, 81, 127, 203, 39, 29, 9, 176, 100, 100, 164, 4]
-
-[18:23:46.217] RAW DATA #37
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: c7 aa 18 47 ea d6 3a bf f5 f2 d2 93 7c 19 d5 be 75 82 06 bf
-  ASCII: 'G:|u'
-  Bytes: [199, 170, 24, 71, 234, 214, 58, 191, 245, 242, 210, 147, 124, 25, 213, 190, 117, 130, 6, 191]
-
-[18:23:46.277] RAW DATA #38
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 0a 35 3b 0d c5 f6 58 64 83 0e 89 90 49 21 3e ca ad dc c2 e9
-  ASCII: '
-XdI!>'
-  Bytes: [10, 53, 59, 13, 197, 246, 88, 100, 131, 14, 137, 144, 73, 33, 62, 202, 173, 220, 194, 233]
-
-[18:23:46.337] RAW DATA #39
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 05 86 2f 29 95 6b 99 49 fb 1b ce 9b d1 d9 07 1e fc 67 96 1a
-  ASCII: '/)kI␦'
-  Bytes: [5, 134, 47, 41, 149, 107, 153, 73, 251, 27, 206, 155, 209, 217, 7, 30, 252, 103, 150, 26]
-
-[18:23:46.397] RAW DATA #40
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 23 40 5c 13 67 54 37 57 1d f4 cd 46 eb b6 22 7c e9 aa d1 ff
-  ASCII: '#@\gT7WF"|'
-  Bytes: [35, 64, 92, 19, 103, 84, 55, 87, 29, 244, 205, 70, 235, 182, 34, 124, 233, 170, 209, 255]
-
-[18:23:46.517] RAW DATA #41
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: aa 85 ff 7a 95 5b 2e 50 b4 a8 93 c8 25 06 fe 97 24 52 4a 20
-  ASCII: 'z[.P%$RJ '
-  Bytes: [170, 133, 255, 122, 149, 91, 46, 80, 180, 168, 147, 200, 37, 6, 254, 151, 36, 82, 74, 32]
-
-[18:23:46.577] RAW DATA #42
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 20 70 53 1b d2 33 5d 15 58 13 3b 8c 29 f0 7b 97 e2 d9 59 7d
-  ASCII: ' pS]X;){Y}'
-  Bytes: [32, 112, 83, 27, 210, 51, 93, 21, 88, 19, 59, 140, 41, 240, 123, 151, 226, 217, 89, 125]
-
-[18:23:46.817] RAW DATA #43
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 1f 03 31 42 75 96 29 f2 63 f0 7f f3 6b 02 9d fa 28 4c 81 90
-  ASCII: '1Bu)ck(L'
-  Bytes: [31, 3, 49, 66, 117, 150, 41, 242, 99, 240, 127, 243, 107, 2, 157, 250, 40, 76, 129, 144]
-
-[18:23:46.817] RAW DATA #44
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 6f da 79 94 7c d5 0c 74 ed 4e fd 45 92 1e 43 5b 48 7e 45 17
-  ASCII: 'oy|
-             tNEC[H~E'
-  Bytes: [111, 218, 121, 148, 124, 213, 12, 116, 237, 78, 253, 69, 146, 30, 67, 91, 72, 126, 69, 23]
-
-[18:23:46.817] RAW DATA #45
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 05 30 c1 ec e8 e4 6c 01 6e f8 b1 f7 0b f5 75 00 79 2a c0 a6
-  ASCII: '0ln
-             uy*'
-  Bytes: [5, 48, 193, 236, 232, 228, 108, 1, 110, 248, 177, 247, 11, 245, 117, 0, 121, 42, 192, 166]
-
-[18:23:46.818] RAW DATA #46
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: ff 16 c6 7c 21 a2 6d 6f 12 e1 53 81 91 3f bf 15 b0 cd 2c 0a
-  ASCII: '|!moS?,
-'
-  Bytes: [255, 22, 198, 124, 33, 162, 109, 111, 18, 225, 83, 129, 145, 63, 191, 21, 176, 205, 44, 10]
-
-[18:23:46.937] RAW DATA #47
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 4a ee 82 cc 0f 3b 37 47 a7 f0 5c 46 cb f4 bd 03 40 bd e3 c1
-  ASCII: 'J;7G\F@'
-  Bytes: [74, 238, 130, 204, 15, 59, 55, 71, 167, 240, 92, 70, 203, 244, 189, 3, 64, 189, 227, 193]
-
-[18:23:46.997] RAW DATA #48
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 99 61 75 7d 9c 70 e3 02 13 b9 51 74 06 79 be e8 9f b0 87 b6
-  ASCII: 'au}pQty'
-  Bytes: [153, 97, 117, 125, 156, 112, 227, 2, 19, 185, 81, 116, 6, 121, 190, 232, 159, 176, 135, 182]
-
-[18:23:47.057] RAW DATA #49
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: e4 b0 96 3c 09 a2 0a ea 6c 6f 88 ff ec cb 8f 09 64 80 a7 c2
-  ASCII: '<
-lo      d'
-  Bytes: [228, 176, 150, 60, 9, 162, 10, 234, 108, 111, 136, 255, 236, 203, 143, 9, 100, 128, 167, 194]
-
-[18:23:47.176] RAW DATA #50
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 56 2d a0 4d 21 13 5b 18 93 b8 00 2a fe 54 60 42 67 0b f7 b2
-  ASCII: 'V-M![*T`Bg
-                    '
-  Bytes: [86, 45, 160, 77, 33, 19, 91, 24, 147, 184, 0, 42, 254, 84, 96, 66, 103, 11, 247, 178]
-
-[18:23:47.177] RAW DATA #51
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: e2 5c 36 ae 09 f0 a8 d6 c6 68 53 ae 05 19 21 24 52 b9 8b 53
-  ASCII: '\6    hS!$RS'
-  Bytes: [226, 92, 54, 174, 9, 240, 168, 214, 198, 104, 83, 174, 5, 25, 33, 36, 82, 185, 139, 83]
-
-[18:23:47.237] RAW DATA #52
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 40 cc 64 b4 77 66 cd 57 b7 7a c0 36 a7 1c f1 d8 3d 76 70 da
-  ASCII: '@dwfWz6=vp'
-  Bytes: [64, 204, 100, 180, 119, 102, 205, 87, 183, 122, 192, 54, 167, 28, 241, 216, 61, 118, 112, 218]
-
-[18:23:47.297] RAW DATA #53
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: f0 2a 4d b2 07 1c c8 90 68 72 d1 16 a4 90 60 43 bd 64 97 62
-  ASCII: '*Mhr`Cdb'
-  Bytes: [240, 42, 77, 178, 7, 28, 200, 144, 104, 114, 209, 22, 164, 144, 96, 67, 189, 100, 151, 98]
-
-[18:23:47.357] RAW DATA #54
-  From: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 (Handle: 25): Unknown
-  Length: 20 bytes
-  Hex: 2b 67 24 1a 82 b7 3f 12 f6 4e ac 20 62 1d 66 37 76 b5 d5 6b
-  ASCII: '+g$␦?N bf7vk'
-  Bytes: [43, 103, 36, 26, 130, 183, 63, 18, 246, 78, 172, 32, 98, 29, 102, 55, 118, 181, 213, 107]
-
-Shutting down...
-
-Disconnecting...
-
-============================================================
-                    RAW STREAM COMPLETE
-============================================================
-Total data packets received: 54
+
+📦 Packet #30 at 1755654502024ms
+📥 Raw encrypted data (20 bytes): 0afbc053b2ce589fdf3b2a02be1a94c4e7dbd003
+🔓 Decrypted data: 4357af08c0a162c70a4e15200064000000000000
+🔢 Bit representation: 0100001101010111101011110000100011000000101000010110001011000111000010100100111000010101001000000000000001100100000000000000000000000000000000000000000000000000
+📋 Event type: 0x3
+   Type: UNKNOWN (0x3)
+✅ Decoded 1 events:
+   Event 1: GanCubeFaceletsEvent(serial=53, facelets='LBDUUULDDURLURBBRURBFFFRDBLFLDDDFFLFBLBFLLRRBRUUDBDRFU', state=GanCubeState(CP=[3, 6, 5, 7, 0, 2, 1, 4], CO=[2, 0, 0, 1, 1, 0, 0, 2], EP=[11, 1, 6, 3, 8, 5, 2, 7, 0, 10, 9, 4], EO=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), type='FACELETS')
+
+📦 Packet #31 at 1755654502083ms
+📥 Raw encrypted data (20 bytes): 74de2ed4ed40db7eb8e2ec9788f6bb5d75d4af1d
+🔓 Decrypted data: 1de429cbc8f6bd037888deb99b658e1cd060888a
+🔢 Bit representation: 0001110111100100001010011100101111001000111101101011110100000011011110001000100011011110101110011001101101100101100011100001110011010000011000001000100010001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.22449415570543535, y=-0.12045655690176092, z=-0.6266975920896023, w=-0.7364116336558123), angular_velocity=GanCubeAngularVelocity(x=0.6073185182573652, y=0.2509979166554676, z=-0.07436035346820201), type='ORIENTATION', local_timestamp=1755654502083.4724, cube_timestamp=None)
+
+📦 Packet #32 at 1755654502203ms
+📥 Raw encrypted data (20 bytes): 14ca9da46c4e217acd7b32c73f51766f4eb938ea
+🔓 Decrypted data: 1df249a0e8cced08b888df8298c08b83d0b8880a
+🔢 Bit representation: 0001110111110010010010011010000011101000110011001110110100001000101110001000100011011111100000101001100011000000100010111000001111010000101110001000100000001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.20355845820490126, y=-0.1000396740623188, z=-0.6292611468855861, w=-0.7433088167973876), angular_velocity=GanCubeAngularVelocity(x=0.17459557561272043, y=0.17026886309753628, z=-0.021379050075027294), type='ORIENTATION', local_timestamp=1755654502203.382, cube_timestamp=None)
+
+📦 Packet #33 at 1755654502203ms
+📥 Raw encrypted data (20 bytes): 8981999d491ff3cd60c08890d0dd0cb9e6726fed
+🔓 Decrypted data: 1df8298c08b83d0b8880e28104c911f6cf96888a
+🔢 Bit representation: 0001110111111000001010011000110000001000101110000011110100001011100010001000000011100010100000010000010011001001000100011111011011001111100101101000100010001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+⚠️ No events decoded
+
+📦 Packet #34 at 1755654502803ms
+📥 Raw encrypted data (20 bytes): c1277c1b0739c961149dae9f95d87c7848656feb
+🔓 Decrypted data: 1e26a0651138ccf36888e24b07c91507cedb888a
+🔢 Bit representation: 0001111000100110101000000110010100010001001110001100110011110011011010001000100011100010010010110000011111001001000101010000011111001110110110111000100010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=0.04934842982268746, y=0.15271462141788994, z=-0.618854335154271, w=-0.7688833277382733), angular_velocity=GanCubeAngularVelocity(x=0.4209352974529507, y=0.42068132418309856, z=0.017320977003916584), type='ORIENTATION', local_timestamp=1755654502804.2034, cube_timestamp=None)
+
+📦 Packet #35 at 1755654502863ms
+📥 Raw encrypted data (20 bytes): 0a6aa7dc717237254875749dc1b7f8ff5929cc7d
+🔓 Decrypted data: 1e221093b1660ce88880e1eb0ab9179cce3e880a
+🔢 Bit representation: 0001111000100010000100001001001110110001011001100000110011101000100010001000000011100001111010110000101010111001000101111001110011001110001111101000100000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=0.07211523789178137, y=0.17481002227851192, z=-0.6135441145054475, w=-0.7666554765465254), angular_velocity=GanCubeAngularVelocity(x=0.38444952569243596, y=0.3731118721197369, z=0.0896705328022565), type='ORIENTATION', local_timestamp=1755654502863.4226, cube_timestamp=None)
+
+📦 Packet #36 at 1755654503283ms
+📥 Raw encrypted data (20 bytes): 20c96e8b9df777f072cf10f2f4ae0be2b0709686
+🔓 Decrypted data: 1e1a80c4518cccdfa880e1570de31a03cdb4880a
+🔢 Bit representation: 0001111000011010100000001100010001010001100011001100110011011111101010001000000011100001010101110000110111100011000110100000001111001101101101001000100000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=0.09585863826410718, y=0.19373149815363017, z=-0.609210486159856, w=-0.7629627368999298), angular_velocity=GanCubeAngularVelocity(x=0.05652589267501801, y=0.04504634120631255, z=0.010317065244026398), type='ORIENTATION', local_timestamp=1755654503283.4673, cube_timestamp=None)
+
+📦 Packet #37 at 1755654503403ms
+📥 Raw encrypted data (20 bytes): a10af5a5cf5459bca9c44758a3f9064286da8b24
+🔓 Decrypted data: 1e0f60f961b4ecd69880e08611621cb5cd10880a
+🔢 Bit representation: 0001111000001111011000001111100101100001101101001110110011010110100110001000000011100000100001100001000101100010000111001011010111001101000100001000100000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=0.12176885280922879, y=0.21332438123722036, z=-0.6047853022858364, w=-0.7575304422132023), angular_velocity=GanCubeAngularVelocity(x=0.21686308316625383, y=0.16398833850734387, z=0.03703786461614453), type='ORIENTATION', local_timestamp=1755654503402.9446, cube_timestamp=None)
+
+📦 Packet #38 at 1755654503403ms
+📥 Raw encrypted data (20 bytes): 413cbfca0e05baa8124858cff0b7fe3d91944f4d
+🔓 Decrypted data: 1e009134a1e3acca3880df7c154b1fdbcc22880a
+🔢 Bit representation: 0001111000000000100100010011010010100001111000111010110011001010001110001000000011011111011111000001010101001011000111111101101111001100001000101000100000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+⚠️ No events decoded
+
+📦 Packet #39 at 1755654503403ms
+📥 Raw encrypted data (20 bytes): 2ac3ec13b37ee5e6b24686f312a6451f1c91673a
+🔓 Decrypted data: 1df7c154b1fdbcc22880db93205e288cc8d6000a
+🔢 Bit representation: 0001110111110111110000010101010010110001111111011011110011000010001010001000000011011011100100110010000001011110001010001000110011001000110101100000000000001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+⚠️ No events decoded
+
+📦 Packet #40 at 1755654503403ms
+📥 Raw encrypted data (20 bytes): 00c4b3a8199b979617d43731d913ea5d232304dc
+🔓 Decrypted data: 1db93205e288cc8d6000db93205e288cc8d6000a
+🔢 Bit representation: 0001110110111001001100100000010111100010100010001100110010001101011000000000000011011011100100110010000001011110001010001000110011001000110101100000000000001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+⚠️ No events decoded
+
+📦 Packet #41 at 1755654503463ms
+📥 Raw encrypted data (20 bytes): a49a8b28d02b65527ffad1c42a029e256f9259cf
+🔓 Decrypted data: 1db93205e288cc8d6000e0fe8c320308d290088a
+🔢 Bit representation: 0001110110111001001100100000010111100010100010001100110010001101011000000000000011100000111111101000110000110010000000110000100011010010100100000000100010001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=0.2528763695181127, y=0.31678212836085085, z=-0.5690481276894437, w=-0.7154454176458022), angular_velocity=GanCubeAngularVelocity(x=2.1743314780127485, y=1.7157783311134118, z=0.5926774117208863), type='ORIENTATION', local_timestamp=1755654503463.2424, cube_timestamp=None)
+
+📦 Packet #42 at 1755654503463ms
+📥 Raw encrypted data (20 bytes): 8c3d66c6a6dc1f3365f1c02c9d08b75ba3a75dd5
+🔓 Decrypted data: 1e1108c98034fd269088e11c8cb403b2d253888a
+🔢 Bit representation: 0001111000010001000010001100100110000000001101001111110100100110100100001000100011100001000111001000110010110100000000111011001011010010010100111000100010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+⚠️ No events decoded
+
+📦 Packet #43 at 1755654503464ms
+📥 Raw encrypted data (20 bytes): 69ffd49997498b85e03e1aa12d76abfa4c26011d
+🔓 Decrypted data: 1e1248c9b0426d248888e13e8c57049ad22c888a
+🔢 Bit representation: 0001111000010010010010001100100110110000010000100110110100100100100010001000100011100001001111101000110001010111000001001001101011010010001011001000100010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+⚠️ No events decoded
+
+📦 Packet #44 at 1755654503465ms
+📥 Raw encrypted data (20 bytes): 553e2ac9890a89b6e98c2f5534a9790730a8d8e6
+🔓 Decrypted data: 1e1728bdd04f0d1fc808e1b48b3e0506d1c3808a
+🔢 Bit representation: 0001111000010111001010001011110111010000010011110000110100011111110010000000100011100001101101001000101100111110000001010000011011010001110000111000000010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+⚠️ No events decoded
+
+📦 Packet #45 at 1755654503466ms
+📥 Raw encrypted data (20 bytes): e1dc91c63d9c9991e705054ac32d8cf84d0ea0c6
+🔓 Decrypted data: 1e1ed8a9f04d1d197808e20b8a27047dd187808a
+🔢 Bit representation: 0001111000011110110110001010100111110000010011010001110100011001011110000000100011100010000010111000101000100111000001000111110111010001100001111000000010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+⚠️ No events decoded
+
+📦 Packet #46 at 1755654503523ms
+📥 Raw encrypted data (20 bytes): 87bfb80d5907e306c85be515e6361276b37a2a82
+🔓 Decrypted data: 1e20989c20430d19a800e1f2893603fcd1c8800a
+🔢 Bit representation: 0001111000100000100110001001110000100000010000110000110100011001101010000000000011100001111100101000100100110110000000111111110011010001110010001000000000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.07623523667104101, y=0.03271584215826896, z=-0.6375316629535812, w=-0.7659230323191014), angular_velocity=GanCubeAngularVelocity(x=-5.39121570183957, y=-4.653323048286603, z=-1.1218367984910966), type='ORIENTATION', local_timestamp=1755654503524.2883, cube_timestamp=None)
+
+📦 Packet #47 at 1755654503583ms
+📥 Raw encrypted data (20 bytes): 3ecb23e84341d6ca2dceda21bfb6db1dec4f4e33
+🔓 Decrypted data: 1e1e6889503d9d1ea800e1da87f903a6d20a800a
+🔢 Bit representation: 0001111000011110011010001000100101010000001111011001110100011110101010000000000011100001110110101000011111111001000000111010011011010010000010101000000000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.06704916531876583, y=0.030060731833857234, z=-0.6399731437116611, w=-0.7648548844874417), angular_velocity=GanCubeAngularVelocity(x=0.15582960220212727, y=-0.04504044980593048, z=-0.04141650556867239), type='ORIENTATION', local_timestamp=1755654503583.2378, cube_timestamp=None)
+
+📦 Packet #48 at 1755654503583ms
+📥 Raw encrypted data (20 bytes): cfb205fa81cb1e789eddf566501610038bf7396b
+🔓 Decrypted data: 1e1d08785036bd224800e1ce8740032dd22f800a
+🔢 Bit representation: 0001111000011101000010000111100001010000001101101011110100100010010010000000000011100001110011101000011101000000000000110010110111010010001011111000000000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+⚠️ No events decoded
+
+📦 Packet #49 at 1755654503584ms
+📥 Raw encrypted data (20 bytes): d17fac0bdce1ed089f394679fe16a7768e7d35d0
+🔓 Decrypted data: 1e1d5871a02fad22b808e1e8871002e1d217008a
+🔢 Bit representation: 0001111000011101010110000111000110100000001011111010110100100010101110000000100011100001111010001000011100010000000000101110000111010010000101110000000010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+⚠️ No events decoded
+
+📦 Packet #50 at 1755654503643ms
+📥 Raw encrypted data (20 bytes): 651e087dc753cda4344e7b53785722162f2eee40
+🔓 Decrypted data: 1e202872702d4d1f7088e21c875802b0d1d4088a
+🔢 Bit representation: 0001111000100000001010000111001001110000001011010100110100011111011100001000100011100010000111001000011101011000000000101011000011010001110101000000100010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.055879525204982655, y=0.022095453986022633, z=-0.6403714240175593, w=-0.7657112437973865), angular_velocity=GanCubeAngularVelocity(x=0.18669771897773776, y=-0.13313689795953434, z=-0.006631339745110719), type='ORIENTATION', local_timestamp=1755654503643.066, cube_timestamp=None)
+
+📦 Packet #51 at 1755654503643ms
+📥 Raw encrypted data (20 bytes): bc2da8028057e823b8519dc49e8420d71705a9dc
+🔓 Decrypted data: 1e23387a20281d1b3088e24287f5025dd19a088a
+🔢 Bit representation: 0001111000100011001110000111101000100000001010000001110100011011001100001000100011100010010000101000011111110101000000100101110111010001100110100000100010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+⚠️ No events decoded
+
+📦 Packet #52 at 1755654503703ms
+📥 Raw encrypted data (20 bytes): 1ade3afd040e4c24885380cb18b4377d19f43789
+🔓 Decrypted data: 1e2518849023bd180088e25988c1020cd16c088a
+🔢 Bit representation: 0001111000100101000110001000010010010000001000111011110100011000000000001000100011100010010110011000100011000001000000100000110011010001011011000000100010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.06473176477388998, y=0.017426608998534265, z=-0.6367579161916268, w=-0.76814417142576), angular_velocity=GanCubeAngularVelocity(x=-0.1467109671538072, y=-0.07740268267080166, z=0.06020208652173477), type='ORIENTATION', local_timestamp=1755654503703.391, cube_timestamp=None)
+
+📦 Packet #53 at 1755654503703ms
+📥 Raw encrypted data (20 bytes): fa1d18fd749330a16278b5c04979c52dc3d248f3
+🔓 Decrypted data: 1e253895401ccd164088e24789d901bbd163080a
+🔢 Bit representation: 0001111000100101001110001001010101000000000111001100110100010110010000001000100011100010010001111000100111011001000000011011101111010001011000110000100000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+⚠️ No events decoded
+
+📦 Packet #54 at 1755654503703ms
+📥 Raw encrypted data (20 bytes): de88ed841a88187ddb290b6cd539b176bc925ebb
+🔓 Decrypted data: 1e2378a0601f8d16f880e26789c001f4d13e808a
+🔢 Bit representation: 0001111000100011011110001010000001100000000111111000110100010110111110001000000011100010011001111000100111000000000000011111010011010001001111101000000010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+⚠️ No events decoded
+
+📦 Packet #55 at 1755654503763ms
+📥 Raw encrypted data (20 bytes): 80f0f0bc7e1fb71bbd6d995a8b0d19f53c15cd8c
+🔓 Decrypted data: 1e27789210262d13b880e25588a602b5d16e800a
+🔢 Bit representation: 0001111000100111011110001001001000010000001001100010110100010011101110001000000011100010010101011000100010100110000000101011010111010001011011101000000000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.07132234606495218, y=0.018616444629705107, z=-0.6346376493028157, w=-0.7692864258704534), angular_velocity=GanCubeAngularVelocity(x=-0.1097706027025341, y=0.019819692154624247, z=0.03506560919664373), type='ORIENTATION', local_timestamp=1755654503763.4436, cube_timestamp=None)
+
+📦 Packet #56 at 1755654503763ms
+📥 Raw encrypted data (20 bytes): 7245fbf828445a2d6c35b1d5df814efbe3a5ba12
+🔓 Decrypted data: 2360842108423acc02b002b003b025d402920218
+🔢 Bit representation: 0010001101100000100001000010000100001000010000100011101011001100000000101011000000000010101100000000001110110000001001011101010000000010100100100000001000011000
+📋 Event type: 0x3
+   Type: UNKNOWN (0x3)
+✅ Decoded 1 events:
+   Event 1: GanCubeMoveEvent(serial=54, face=0, direction=1, move="U'", local_timestamp=1755654503763.4436, cube_timestamp=7526, type='MOVE')
+
+📦 Packet #57 at 1755654503763ms
+📥 Raw encrypted data (20 bytes): 036aeac211b8113949dc6bbfd6bdbc0cf2152727
+🔓 Decrypted data: 1e22e88560295d1a7800e2098810026bd1db800a
+🔢 Bit representation: 0001111000100010111010001000010101100000001010010101110100011010011110000000000011100010000010011000100000010000000000100110101111010001110110111000000000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+⚠️ No events decoded
+
+📦 Packet #58 at 1755654503882ms
+📥 Raw encrypted data (20 bytes): e432b62eeda3e21565e79d8bf33e292df518133f
+🔓 Decrypted data: 1e20287b9023cd1ed800e1fd87500239d1fd800a
+🔢 Bit representation: 0001111000100000001010000111101110010000001000111100110100011110110110000000000011100001111111011000011101010000000000100011100111010001111111011000000000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.06033694064075954, y=0.01745712192539932, z=-0.64008429745, w=-0.7657328480913793), angular_velocity=GanCubeAngularVelocity(x=0.09151493952659022, y=-0.009659910283362315, z=-0.04524905343259239), type='ORIENTATION', local_timestamp=1755654503883.4968, cube_timestamp=None)
+
+📦 Packet #59 at 1755654503883ms
+📥 Raw encrypted data (20 bytes): 27e8de3ada028bc49e3513eb5155ddb576fdad20
+🔓 Decrypted data: 1e20486fb023fd1fb808e21586aa024cd1ef808a
+🔢 Bit representation: 0001111000100000010010000110111110110000001000111111110100011111101110000000100011100010000101011000011010101010000000100100110011010001111011111000000010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+⚠️ No events decoded
+
+📦 Packet #60 at 1755654503943ms
+📥 Raw encrypted data (20 bytes): c2a2b1141cf970767f7448fe3732629fb25ea5e9
+🔓 Decrypted data: 1e22d86590264d1d7808e25e86090284d1a1808a
+🔢 Bit representation: 0001111000100010110110000110010110010000001001100100110100011101011110000000100011100010010111101000011000001001000000101000010011010001101000011000000010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.04959371027302959, y=0.01867775426898099, z=-0.6394078916493803, w=-0.767039212487417), angular_velocity=GanCubeAngularVelocity(x=0.18040583026960397, y=0.020500662530636815, z=0.011275364391849927), type='ORIENTATION', local_timestamp=1755654503943.0432, cube_timestamp=None)
+
+📦 Packet #61 at 1755654504123ms
+📥 Raw encrypted data (20 bytes): 0b4c177ca7948c50f9181fc85d03b948501f1da0
+🔓 Decrypted data: 1e2b3858d02c6d141808e2b3858d02c6d141808a
+🔢 Bit representation: 0001111000101011001110000101100011010000001011000110110100010100000110000000100011100010101100111000010110001101000000101100011011010001010000011000000010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.043367812945753044, y=0.021668646862410035, z=-0.6348303146267481, w=-0.7711291553134004), angular_velocity=GanCubeAngularVelocity(x=0.03454093547813574, y=0.016593194494398562, z=0.025397746675099718), type='ORIENTATION', local_timestamp=1755654504123.2866, cube_timestamp=None)
+
+📦 Packet #62 at 1755654504123ms
+📥 Raw encrypted data (20 bytes): 6276443506734b9b413c29ee7bccaf048db38980
+🔓 Decrypted data: 1e21e86490254d1eb008e22586580220d1e3008a
+🔢 Bit representation: 0001111000100001111010000110010010010000001001010100110100011110101100000000100011100010001001011000011001011000000000100010000011010001111000110000000010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+⚠️ No events decoded
+
+📦 Packet #63 at 1755654504183ms
+📥 Raw encrypted data (20 bytes): 1a29690ff9f717a1f97720e7324114c5c7fd1848
+🔓 Decrypted data: 436d7b0883202c770a4e15200064000000000000
+🔢 Bit representation: 0100001101101101011110110000100010000011001000000010110001110111000010100100111000010101001000000000000001100100000000000000000000000000000000000000000000000000
+📋 Event type: 0x3
+   Type: UNKNOWN (0x3)
+✅ Decoded 1 events:
+   Event 1: GanCubeFaceletsEvent(serial=54, facelets='DUDBUDLULBBBURBBRUFLLFFRDBLULFDDFFLFRRDFLLRRBRUUDBDRFU', state=GanCubeState(CP=[6, 5, 7, 3, 0, 2, 1, 4], CO=[0, 0, 1, 2, 1, 0, 0, 2], EP=[1, 6, 3, 11, 8, 5, 2, 7, 0, 10, 9, 4], EO=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), type='FACELETS')
+
+📦 Packet #64 at 1755654504183ms
+📥 Raw encrypted data (20 bytes): cb19baa4a0b944f067714a9e65d1b7086b1cd9a9
+🔓 Decrypted data: 1e226866501fbd1e2008e224866501e6d1e4000a
+🔢 Bit representation: 0001111000100010011010000110011001010000000111111011110100011110001000000000100011100010001001001000011001100101000000011110011011010001111001000000000000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.04995922230600579, y=0.015473015094163062, z=-0.6397344031634046, w=-0.7668145508006727), angular_velocity=GanCubeAngularVelocity(x=-0.10999195046340171, y=-0.10337206455588219, z=-0.08198474085466469), type='ORIENTATION', local_timestamp=1755654504183.2183, cube_timestamp=None)
+
+📦 Packet #65 at 1755654504243ms
+📥 Raw encrypted data (20 bytes): 2847c966ce94e2c72e4a8f7a161da68826c2e750
+🔓 Decrypted data: 1e227865801e3d1e1888e235864901f5d1d2888a
+🔢 Bit representation: 0001111000100010011110000110010110000000000111100011110100011110000110001000100011100010001101011000011001001001000000011111010111010001110100101000100010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.04956381300311309, y=0.014740961625925876, z=-0.6397211110580379, w=-0.7668657200303094), angular_velocity=GanCubeAngularVelocity(x=0.006618187415556172, y=-0.01221819215179593, z=0.0005090913396581493), type='ORIENTATION', local_timestamp=1755654504243.1653, cube_timestamp=None)
+
+📦 Packet #66 at 1755654504303ms
+📥 Raw encrypted data (20 bytes): 8e357acf6e451fd7508bbd59de42be29a6f7dfe9
+🔓 Decrypted data: 1e235864901f5d1d2888e2698393011ad1c1808a
+🔢 Bit representation: 0001111000100011010110000110010010010000000111110101110100011101001010001000100011100010011010011000001110010011000000010001101011010001110000011000000010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.04910500460005045, y=0.01528999832481372, z=-0.6392501096038886, w=-0.7672771414853128), angular_velocity=GanCubeAngularVelocity(x=0.007615775433701199, y=0.00913893052044142, z=0.007615775433700968), type='ORIENTATION', local_timestamp=1755654504303.2744, cube_timestamp=None)
+
+📦 Packet #67 at 1755654504303ms
+📥 Raw encrypted data (20 bytes): 2624781e024d3d25c1fc6e929974bdf8655f7083
+🔓 Decrypted data: 237084210842046a3acc02b002b003b025d40292
+🔢 Bit representation: 0010001101110000100001000010000100001000010000100000010001101010001110101100110000000010101100000000001010110000000000111011000000100101110101000000001010010010
+📋 Event type: 0x3
+   Type: UNKNOWN (0x3)
+✅ Decoded 1 events:
+   Event 1: GanCubeMoveEvent(serial=55, face=0, direction=1, move="U'", local_timestamp=1755654504303.2744, cube_timestamp=8091, type='MOVE')
+
+📦 Packet #68 at 1755654504363ms
+📥 Raw encrypted data (20 bytes): f5bc3ba0f54868e06e79e5529c4ae01f0e30064c
+🔓 Decrypted data: 1e27c833500f5d1af808e28c82cc00fcd1a0808a
+🔢 Bit representation: 0001111000100111110010000011001101010000000011110101110100011010111110000000100011100010100011001000001011001100000000001111110011010001101000001000000010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.025056015503961106, y=0.007477130083398869, z=-0.6381806823426683, w=-0.7694424639291929), angular_velocity=GanCubeAngularVelocity(x=0.4013683025417181, y=-0.13039376326228408, z=0.017827272321016746), type='ORIENTATION', local_timestamp=1755654504363.191, cube_timestamp=None)
+
+📦 Packet #69 at 1755654504423ms
+📥 Raw encrypted data (20 bytes): d5baa99ff9939a9159e6eb39a788ef7bf4dca975
+🔓 Decrypted data: 1e28c829d00d0d1a1000e28282a0008cd1ae000a
+🔢 Bit representation: 0001111000101000110010000010100111010000000011010000110100011010000100000000000011100010100000101000001010100000000000001000110011010001101011100000000000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.020417347517462638, y=0.006347994444891224, z=-0.6377598072831341, w=-0.7699384800755567), angular_velocity=GanCubeAngularVelocity(x=0.07702209190352281, y=-0.01874879868704174, z=0.007094140043745321), type='ORIENTATION', local_timestamp=1755654504423.418, cube_timestamp=None)
+
+📦 Packet #70 at 1755654504483ms
+📥 Raw encrypted data (20 bytes): 00e5c4a8c35a97b391c2a07f26a824107492d963
+🔓 Decrypted data: 1e27b82c80045d1b5008e25483220036d1e1080a
+🔢 Bit representation: 0001111000100111101110000010110010000000000001000101110100011011010100000000100011100010010101001000001100100010000000000011011011010001111000010000100000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.021729676358411304, y=0.0021058253774303088, z=-0.638370281445069, w=-0.7694197621796451), angular_velocity=GanCubeAngularVelocity(x=-0.021828609172156222, y=-0.07056224825417937, z=-0.010152841475421203), type='ORIENTATION', local_timestamp=1755654504483.5361, cube_timestamp=None)
+
+📦 Packet #71 at 1755654504603ms
+📥 Raw encrypted data (20 bytes): 46330d1a45caca3681a9a6876989bd12a0714df0
+🔓 Decrypted data: 1e23c83a30008d1f9008e261838e8006d1cd808a
+🔢 Bit representation: 0001111000100011110010000011101000110000000000001000110100011111100100000000100011100010011000011000001110001110100000000000011011010001110011011000000010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.028412961693279528, y=0.0002441500467736157, z=-0.6404360914430407, w=-0.7674856720328609), angular_velocity=GanCubeAngularVelocity(x=-0.05570103940399552, y=-0.015514901386501032, z=-0.01729529990626388), type='ORIENTATION', local_timestamp=1755654504603.526, cube_timestamp=None)
+
+📦 Packet #72 at 1755654504663ms
+📥 Raw encrypted data (20 bytes): 0bb00da3bec1e140b2b1a304975fc5e9922b6706
+🔓 Decrypted data: 1e234834a8039d205000e2608306805fd1d3888a
+🔢 Bit representation: 0001111000100011010010000011010010101000000000111001110100100000010100000000000011100010011000001000001100000110100000000101111111010001110100111000100010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.02569742827318357, y=-0.0017396121277570824, z=-0.6408181727458853, w=-0.7672605068739132), angular_velocity=GanCubeAngularVelocity(x=0.04535752674857782, y=-0.033126283580422015, z=-0.006115621584077737), type='ORIENTATION', local_timestamp=1755654504663.409, cube_timestamp=None)
+
+📦 Packet #73 at 1755654504723ms
+📥 Raw encrypted data (20 bytes): 79dcfb2cf4d8931b82b5533e66846929f297dd63
+🔓 Decrypted data: 1e2658301802ad1ce880e25f8371002fd1d0080a
+🔢 Bit representation: 0001111000100110010110000011000000011000000000101010110100011100111010001000000011100010010111111000001101110001000000000010111111010001110100000000100000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.023469062531787026, y=-0.0012817953528414241, z=-0.639127578076312, w=-0.7687415033981579), angular_velocity=GanCubeAngularVelocity(x=0.03707006528763047, y=0.007617136702937758, z=0.02792950124410432), type='ORIENTATION', local_timestamp=1755654504723.5073, cube_timestamp=None)
+
+📦 Packet #74 at 1755654504724ms
+📥 Raw encrypted data (20 bytes): 56dacf126b0d2f8b73f231d6b824e842b7d8fee6
+🔓 Decrypted data: 437bde088c20c7630a4e15200064000000000000
+🔢 Bit representation: 0100001101111011110111100000100010001100001000001100011101100011000010100100111000010101001000000000000001100100000000000000000000000000000000000000000000000000
+📋 Event type: 0x3
+   Type: UNKNOWN (0x3)
+✅ Decoded 1 events:
+   Event 1: GanCubeFaceletsEvent(serial=55, facelets='DDLUUUDBLRLDURBBRUULBFFRDBLBRLDDFFLFFBFFLLRRBRUUDBDRFU', state=GanCubeState(CP=[5, 7, 3, 6, 0, 2, 1, 4], CO=[0, 1, 2, 0, 1, 0, 0, 2], EP=[6, 3, 11, 1, 8, 5, 2, 7, 0, 10, 9, 4], EO=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), type='FACELETS')
+
+📦 Packet #75 at 1755654504783ms
+📥 Raw encrypted data (20 bytes): 9280df87091ef961e25c85f980c17b0b27053142
+🔓 Decrypted data: 1e25f8371002fd1d0080e211849601e9d219888a
+🔢 Bit representation: 0001111000100101111110000011011100010000000000101111110100011101000000001000000011100010000100011000010010010110000000011110100111010010000110011000100010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.02688759938182678, y=0.001434412225818228, z=-0.6391985033518504, w=-0.7685702783570305), angular_velocity=GanCubeAngularVelocity(x=-0.05707773856393802, y=0.04535641725170074, z=-0.0010192453314988642), type='ORIENTATION', local_timestamp=1755654504783.3918, cube_timestamp=None)
+
+📦 Packet #76 at 1755654504783ms
+📥 Raw encrypted data (20 bytes): 5b247499ebdbea56e00a98433a153e9bd227d4cf
+🔓 Decrypted data: 23808421084203f2046a3acc02b002b003b025d4
+🔢 Bit representation: 0010001110000000100001000010000100001000010000100000001111110010000001000110101000111010110011000000001010110000000000101011000000000011101100000010010111010100
+📋 Event type: 0x3
+   Type: UNKNOWN (0x3)
+✅ Decoded 1 events:
+   Event 1: GanCubeMoveEvent(serial=56, face=0, direction=1, move="U'", local_timestamp=1755654504783.3918, cube_timestamp=8596, type='MOVE')
+
+📦 Packet #77 at 1755654504843ms
+📥 Raw encrypted data (20 bytes): 8032c0061074cdea823b35ce807d54345a748dff
+🔓 Decrypted data: 1e234843d01dcd1f5808e25b83ec01acd1cb808a
+🔢 Bit representation: 0001111000100011010010000100001111010000000111011100110100011111010110000000100011100010010110111000001111101100000000011010110011010001110010111000000010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.03311336194485134, y=0.01452715233709607, z=-0.6403239142533879, w=-0.7672533818373848), angular_velocity=GanCubeAngularVelocity(x=-0.10359768850950492, y=0.21785984495381167, z=-0.0187897768375077), type='ORIENTATION', local_timestamp=1755654504843.4875, cube_timestamp=None)
+
+📦 Packet #78 at 1755654504903ms
+📥 Raw encrypted data (20 bytes): 64e244dd17aaa41891f477ea41603e7782859d10
+🔓 Decrypted data: 1e26f8399017ad1b8808e27483260164d1b7808a
+🔢 Bit representation: 0001111000100110111110000011100110010000000101111010110100011011100010000000100011100010011101001000001100100110000000010110010011010001101101111000000010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.028108190763446096, y=0.011536260704215661, z=-0.6384618357994487, w=-0.7690535277394985), angular_velocity=GanCubeAngularVelocity(x=0.08366850988663986, y=-0.04999703639567501, z=0.0311206042871048), type='ORIENTATION', local_timestamp=1755654504903.3074, cube_timestamp=None)
+
+📦 Packet #79 at 1755654505023ms
+📥 Raw encrypted data (20 bytes): e58edd13991e4db8df92852c0d8fc38980ef3bca
+🔓 Decrypted data: 1e26c82e30153d1c4800e26c82e30153d1c4800a
+🔢 Bit representation: 0001111000100110110010000010111000110000000101010011110100011100010010000000000011100010011011001000001011100011000000010101001111010001110001001000000000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.022553474760603973, y=0.010345910614133622, z=-0.6388218317847935, w=-0.7689544655861673), angular_velocity=GanCubeAngularVelocity(x=0.046369235198149714, y=-0.009936264685317792, z=-0.003057312210867855), type='ORIENTATION', local_timestamp=1755654505023.093, cube_timestamp=None)
+
+📦 Packet #80 at 1755654505023ms
+📥 Raw encrypted data (20 bytes): bee7c9d303e27a5f3fc40807315e5e8d39516204
+🔓 Decrypted data: 1e23287f30259d1ad088e2428834029cd192088a
+🔢 Bit representation: 0001111000100011001010000111111100110000001001011001110100011010110100001000100011100010010000101000100000110100000000101001110011010001100100100000100010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+⚠️ No events decoded
+
+📦 Packet #81 at 1755654505143ms
+📥 Raw encrypted data (20 bytes): fcc079d82558b899159421b9242c2a1449aa60a6
+🔓 Decrypted data: 1e24f887d02dfd179088e25188dd031bd169088a
+🔢 Bit representation: 0001111000100100111110001000011111010000001011011111110100010111100100001000100011100010010100011000100011011101000000110001101111010001011010010000100010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.0663167210913419, y=0.022431104464857937, z=-0.6365245521408733, w=-0.7680593279824213), angular_velocity=GanCubeAngularVelocity(x=-0.3639978443920124, y=0.10051823317938416, z=0.019037544162762533), type='ORIENTATION', local_timestamp=1755654505143.3232, cube_timestamp=None)
+
+📦 Packet #82 at 1755654505203ms
+📥 Raw encrypted data (20 bytes): ac267e8c5dceb818f052c4b4127af7197ef99bc4
+🔓 Decrypted data: 1e24a896c034dd160088e24a8a0e038ed14a088a
+🔢 Bit representation: 0001111000100100101010001001011011000000001101001101110100010110000000001000100011100010010010101000101000001110000000111000111011010001010010100000100010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.07361222355655037, y=0.02578869357598883, z=-0.6357752243491117, w=-0.7679232044485574), angular_velocity=GanCubeAngularVelocity(x=-0.12132300677142671, y=0.055839040773459955, z=0.012690691084876908), type='ORIENTATION', local_timestamp=1755654505203.443, cube_timestamp=None)
+
+📦 Packet #83 at 1755654505203ms
+📥 Raw encrypted data (20 bytes): 4f8eb347ab409a0e9a88db44789bc2eea181a27d
+🔓 Decrypted data: 438ef508b020762d0a4e15200064000000000000
+🔢 Bit representation: 0100001110001110111101010000100010110000001000000111011000101101000010100100111000010101001000000000000001100100000000000000000000000000000000000000000000000000
+📋 Event type: 0x3
+   Type: UNKNOWN (0x3)
+✅ Decoded 1 events:
+   Event 1: GanCubeFaceletsEvent(serial=56, facelets='LULDUBDUDFLFURBBRUBRDFFRDBLRBBDDFFLFULLFLLRRBRUUDBDRFU', state=GanCubeState(CP=[7, 3, 6, 5, 0, 2, 1, 4], CO=[1, 2, 0, 0, 1, 0, 0, 2], EP=[3, 11, 1, 6, 8, 5, 2, 7, 0, 10, 9, 4], EO=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), type='FACELETS')
+
+📦 Packet #84 at 1755654505263ms
+📥 Raw encrypted data (20 bytes): a618d5fa9f21141a7cbc3c42a0fde69d46f4e2f9
+🔓 Decrypted data: 1e2508aaf03cbd12b088e2588b4403ebd10c088a
+🔢 Bit representation: 0001111000100101000010001010101011110000001111001011110100010010101100001000100011100010010110001000101101000100000000111110101111010001000011000000100010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.08347038412447419, y=0.029634275314392847, z=-0.6341612839935828, w=-0.7681106499615233), angular_velocity=GanCubeAngularVelocity(x=-0.1648238212030244, y=0.0642965989832232, z=0.027045394810404483), type='ORIENTATION', local_timestamp=1755654505263.2493, cube_timestamp=None)
+
+📦 Packet #85 at 1755654505323ms
+📥 Raw encrypted data (20 bytes): 393ce2f986bc17c3bd0831132dd2b0e14f8bb9e7
+🔓 Decrypted data: 239084210842040203f2046a3acc02b002b003b0
+🔢 Bit representation: 0010001110010000100001000010000100001000010000100000010000000010000000111111001000000100011010100011101011001100000000101011000000000010101100000000001110110000
+📋 Event type: 0x3
+   Type: UNKNOWN (0x3)
+✅ Decoded 1 events:
+   Event 1: GanCubeMoveEvent(serial=57, face=0, direction=1, move="U'", local_timestamp=1755654505323.4949, cube_timestamp=9109, type='MOVE')
+
+📦 Packet #86 at 1755654505323ms
+📥 Raw encrypted data (20 bytes): 66e4b24e92b968468d8ccdf0111aa1f8b87febb3
+🔓 Decrypted data: 1e25e8bc803ffd0f0088e2678c340413d0d4088a
+🔢 Bit representation: 0001111000100101111010001011110010000000001111111111110100001111000000001000100011100010011001111000110000110100000001000001001111010000110101000000100010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.09204733876025858, y=0.031221627172329087, z=-0.6323676588569489, w=-0.7685464471687107), angular_velocity=GanCubeAngularVelocity(x=-0.14234567145654334, y=0.026341547742847856, z=0.029887525323614987), type='ORIENTATION', local_timestamp=1755654505323.4949, cube_timestamp=None)
+
+📦 Packet #87 at 1755654505383ms
+📥 Raw encrypted data (20 bytes): 8b6e054c1ef5da8da7676444e91918db9ef3e197
+🔓 Decrypted data: 1e2718c880426d0ba088e2768cc90431d0a9088a
+🔢 Bit representation: 0001111000100111000110001100100010000000010000100110110100001011101000001000100011100010011101101000110011001001000001000011000111010000101010010000100010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.09790717301780331, y=0.03241191326212815, z=-0.6307199618409984, w=-0.7691267665902934), angular_velocity=GanCubeAngularVelocity(x=-0.09772921869595505, y=0.019851247547615882, z=0.027486342758238427), type='ORIENTATION', local_timestamp=1755654505383.452, cube_timestamp=None)
+
+📦 Packet #88 at 1755654505563ms
+📥 Raw encrypted data (20 bytes): 8680ffa8eafc1297c606a9f09320eecab0bb73b9
+🔓 Decrypted data: 1e27b8cfc0440d09b088e27b8cfc0440d09b088a
+🔢 Bit representation: 0001111000100111101110001100111111000000010001000000110100001001101100001000100011100010011110111000110011111100000001000100000011010000100110110000100010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.10144569030129066, y=0.03320484688562101, z=-0.6297628818794021, w=-0.7694185614277493), angular_velocity=GanCubeAngularVelocity(x=-0.019671806302908608, y=0.004409197964445027, z=0.005257120649915087), type='ORIENTATION', local_timestamp=1755654505563.4124, cube_timestamp=None)
+
+📦 Packet #89 at 1755654505563ms
+📥 Raw encrypted data (20 bytes): b30438cc6183efd50a47c4297a6569d445db479f
+🔓 Decrypted data: 1e2bf89de0396d0c1808e2ce896e0374d0be808a
+🔢 Bit representation: 0001111000101011111110001001110111100000001110010110110100001100000110000000100011100010110011101000100101101110000000110111010011010000101111101000000010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+⚠️ No events decoded
+
+📦 Packet #90 at 1755654505623ms
+📥 Raw encrypted data (20 bytes): bcb3e2d0db101d641918a4a7355f1fc1ec91db52
+🔓 Decrypted data: 1e2d88901033ed0c0808e2df889a0324d0c3808a
+🔢 Bit representation: 0001111000101101100010001001000000010000001100111110110100001100000010000000100011100010110111111000100010011010000000110010010011010000110000111000000010001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.07034681427546327, y=0.025330956984223222, z=-0.6308934250335692, w=-0.7722584765407041), angular_velocity=GanCubeAngularVelocity(x=0.5219761641716846, y=-0.1321588325380712, z=-0.018953010867864255), type='ORIENTATION', local_timestamp=1755654505622.9905, cube_timestamp=None)
+
+📦 Packet #91 at 1755654505683ms
+📥 Raw encrypted data (20 bytes): 896988a7ac60f07c6da5d29a9ec346af1e00f8d1
+🔓 Decrypted data: 1e2e98828032cd0c3808e2f1879b033ed0c6800a
+🔢 Bit representation: 0001111000101110100110001000001010000000001100101100110100001100001110000000100011100010111100011000011110011011000000110011111011010000110001101000000000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.06372408810993585, y=0.024781589820530605, z=-0.630984445245653, w=-0.7727766451301176), angular_velocity=GanCubeAngularVelocity(x=0.1094008357144796, y=-0.009074723699818625, z=-0.0015124539499697229), type='ORIENTATION', local_timestamp=1755654505683.525, cube_timestamp=None)
+
+📦 Packet #92 at 1755654505743ms
+📥 Raw encrypted data (20 bytes): 3adff2e62e3055cb2217820fc4d2d1b27001c797
+🔓 Decrypted data: 4397af08c0a162c70a4e15200064000000000000
+🔢 Bit representation: 0100001110010111101011110000100011000000101000010110001011000111000010100100111000010101001000000000000001100100000000000000000000000000000000000000000000000000
+📋 Event type: 0x3
+   Type: UNKNOWN (0x3)
+✅ Decoded 1 events:
+   Event 1: GanCubeFaceletsEvent(serial=57, facelets='LBDUUULDDURLURBBRURBFFFRDBLFLDDDFFLFBLBFLLRRBRUUDBDRFU', state=GanCubeState(CP=[3, 6, 5, 7, 0, 2, 1, 4], CO=[2, 0, 0, 1, 1, 0, 0, 2], EP=[11, 1, 6, 3, 8, 5, 2, 7, 0, 10, 9, 4], EO=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), type='FACELETS')
+
+📦 Packet #93 at 1755654505743ms
+📥 Raw encrypted data (20 bytes): 18c3bf20735dacd72b057376b745fbc125099bd2
+🔓 Decrypted data: 1e2f1879b033ed0c6800e10e016c809ad36d800a
+🔢 Bit representation: 0001111000101111000110000111100110110000001100111110110100001100011010000000000011100001000011100000000101101100100000001001101011010011011011011000000000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.05942116106272913, y=0.025331054793048372, z=-0.6310789771212701, w=-0.7730244419917135), angular_velocity=GanCubeAngularVelocity(x=0.07183102552717087, y=0.009169918152404801, z=-0.0015283196920674186), type='ORIENTATION', local_timestamp=1755654505743.431, cube_timestamp=None)
+
+📦 Packet #94 at 1755654505803ms
+📥 Raw encrypted data (20 bytes): a3314a9da6e9c9250933ad130066da0d55584a8c
+🔓 Decrypted data: 1e0f801a2807cd387800e0dc01c88058d3a6880a
+🔢 Bit representation: 0001111000001111100000000001101000101000000001111100110100111000011110000000000011100000110111000000000111001000100000000101100011010011101001101000100000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=0.012756736960966826, y=-0.003784295175023652, z=-0.652577288125248, w=-0.7575914792321543), angular_velocity=GanCubeAngularVelocity(x=1.202536678168758, y=-0.48508244861437433, z=-0.35847287869301153), type='ORIENTATION', local_timestamp=1755654505803.451, cube_timestamp=None)
+
+📦 Packet #95 at 1755654505923ms
+📥 Raw encrypted data (20 bytes): 838a2be7a8cb4be9103266287290b27547a9664f
+🔓 Decrypted data: 1e0b901e18037d3ce880e09301e78023d3fa880a
+🔢 Bit representation: 0001111000001011100100000001111000011000000000110111110100111100111010001000000011100000100100110000000111100111100000000010001111010011111110101000100000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=0.01467940305795465, y=-0.0016785180211798456, z=-0.6547441022980438, w=-0.7556688131351664), angular_velocity=GanCubeAngularVelocity(x=0.016032165819981327, y=0.017559038755217634, z=-0.01806799640029682), type='ORIENTATION', local_timestamp=1755654505923.3765, cube_timestamp=None)
+
+📦 Packet #96 at 1755654505983ms
+📥 Raw encrypted data (20 bytes): 6590e47cb59428191afb21fc1715d087cfc0f46d
+🔓 Decrypted data: 1e06d01d1801dd426080e0530197800ed445080a
+🔢 Bit representation: 0001111000000110110100000001110100011000000000011101110101000010011000001000000011100000010100110000000110010111100000000000111011010100010001010000100000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=0.014191452115287294, y=-0.0008850583039641537, z=-0.657445723586062, w=-0.7533677321846598), angular_velocity=GanCubeAngularVelocity(x=-0.008129139788563267, y=0.013209852156415309, z=-0.044710268837096695), type='ORIENTATION', local_timestamp=1755654505983.4438, cube_timestamp=None)
+
+📦 Packet #97 at 1755654506043ms
+📥 Raw encrypted data (20 bytes): a058b67731e0681c7ed35d48d81f8c916334e13c
+🔓 Decrypted data: 1e03f0145000dd45d080e02e00e20036d472080a
+🔢 Bit representation: 0001111000000011111100000001010001010000000000001101110101000101110100001000000011100000001011100000000011100010000000000011011011010100011100100000100000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=0.009918791642809626, y=0.00039675166571238505, z=-0.6591265941838754, w=-0.7519664839605734), angular_velocity=GanCubeAngularVelocity(x=-0.07128614229060164, y=0.021385842687180488, z=-0.028005270185594556), type='ORIENTATION', local_timestamp=1755654506043.3796, cube_timestamp=None)
+
+📦 Packet #98 at 1755654506103ms
+📥 Raw encrypted data (20 bytes): 032832d3d90774fdde15bf65dee52860c160a4fd
+🔓 Decrypted data: 1e01d007e0060d486080e00900260074d49c080a
+🔢 Bit representation: 0001111000000001110100000000011111100000000001100000110101001000011000001000000011100000000010010000000000100110000000000111010011010100100111000000100000001010
+📋 Event type: 0xE
+   Type: UNKNOWN (0xE)
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=0.0038454076361380952, y=0.0029298343894385488, z=-0.6603724637361595, w=-0.7509226578347447), angular_velocity=GanCubeAngularVelocity(x=-0.10116003801436822, y=0.04219237766428423, z=-0.020842017882356678), type='ORIENTATION', local_timestamp=1755654506103.415, cube_timestamp=None)
+
+📦 Packet #99 at 1755654506163ms
+📥 Raw encrypted data (20 bytes): cb1cdadf578b4720c2d47902345ebca8354331ed
+🔓 Decrypted data: 1dff28021006ed4b7080dfda80560062d4d2080a
+🔢 Bit representation: 0001110111111111001010000000001000010000000001101110110101001011011100001000000011011111110110101000000001010110000000000110001011010100110100100000100000001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.001007132053034583, y=0.003357106843448613, z=-0.6618688737624551, w=-0.749611438988953), angular_velocity=GanCubeAngularVelocity(x=-0.08103694175049063, y=0.007135328204445716, z=-0.024973648715559297), type='ORIENTATION', local_timestamp=1755654506163.2944, cube_timestamp=None)
+
+📦 Packet #100 at 1755654506223ms
+📥 Raw encrypted data (20 bytes): 106da42341a50bd0e7faa5f112799b3f1d1c740f
+🔓 Decrypted data: 1dfda80560062d4d2080deb0845f82bdd5f7080a
+🔢 Bit representation: 0001110111111101101010000000010101100000000001100010110101001101001000001000000011011110101100001000010001011111100000101011110111010101111101110000100000001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.0026246505445762813, y=0.002990880853121809, z=-0.6626937433131324, w=-0.7488799425908464), angular_velocity=GanCubeAngularVelocity(x=-0.026915523120745563, y=-0.006094080706583901, z=-0.013711681589815235), type='ORIENTATION', local_timestamp=1755654506223.3892, cube_timestamp=None)
+
+📦 Packet #101 at 1755654506283ms
+📥 Raw encrypted data (20 bytes): 6beb0109c3a9f75160d1ad6d983143d0ee377207
+🔓 Decrypted data: 1dea5849f82edd5ff080de9b84d6831dd604000a
+🔢 Bit representation: 0001110111101010010110000100100111111000001011101101110101011111111100001000000011011110100110111000010011010110100000110001110111010110000001000000000000001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.03610339671010468, y=-0.022858363597521896, z=-0.6718649861140781, w=-0.7394329660939358), angular_velocity=GanCubeAngularVelocity(x=-0.5602620735115436, y=-0.43258156450708973, z=-0.1537273328413618), type='ORIENTATION', local_timestamp=1755654506283.1448, cube_timestamp=None)
+
+📦 Packet #102 at 1755654506343ms
+📥 Raw encrypted data (20 bytes): 250e4bcd34fa330ac94e2780fd801239d17a5254
+🔓 Decrypted data: 1de9285018350d60a000de8885248388d611000a
+🔢 Bit representation: 0001110111101001001010000101000000011000001101010000110101100000101000000000000011011110100010001000010100100100100000111000100011010110000100010000000000001010
+📋 Event type: 0xD
+   Type: DISCONNECT
+✅ Decoded 1 events:
+   Event 1: GanCubeOrientationEvent(quaternion=Quaternion(x=-0.039095074494836395, y=-0.025880267893537288, z=-0.6722155431875616, w=-0.7388694406869548), angular_velocity=GanCubeAngularVelocity(x=-0.04987835692164685, y=-0.050387319747377986, z=-0.005598591083041837), type='ORIENTATION', local_timestamp=1755654506343.107, cube_timestamp=None)
+Traceback (most recent call last):
+  File "C:\Users\User\AppData\Local\Programs\Python\Python39\lib\asyncio\runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "C:\Users\User\AppData\Local\Programs\Python\Python39\lib\asyncio\base_events.py", line 629, in run_until_complete
+    self.run_forever()
+  File "C:\Users\User\AppData\Local\Programs\Python\Python39\lib\asyncio\windows_events.py", line 316, in run_forever
+    super().run_forever()
+  File "C:\Users\User\AppData\Local\Programs\Python\Python39\lib\asyncio\base_events.py", line 596, in run_forever
+    self._run_once()
+  File "C:\Users\User\AppData\Local\Programs\Python\Python39\lib\asyncio\base_events.py", line 1854, in _run_once
+    event_list = self._selector.select(timeout)
+  File "C:\Users\User\AppData\Local\Programs\Python\Python39\lib\asyncio\windows_events.py", line 434, in select
+    self._poll(timeout)
+  File "C:\Users\User\AppData\Local\Programs\Python\Python39\lib\asyncio\windows_events.py", line 783, in _poll
+    status = _overlapped.GetQueuedCompletionStatus(self._iocp, ms)
+KeyboardInterrupt

@@ -15,10 +15,11 @@ from .event_emitter import EventEmitter
 
 from . import definitions as defs
 from .protocols import (
-    GanCubeProtocol, GanGen2Protocol, CommandType,
+    GanCubeProtocol, CommandType,
     GanCubeCommand, GanCubeMoveEvent, GanCubeFaceletsEvent,
     GanCubeOrientationEvent, GanCubeBatteryEvent, GanCubeHardwareEvent
 )
+from .protocols.gen2 import GanGen2Protocol
 from .encryption import (
     GanGen2CubeEncrypter, GanGen3CubeEncrypter, GanGen4CubeEncrypter
 )

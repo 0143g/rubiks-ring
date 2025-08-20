@@ -21,41 +21,50 @@ class ProtocolMessageView:
     
     def __init__(self, data: bytes):
         self.data = data
+        # Convert bytes to bit string like in TypeScript implementation
+        self.bits = ''.join(f'{byte:08b}' for byte in data)
     
-    def get_bit_word(self, bit_offset: int, bit_length: int) -> int:
+    def get_bit_word(self, bit_offset: int, bit_length: int, little_endian: bool = False) -> int:
         """
         Extract bits from message.
         
         Args:
             bit_offset: Starting bit position
             bit_length: Number of bits to extract
+            little_endian: Whether to interpret multi-byte values as little endian
         
         Returns:
             Extracted value as integer
         """
-        byte_offset = bit_offset // 8
-        bit_shift = bit_offset % 8
-        mask = (1 << bit_length) - 1
-        
-        result = 0
-        bits_read = 0
-        
-        while bits_read < bit_length and byte_offset < len(self.data):
-            # Get bits from current byte
-            available_bits = 8 - bit_shift
-            bits_to_read = min(available_bits, bit_length - bits_read)
+        if bit_length <= 8:
+            # Simple case: extract from bit string
+            bit_slice = self.bits[bit_offset:bit_offset + bit_length]
+            return int(bit_slice, 2) if bit_slice else 0
+        elif bit_length in (16, 32):
+            # Multi-byte case: extract byte by byte then combine
+            num_bytes = bit_length // 8
+            bytes_data = bytearray()
             
-            byte_val = self.data[byte_offset]
-            byte_val >>= bit_shift
-            byte_val &= (1 << bits_to_read) - 1
+            for i in range(num_bytes):
+                byte_start = bit_offset + (8 * i)
+                byte_end = byte_start + 8
+                byte_bits = self.bits[byte_start:byte_end]
+                if byte_bits:
+                    bytes_data.append(int(byte_bits, 2))
+                else:
+                    bytes_data.append(0)
             
-            result |= byte_val << bits_read
-            
-            bits_read += bits_to_read
-            byte_offset += 1
-            bit_shift = 0
-        
-        return result & mask
+            # Convert to integer with proper endianness
+            if bit_length == 16:
+                import struct
+                return struct.unpack('<H' if little_endian else '>H', bytes_data)[0]
+            else:  # 32-bit
+                import struct
+                return struct.unpack('<I' if little_endian else '>I', bytes_data)[0]
+        else:
+            # Fallback for other sizes
+            bit_slice = self.bits[bit_offset:bit_offset + bit_length]
+            return int(bit_slice, 2) if bit_slice else 0
 
 
 class GanGen2Protocol(GanCubeProtocol):
@@ -129,6 +138,8 @@ class GanGen2Protocol(GanCubeProtocol):
             events.extend(self._handle_gyro_event(msg, timestamp))
         elif event_type == 0x02:  # MOVE
             events.extend(self._handle_move_event(msg, timestamp))
+        elif event_type == 0x03:  # FACELETS (some cubes use 0x03 instead of 0x04)
+            events.extend(self._handle_facelets_event(msg, timestamp))
         elif event_type == 0x04:  # FACELETS
             events.extend(self._handle_facelets_event(msg, timestamp))
         elif event_type == 0x05:  # HARDWARE
@@ -350,3 +361,23 @@ class GanGen2Protocol(GanCubeProtocol):
             type="BATTERY",
             percent=min(battery_level, 100)
         )]
+    
+    def _move_to_string(self, face: int, direction: int) -> str:
+        """Convert face and direction to move notation."""
+        face_chars = "URFDLB"
+        if 0 <= face < len(face_chars):
+            face_char = face_chars[face]
+            return face_char + "'" if direction == 1 else face_char
+        return "?"
+    
+    def _encrypt(self, data: bytes) -> bytes:
+        """Encrypt data using encrypter if available."""
+        if self.encrypter:
+            return self.encrypter.encrypt(data)
+        return data
+    
+    def _decrypt(self, data: bytes) -> bytes:
+        """Decrypt data using encrypter if available."""
+        if self.encrypter:
+            return self.encrypter.decrypt(data)
+        return data
