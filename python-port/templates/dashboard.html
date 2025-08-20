@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GAN Smart Cube Dashboard</title>
+    <title>Elden Cube</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script type="module" src="https://cdn.cubing.net/v0/js/cubing/twisty"></script>
@@ -378,11 +378,6 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>GAN Smart Cube Dashboard</h1>
-            <p>Real-time cube monitoring and control</p>
-        </div>
-
         <div class="grid">
             <!-- Left Panel: Connection & Controls -->
             <div class="panel">
@@ -544,8 +539,11 @@
         });
 
         socket.on('orientation', (data) => {
-            updateOrientation(data.quaternion);
-            updateOrientationDisplay(data.quaternion);
+            // Update both the 3D visualization AND the text display
+            if (data.quaternion) {
+                updateOrientation(data.quaternion);
+                updateOrientationDisplay(data.quaternion);
+            }
         });
 
         socket.on('facelets', (data) => {
@@ -635,8 +633,7 @@
         }
 
         function updateOrientation(quaternion) {
-            if (!twistyPlayer) return;
-            
+            // ACTUALLY CALL THE FUCKING ROTATION FUNCTION
             update3DCubeOrientation(quaternion);
         }
 
@@ -650,28 +647,42 @@
 
         // 3D Cube orientation tracking
         let twistyScene = null;
-        let twistyVantage = null;
         let cubeQuaternion = new THREE.Quaternion();
-        let isInitialized = false;
+        let animationStarted = false;
 
         function initializeTwistyPlayer() {
-            if (!twistyPlayer || isInitialized) return;
+            if (!twistyPlayer) return;
             
             // Keep trying to get the scene
             const tryInit = setInterval(() => {
                 try {
-                    // Access the internal 3D scene
-                    if (twistyPlayer.experimentalModel && 
-                        twistyPlayer.experimentalModel.twistySceneModel &&
-                        twistyPlayer.experimentalModel.twistySceneModel.twistyScene) {
-                        
+                    // Try multiple ways to access the 3D scene
+                    const player = document.querySelector('#twistyPlayer');
+                    if (!player) return;
+                    
+                    // Method 1: Direct scene access
+                    const scene = player.scene || 
+                                 player.twisty3DCanvas?.scene ||
+                                 player.twisty3DPuzzle?.world?.scene;
+                    
+                    if (scene) {
+                        twistyScene = scene;
+                        console.log('Got twisty scene directly');
+                        clearInterval(tryInit);
+                        if (!animationStarted) {
+                            animationStarted = true;
+                            animateCubeOrientation();
+                        }
+                        return;
+                    }
+                    
+                    // Method 2: Via experimental model
+                    if (twistyPlayer.experimentalModel?.twistySceneModel?.twistyScene) {
                         twistyScene = twistyPlayer.experimentalModel.twistySceneModel.twistyScene;
-                        twistyVantage = twistyPlayer.experimentalModel.viewerElems[0];
-                        
-                        if (twistyScene && twistyVantage) {
-                            console.log('Twisty 3D scene initialized');
-                            isInitialized = true;
-                            clearInterval(tryInit);
+                        console.log('Got twisty scene via experimental model');
+                        clearInterval(tryInit);
+                        if (!animationStarted) {
+                            animationStarted = true;
                             animateCubeOrientation();
                         }
                     }
@@ -716,10 +727,20 @@
         }
 
         function animateCubeOrientation() {
-            if (twistyScene && twistyVantage) {
+            if (twistyScene) {
                 // Smoothly interpolate to target orientation
                 twistyScene.quaternion.slerp(cubeQuaternion, 0.25);
-                twistyVantage.render();
+            } else if (twistyPlayer && twistyPlayer.experimentalModel) {
+                // Try to set orientation directly on the player
+                try {
+                    const scene = twistyPlayer.experimentalModel.twistySceneModel?.twistyScene;
+                    if (scene) {
+                        scene.quaternion.slerp(cubeQuaternion, 0.25);
+                        twistyScene = scene; // Cache it for next time
+                    }
+                } catch (e) {
+                    // Ignore
+                }
             }
             
             requestAnimationFrame(animateCubeOrientation);
