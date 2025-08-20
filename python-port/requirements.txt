@@ -6,6 +6,11 @@ pyee                    # Event emitter (optional, fallback included)
 typing-extensions>=4.7.0  # Enhanced typing support for older Python versions
 dataclasses>=0.6       # Backport for Python < 3.7
 
+# Dashboard dependencies
+flask>=2.3.0           # Web framework for dashboard
+flask-socketio>=5.3.0  # WebSocket support for real-time communication
+python-socketio>=5.8.0 # Socket.IO server implementation
+
 # Development dependencies (install with pip install -e .[dev])
 pytest>=7.4.0
 pytest-asyncio>=0.21.0
