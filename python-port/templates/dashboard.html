@@ -401,14 +401,7 @@
                         <div id="quatW" class="quat-value">1.000</div>
                     </div>
                 </div>
-                <div id="cubeViewer" class="cube-viewer">
-                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d;">
-                        <div style="text-align: center;">
-                            <div style="font-size: 48px; margin-bottom: 10px;">🎲</div>
-                            <div>3D visualization coming soon!</div>
-                        </div>
-                    </div>
-                </div>
+                <div id="cubeViewer" class="cube-viewer"></div>
             </div>
 
             <div class="panel">
@@ -462,12 +455,186 @@
         let moveCount = 0;
         let connectionStartTime = null;
         
+        // 3D cube variables
+        let scene, camera, renderer, cubeGroup;
+        let animationId;
+        let currentQuaternion = new THREE.Quaternion();
+        let targetQuaternion = new THREE.Quaternion();
+        
+        // Cube state for face colors
+        const cubeState = {
+            // Standard solved state colors: White=0, Red=1, Green=2, Yellow=3, Orange=4, Blue=5
+            faces: [
+                // U (top) - White
+                [0,0,0, 0,0,0, 0,0,0],
+                // R (right) - Red  
+                [1,1,1, 1,1,1, 1,1,1],
+                // F (front) - Green
+                [2,2,2, 2,2,2, 2,2,2],
+                // D (bottom) - Yellow
+                [3,3,3, 3,3,3, 3,3,3],
+                // L (left) - Orange
+                [4,4,4, 4,4,4, 4,4,4],
+                // B (back) - Blue
+                [5,5,5, 5,5,5, 5,5,5]
+            ]
+        };
+        
+        // Color mapping for cube faces
+        const FACE_COLORS = [
+            0xffffff, // White
+            0xff0000, // Red
+            0x00ff00, // Green
+            0xffff00, // Yellow
+            0xff8000, // Orange
+            0x0000ff  // Blue
+        ];
+        
         // DOM elements
         const connectBtn = document.getElementById('connectBtn');
         const disconnectBtn = document.getElementById('disconnectBtn');
         const requestStateBtn = document.getElementById('requestStateBtn');
         const requestBatteryBtn = document.getElementById('requestBatteryBtn');
         const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+        
+        // Initialize 3D cube visualization
+        function init3DCube() {
+            const container = document.getElementById('cubeViewer');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            
+            // Scene setup
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            
+            renderer.setSize(width, height);
+            renderer.setClearColor(0x000000, 0);
+            container.appendChild(renderer.domElement);
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(1, 1, 1);
+            scene.add(directionalLight);
+            
+            // Create cube group
+            cubeGroup = new THREE.Group();
+            scene.add(cubeGroup);
+            
+            // Create 3x3x3 cube structure
+            createRubiksCube();
+            
+            // Position camera
+            camera.position.set(3, 3, 3);
+            camera.lookAt(0, 0, 0);
+            
+            // Start animation loop
+            animate3DCube();
+            
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize);
+        }
+        
+        function createRubiksCube() {
+            const size = 0.9;  // Size of each small cube
+            const gap = 0.05;  // Gap between cubes
+            const spacing = size + gap;
+            
+            // Create 27 small cubes (3x3x3)
+            for (let x = 0; x < 3; x++) {
+                for (let y = 0; y < 3; y++) {
+                    for (let z = 0; z < 3; z++) {
+                        const geometry = new THREE.BoxGeometry(size, size, size);
+                        
+                        // Create materials for each face
+                        const materials = [
+                            new THREE.MeshLambertMaterial({ color: getFaceColor(x, y, z, 'right') }),  // +X
+                            new THREE.MeshLambertMaterial({ color: getFaceColor(x, y, z, 'left') }),   // -X
+                            new THREE.MeshLambertMaterial({ color: getFaceColor(x, y, z, 'top') }),    // +Y
+                            new THREE.MeshLambertMaterial({ color: getFaceColor(x, y, z, 'bottom') }), // -Y
+                            new THREE.MeshLambertMaterial({ color: getFaceColor(x, y, z, 'front') }),  // +Z
+                            new THREE.MeshLambertMaterial({ color: getFaceColor(x, y, z, 'back') })    // -Z
+                        ];
+                        
+                        const cube = new THREE.Mesh(geometry, materials);
+                        
+                        // Position the cube
+                        cube.position.set(
+                            (x - 1) * spacing,
+                            (y - 1) * spacing,
+                            (z - 1) * spacing
+                        );
+                        
+                        // Store position info for later updates
+                        cube.userData = { x, y, z };
+                        
+                        cubeGroup.add(cube);
+                    }
+                }
+            }
+        }
+        
+        function getFaceColor(x, y, z, face) {
+            // Only show colors on the outer faces, inner faces are black
+            const isOuter = {
+                right: x === 2,
+                left: x === 0,
+                top: y === 2,
+                bottom: y === 0,
+                front: z === 2,
+                back: z === 0
+            };
+            
+            if (!isOuter[face]) {
+                return 0x000000; // Black for inner faces
+            }
+            
+            // Map face to color index
+            const faceMap = {
+                top: 0,    // White (U)
+                right: 1,  // Red (R)
+                front: 2,  // Green (F)
+                bottom: 3, // Yellow (D)
+                left: 4,   // Orange (L)
+                back: 5    // Blue (B)
+            };
+            
+            return FACE_COLORS[faceMap[face]];
+        }
+        
+        function animate3DCube() {
+            animationId = requestAnimationFrame(animate3DCube);
+            
+            // Smooth quaternion interpolation
+            currentQuaternion.slerp(targetQuaternion, 0.1);
+            cubeGroup.setRotationFromQuaternion(currentQuaternion);
+            
+            renderer.render(scene, camera);
+        }
+        
+        function onWindowResize() {
+            const container = document.getElementById('cubeViewer');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        }
+        
+        function update3DCubeOrientation(quaternion) {
+            // Apply axis mapping to match the cube's physical orientation
+            // This maps the cube's coordinate system to the 3D visualization
+            targetQuaternion.set(
+                -quaternion.x,
+                quaternion.z,
+                quaternion.y,
+                quaternion.w
+            );
+        }
         
         // Socket event handlers
         socket.on('connect', () => {
@@ -576,6 +743,56 @@
             updateMoveCount();
             document.getElementById('lastMove').textContent = data.move;
             document.getElementById('sessionMoves').textContent = moveCount;
+            
+            // Animate the move on the 3D cube
+            if (cubeGroup) {
+                animateCubeMove(data.move);
+            }
+        }
+        
+        function animateCubeMove(move) {
+            // Parse move notation (R, U', F2, etc.)
+            const face = move.charAt(0);
+            const modifier = move.slice(1);
+            
+            // Determine rotation angle
+            let angle = Math.PI / 2; // 90 degrees
+            if (modifier === "'") {
+                angle = -Math.PI / 2; // Counter-clockwise
+            } else if (modifier === "2") {
+                angle = Math.PI; // 180 degrees
+            }
+            
+            // Create a temporary visual indicator for the move
+            showMoveIndicator(face, angle);
+        }
+        
+        function showMoveIndicator(face, angle) {
+            // Create a simple visual feedback for moves
+            // This could be enhanced with actual cube rotation animations
+            const moveIndicator = document.createElement('div');
+            moveIndicator.style.position = 'absolute';
+            moveIndicator.style.top = '10px';
+            moveIndicator.style.right = '10px';
+            moveIndicator.style.background = 'rgba(0, 255, 0, 0.8)';
+            moveIndicator.style.color = 'white';
+            moveIndicator.style.padding = '5px 10px';
+            moveIndicator.style.borderRadius = '3px';
+            moveIndicator.style.fontSize = '14px';
+            moveIndicator.style.fontWeight = 'bold';
+            moveIndicator.style.zIndex = '1000';
+            moveIndicator.textContent = `${face}${angle === -Math.PI/2 ? "'" : angle === Math.PI ? "2" : ""}`;
+            
+            const cubeViewer = document.getElementById('cubeViewer');
+            cubeViewer.style.position = 'relative';
+            cubeViewer.appendChild(moveIndicator);
+            
+            // Remove indicator after animation
+            setTimeout(() => {
+                if (moveIndicator.parentNode) {
+                    moveIndicator.parentNode.removeChild(moveIndicator);
+                }
+            }, 1000);
         }
         
         function updateMoveHistory(moves) {
@@ -612,6 +829,11 @@
             for (let i = 0; i < quatElements.length; i++) {
                 document.getElementById(quatElements[i]).textContent = 
                     data.quaternion[quatValues[i]].toFixed(3);
+            }
+            
+            // Update 3D cube orientation
+            if (cubeGroup) {
+                update3DCubeOrientation(data.quaternion);
             }
         }
         
@@ -666,6 +888,11 @@
         
         // Update connection time every second
         setInterval(updateConnectionTime, 1000);
+        
+        // Initialize 3D cube when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            init3DCube();
+        });
     </script>
 </body>
 </html>

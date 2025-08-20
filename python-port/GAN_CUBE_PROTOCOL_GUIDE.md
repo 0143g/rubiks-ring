@@ -54,7 +54,12 @@ Cube → BLE → Raw Encrypted Data → Decrypt → Parse Bits → Events → Yo
 ### 1. Install Dependencies
 
 ```bash
-pip install bleak cryptography numpy
+pip install bleak cryptography numpy flask flask-socketio python-socketio
+```
+
+Or install all requirements:
+```bash
+pip install -r requirements.txt
 ```
 
 ### 2. Basic Usage
@@ -78,13 +83,19 @@ async def main():
 asyncio.run(main())
 ```
 
-### 3. Move Tracking Only
+### 3. Web Dashboard
+
+```bash
+python run_dashboard.py  # Launch web dashboard at http://localhost:5000
+```
+
+### 4. Move Tracking Only
 
 ```bash
 python track_moves.py  # Clean move detection without noise
 ```
 
-### 4. Full Debug Stream
+### 5. Full Debug Stream
 
 ```bash
 python debug_cube_stream.py  # See all raw data
@@ -419,13 +430,63 @@ def process_orientation(raw_quaternion):
     return normalized
 ```
 
+## Web Dashboard
+
+### Real-Time Cube Monitoring
+
+The included web dashboard provides a modern interface for monitoring cube activity:
+
+```bash
+python run_dashboard.py
+# Open http://localhost:5000 in your browser
+```
+
+#### Dashboard Features
+
+- **🎯 Move History** - Real-time move detection with clean notation (R, U', F, etc.)
+- **📋 Cube State** - Live facelets display in Kociemba format
+- **🌐 Orientation** - Real-time quaternion values updated at 60 FPS  
+- **🔋 Battery Monitor** - Visual battery level indicator
+- **📊 Statistics** - Session tracking and connection info
+- **🔌 Connection Controls** - Connect/disconnect and information requests
+
+#### Dashboard Architecture
+
+```
+Browser ←→ WebSocket ←→ Flask Server ←→ Cube Library ←→ GAN Cube
+```
+
+**Key Benefits:**
+- Real-time updates via WebSocket
+- Responsive design (desktop + mobile)
+- Optimized for minimal latency
+- Multiple client support
+- Clean, modern UI
+
+#### Performance Optimizations
+
+The dashboard is optimized for responsiveness:
+- **Move events**: Zero latency - immediate updates
+- **Orientation data**: 60 FPS with browser animation frames
+- **Terminal output**: Rate-limited debug (moves immediate, orientation 1/sec)
+- **Error handling**: Minimal spam with periodic error reporting
+
+## Available Tools
+
+### Dashboard and Monitoring
+
+1. **`run_dashboard.py`** - Web dashboard launcher (http://localhost:5000)
+2. **`cube_dashboard.py`** - Main dashboard server with real-time monitoring
+3. **`track_moves.py`** - Terminal-based clean move tracking
+4. **`debug_cube_stream.py`** - Full packet analysis and debugging
+
+### Examples and Testing
+
+5. **`examples/cube_example.py`** - Complete cube usage example
+6. **`examples/timer_example.py`** - Timer usage example  
+7. **`test_gen2_implementation.py`** - Unit tests for protocol implementation
+
 ## Debugging
-
-### Debug Tools
-
-1. **`track_moves.py`** - Clean move tracking only
-2. **`debug_cube_stream.py`** - Full packet analysis
-3. **`test_gen2_implementation.py`** - Unit tests
 
 ### Common Issues
 
@@ -451,6 +512,13 @@ elif event_type in [0x03, 0x04]:  # Handle both
     events.extend(self._handle_facelets_event(msg, timestamp))
 ```
 
+### Debug Tools
+
+1. **Web Dashboard** - `python run_dashboard.py` - Real-time monitoring with web interface
+2. **Move Tracker** - `python track_moves.py` - Terminal-based clean move detection  
+3. **Raw Debug Stream** - `python debug_cube_stream.py` - Full packet analysis with encryption details
+4. **Unit Tests** - `python test_gen2_implementation.py` - Protocol validation tests
+
 ### Logging Strategy
 
 ```python
@@ -467,10 +535,23 @@ def log_event(event_type, data):
 
 ## Performance Considerations
 
-- **Rate Limiting**: Gyro events can fire at 60+ FPS - implement rate limiting
-- **Buffer Management**: Maintain limited-size buffers for smoothing
+### Dashboard Optimizations
+
+The included dashboard implements several performance optimizations:
+
+- **Move Events**: Zero latency - highest priority with immediate emission
+- **Orientation Data**: 60 FPS to dashboard, rate-limited debug output (1/sec) 
+- **WebSocket Efficiency**: Uses requestAnimationFrame for smooth browser updates
+- **Event Prioritization**: Moves > State > Orientation > Battery in priority order
+- **Error Handling**: Minimal terminal spam with periodic error reporting
+
+### General Guidelines
+
+- **Rate Limiting**: Gyro events fire at 60+ FPS - implement app-specific rate limiting
+- **Buffer Management**: Maintain limited-size buffers for smoothing (default: 5 samples)
 - **Event Filtering**: Filter unnecessary events based on your application needs
-- **Async Handling**: Use async/await properly to avoid blocking
+- **Async Handling**: Use async/await properly to avoid blocking the event loop
+- **Memory Management**: Clear old move history periodically for long-running sessions
 
 ## Coordinate Systems
 
