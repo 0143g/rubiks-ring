@@ -23,14 +23,14 @@ if PLATFORM == "Windows":
         import win32con
         WINDOWS_AVAILABLE = True
     except ImportError:
-        print("⚠️ Windows libraries not available - install: pip install pywin32")
+        print("Windows libraries not available - install: pip install pywin32")
         WINDOWS_AVAILABLE = False
     
     try:
         import vgamepad as vg
         GAMEPAD_AVAILABLE = True
     except ImportError:
-        print("⚠️ Virtual gamepad not available - install: pip install vgamepad")
+        print("Virtual gamepad not available - install: pip install vgamepad")
         GAMEPAD_AVAILABLE = False
 
 elif PLATFORM == "Linux":
@@ -39,7 +39,7 @@ elif PLATFORM == "Linux":
         import subprocess
         LINUX_AVAILABLE = True
     except ImportError:
-        print("⚠️ Linux input libraries not available - install: pip install pyautogui")
+        print("Linux input libraries not available - install: pip install pyautogui")
         LINUX_AVAILABLE = False
     GAMEPAD_AVAILABLE = False  # TODO: Add Linux gamepad support
 
@@ -48,12 +48,12 @@ elif PLATFORM == "Darwin":  # macOS
         import pyautogui
         MACOS_AVAILABLE = True
     except ImportError:
-        print("⚠️ macOS input libraries not available - install: pip install pyautogui")
+        print("macOS input libraries not available - install: pip install pyautogui")
         MACOS_AVAILABLE = False
     GAMEPAD_AVAILABLE = False  # TODO: Add macOS gamepad support
 
 else:
-    print(f"⚠️ Unsupported platform: {PLATFORM}")
+    print(f"Unsupported platform: {PLATFORM}")
     sys.exit(1)
 
 @dataclass
@@ -62,7 +62,7 @@ class ControllerConfig:
     mouse_sensitivity: float = 2.0
     movement_sensitivity: float = 1.0
     deadzone: float = 0.1
-    rate_limit_ms: int = 1  # Maximum responsiveness - ~1000 FPS
+    rate_limit_ms: int = 16  # 60 FPS
     
     # Move mappings
     move_mappings: Dict[str, str] = None
@@ -73,7 +73,7 @@ class ControllerConfig:
                 "R": "gamepad_r1",      # Right shoulder button
                 "R'": "gamepad_r2",     # Right trigger  
                 "L": "gamepad_b",       # B button
-                "L'": "gamepad_b",      # B button (same as L)
+                "L'": "gamepad_a",      # A button
                 "U": "gamepad_y",       # Y button
                 "U'": "gamepad_y",      # Y button
                 "D": "gamepad_x",       # X button
@@ -100,11 +100,11 @@ class CrossPlatformController:
         if PLATFORM == "Windows" and WINDOWS_AVAILABLE and GAMEPAD_AVAILABLE:
             try:
                 self.gamepad = vg.VX360Gamepad()
-                print("✅ Virtual Xbox controller created (Windows)")
+                print("Virtual Xbox controller created (Windows)")
             except Exception as e:
-                print(f"⚠️ Could not create virtual gamepad: {e}")
+                print(f"Could not create virtual gamepad: {e}")
                 
-        print(f"✅ Controller bridge initialized for {PLATFORM}")
+        print(f"Controller bridge initialized for {PLATFORM}")
         
     async def handle_message(self, data: Dict[str, Any]):
         """Process incoming WebSocket message from cube dashboard"""
@@ -126,12 +126,12 @@ class CrossPlatformController:
     async def handle_cube_move(self, data: Dict[str, Any]):
         """Handle cube face moves and convert to game input"""
         move = data.get('move', '')
-        print(f"🎮 Cube move: {move}")
+        print(f"Cube move: {move}")
         
         # Get mapped action for this move
         action = self.config.move_mappings.get(move)
         if not action:
-            print(f"⚠️ No mapping for move: {move}")
+            print(f"No mapping for move: {move}")
             return
             
         await self.execute_action(action, move)
@@ -161,7 +161,7 @@ class CrossPlatformController:
         if key not in self.active_keys:
             await self.key_down(key)
             self.active_keys.add(key)
-            print(f"⌨️ Key DOWN: {key.upper()}")
+            print(f"Key DOWN: {key.upper()}")
     
     async def handle_key_release(self, data: Dict[str, Any]):
         """Handle key release"""
@@ -169,13 +169,13 @@ class CrossPlatformController:
         if key in self.active_keys:
             await self.key_up(key)
             self.active_keys.remove(key)
-            print(f"⌨️ Key UP: {key.upper()}")
+            print(f"Key UP: {key.upper()}")
     
     async def handle_mouse_click(self, data: Dict[str, Any]):
         """Handle mouse clicks"""
         button = data.get('button', 'left')
         await self.mouse_click(button)
-        print(f"🖱️ Mouse {button.upper()} click")
+        print(f"Mouse {button.upper()} click")
     
     async def handle_mouse_move(self, data: Dict[str, Any]):
         """Handle mouse movement with rate limiting"""
@@ -187,7 +187,7 @@ class CrossPlatformController:
         
         if delta_x != 0 or delta_y != 0:
             await self.mouse_move_relative(delta_x, delta_y)
-            print(f"🖱️ Mouse → ({delta_x:+d}, {delta_y:+d})")
+            print(f"Mouse → ({delta_x:+d}, {delta_y:+d})")
     
     async def execute_action(self, action: str, move: str):
         """Execute a mapped gaming action"""
@@ -200,7 +200,7 @@ class CrossPlatformController:
             button = action[6:]  # Remove 'mouse_' prefix
             await self.mouse_click(button)
         else:
-            print(f"⚠️ Unknown action: {action}")
+            print(f"Unknown action: {action}")
     
     async def _execute_gamepad_action(self, action: str, move: str):
         """Execute gamepad-specific actions"""
@@ -210,36 +210,39 @@ class CrossPlatformController:
         try:
             if action == "gamepad_r1":
                 await self._gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER)
-                print(f"  ✅ Gamepad R1 (Right Bumper) → {move}")
+                print(f"  Gamepad R1 (Right Bumper) → {move}")
             elif action == "gamepad_r2":
                 await self._gamepad_trigger_press('right')
-                print(f"  ✅ Gamepad R2 (Right Trigger) → {move}")
+                print(f"  Gamepad R2 (Right Trigger) → {move}")
             elif action == "gamepad_b":
                 await self._gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
-                print(f"  ✅ Gamepad B Button → {move}")
+                print(f"  Gamepad B Button → {move}")
+            elif action == "gamepad_a":
+                await self._gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_A)
+                print(f"  Gamepad A Button → {move}")
             elif action == "gamepad_x":
                 await self._gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_X)
-                print(f"  ✅ Gamepad X Button → {move}")
+                print(f"  Gamepad X Button → {move}")
             elif action == "gamepad_y":
                 await self._gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_Y)
-                print(f"  ✅ Gamepad Y Button → {move}")
+                print(f"  Gamepad Y Button → {move}")
             elif action == "gamepad_r3":
                 await self._gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_THUMB)
-                print(f"  ✅ Gamepad R3 (Right Stick Press) → {move}")
+                print(f"  Gamepad R3 (Right Stick Press) → {move}")
             elif action == "gamepad_dpad_right":
                 await self._gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT)
-                print(f"  ✅ Gamepad D-Pad Right → {move}")
+                print(f"  Gamepad D-Pad Right → {move}")
             elif action == "gamepad_dpad_left":
                 await self._gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT)
-                print(f"  ✅ Gamepad D-Pad Left → {move}")
+                print(f"  Gamepad D-Pad Left → {move}")
             elif action == "gamepad_b_hold":
                 await self._gamepad_button_hold(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
-                print(f"  🏃 AUTO B BUTTON: PRESSED (sprint mode)")
+                print(f"  AUTO B BUTTON: PRESSED (sprint mode)")
             elif action == "gamepad_b_release":
                 await self._gamepad_button_release(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
-                print(f"  🚶 AUTO B BUTTON: RELEASED (normal mode)")
+                print(f"  AUTO B BUTTON: RELEASED (normal mode)")
         except Exception as e:
-            print(f"⚠️ Gamepad action failed: {e}")
+            print(f"Gamepad action failed: {e}")
     
     async def set_analog_movement(self, tilt_x: float, tilt_y: float, spin_z: float):
         """Set analog stick positions based on cube orientation"""
@@ -254,7 +257,7 @@ class CrossPlatformController:
             self.gamepad.update()
             
             if abs(left_stick_x) > 1000 or abs(left_stick_y) > 1000 or abs(right_stick_x) > 1000:
-                print(f"🎮 Left: ({left_stick_x}, {left_stick_y}) | Right: ({right_stick_x}, 0)")
+                print(f"Left: ({left_stick_x}, {left_stick_y}) | Right: ({right_stick_x}, 0)")
         else:
             # Fallback to WASD keys for movement
             await self._set_wasd_movement(tilt_x, tilt_y)
@@ -376,28 +379,28 @@ class CrossPlatformController:
         try:
             pyautogui.keyDown(key)
         except Exception as e:
-            print(f"⚠️ Key down failed: {e}")
+            print(f"Key down failed: {e}")
     
     async def _generic_key_up(self, key: str):
         """Generic key up using pyautogui"""
         try:
             pyautogui.keyUp(key)
         except Exception as e:
-            print(f"⚠️ Key up failed: {e}")
+            print(f"Key up failed: {e}")
     
     async def _generic_mouse_click(self, button: str):
         """Generic mouse click using pyautogui"""
         try:
             pyautogui.click(button=button)
         except Exception as e:
-            print(f"⚠️ Mouse click failed: {e}")
+            print(f"Mouse click failed: {e}")
     
     async def _generic_mouse_move(self, dx: int, dy: int):
         """Generic mouse move using pyautogui"""
         try:
             pyautogui.moveRel(dx, dy)
         except Exception as e:
-            print(f"⚠️ Mouse move failed: {e}")
+            print(f"Mouse move failed: {e}")
     
     # Gamepad helper methods
     async def _gamepad_button_press(self, button):
@@ -489,13 +492,13 @@ class CrossPlatformController:
                 if attr_name.startswith('_auto_button_') and attr_name.endswith('_held'):
                     if getattr(self, attr_name, False):
                         setattr(self, attr_name, False)
-                        print("🔄 Auto button released")
+                        print("Auto button released")
             
             self.gamepad.reset()
             self.gamepad.update()
-            print("🔄 All inputs and gamepad reset")
+            print("All inputs and gamepad reset")
         else:
-            print("🔄 All inputs released")
+            print("All inputs released")
 
 class ControllerBridgeServer:
     """WebSocket server that bridges cube events to gaming input"""
@@ -509,8 +512,8 @@ class ControllerBridgeServer:
         """Handle incoming WebSocket connections"""
         client_addr = websocket.remote_address
         self.controller.connected_clients.add(websocket)
-        print(f"🔗 Client connected from {client_addr}")
-        print("✅ Ready to receive cube commands!")
+        print(f"Client connected from {client_addr}")
+        print("Ready to receive cube commands!")
         
         try:
             async for message in websocket:
@@ -518,14 +521,14 @@ class ControllerBridgeServer:
                     data = json.loads(message)
                     await self.controller.handle_message(data)
                 except json.JSONDecodeError as e:
-                    print(f"⚠️ Invalid JSON: {e}")
+                    print(f"Invalid JSON: {e}")
                 except Exception as e:
-                    print(f"⚠️ Error processing message: {e}")
+                    print(f"Error processing message: {e}")
         
         except websockets.exceptions.ConnectionClosed:
-            print(f"🔌 Client disconnected: {client_addr}")
+            print(f"Client disconnected: {client_addr}")
         except Exception as e:
-            print(f"❌ Connection error: {e}")
+            print(f"Connection error: {e}")
         finally:
             self.controller.connected_clients.discard(websocket)
             if not self.controller.connected_clients:
@@ -533,17 +536,17 @@ class ControllerBridgeServer:
     
     async def start_server(self):
         """Start the WebSocket server"""
-        print(f"🖥️ GAN Cube → Gaming Controller Bridge ({PLATFORM})")
-        print(f"🚀 Starting WebSocket server on {self.host}:{self.port}")
-        print("📋 Waiting for cube dashboard to connect...")
+        print(f"GAN Cube → Gaming Controller Bridge ({PLATFORM})")
+        print(f"Starting WebSocket server on {self.host}:{self.port}")
+        print("Waiting for cube dashboard to connect...")
         print()
         
         try:
             async with websockets.serve(self.handle_client, self.host, self.port):
-                print(f"✅ Server started successfully on {self.host}:{self.port}")
+                print(f"Server started successfully on {self.host}:{self.port}")
                 await asyncio.Future()  # Run forever
         except KeyboardInterrupt:
-            print("\n👋 Server stopped by user")
+            print("\nServer stopped by user")
         finally:
             await self.controller.release_all_inputs()
 
@@ -556,7 +559,7 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("\n🛑 Shutting down...")
+        print("\nShutting down...")
     except Exception as e:
-        print(f"❌ Server error: {e}")
+        print(f"Server error: {e}")
         input("Press Enter to exit...")

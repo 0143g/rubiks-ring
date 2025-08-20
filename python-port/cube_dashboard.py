@@ -66,7 +66,7 @@ class CubeDashboardServer:
         
         # Dashboard gets all data with minimal rate limiting
         self.last_orientation_emit = 0
-        self.orientation_rate_limit = 1  # Maximum responsiveness for controller bridge
+        self.orientation_rate_limit = 16 # 60 FPS
         
         self.setup_routes()
         self.setup_socketio_events()
@@ -83,13 +83,13 @@ class CubeDashboardServer:
         
         @self.socketio.on('connect')
         def handle_connect():
-            print(f"🌐 Client connected: {request.sid}")
+            print(f"Client connected: {request.sid}")
             # Send current state to new client
             self.emit_status_update()
         
         @self.socketio.on('disconnect')
         def handle_disconnect():
-            print(f"🌐 Client disconnected: {request.sid}")
+            print(f"Client disconnected: {request.sid}")
         
         @self.socketio.on('connect_cube')
         def handle_connect_cube(data=None):
@@ -123,7 +123,7 @@ class CubeDashboardServer:
             """Enable/disable controller bridge forwarding."""
             enable = data.get('enable', False) if data else False
             self.enable_controller = enable
-            print(f"🎮 Controller {'enabled' if enable else 'disabled'}")
+            print(f"Controller {'enabled' if enable else 'disabled'}")
             
             # Try to connect to bridge if enabling
             if enable and not self.bridge_connected and self.cube_loop:
@@ -216,7 +216,7 @@ class CubeDashboardServer:
             )
             
         except Exception as e:
-            print(f"❌ Cube connection error: {e}")
+            print(f"Cube connection error: {e}")
             self.connection_status = "error"
             self.socketio.emit('message', {
                 'type': 'error',
@@ -250,7 +250,7 @@ class CubeDashboardServer:
                 await asyncio.sleep(0.1)
                 
         except Exception as e:
-            print(f"❌ Cube monitoring error: {e}")
+            print(f"Cube monitoring error: {e}")
             self.connection_status = "error"
             self.socketio.emit('message', {
                 'type': 'error',
@@ -264,11 +264,11 @@ class CubeDashboardServer:
             try:
                 await self.cube.disconnect()
             except Exception as e:
-                print(f"❌ Disconnection error: {e}")
+                print(f"Disconnection error: {e}")
     
     def _handle_move_event(self, event: GanCubeMoveEvent):
         """Handle move event from cube."""
-        print(f"🎯 Move: {event.move} (Serial: {event.serial})")
+        print(f"Move: {event.move} (Serial: {event.serial})")
         
         move_data = {
             'move': event.move,
@@ -296,11 +296,11 @@ class CubeDashboardServer:
                 self._forward_to_controller_bridge('CUBE_MOVE', move_data)
                 
         except Exception as e:
-            print(f"❌ Error emitting move event: {e}")
+            print(f"Error emitting move event: {e}")
     
     def _handle_facelets_event(self, event: GanCubeFaceletsEvent):
         """Handle facelets event from cube."""
-        print(f"📋 State update: Serial {event.serial}")
+        print(f"State update: Serial {event.serial}")
         
         self.current_state = {
             'facelets': event.facelets,
@@ -316,7 +316,7 @@ class CubeDashboardServer:
         try:
             self.socketio.emit('facelets', self.current_state)
         except Exception as e:
-            print(f"❌ Error emitting facelets: {e}")
+            print(f"Error emitting facelets: {e}")
     
     def _handle_orientation_event(self, event: GanCubeOrientationEvent):
         """Handle orientation event from cube - fast dashboard updates with limited debug output."""
@@ -325,7 +325,7 @@ class CubeDashboardServer:
         # Debug output to terminal (rate limited to once per second)
         if current_time - self.last_orientation_debug >= self.orientation_debug_limit:
             q = event.quaternion
-            print(f"🌐 Orientation: x={q.x:.3f}, y={q.y:.3f}, z={q.z:.3f}, w={q.w:.3f}")
+            print(f"Orientation: x={q.x:.3f}, y={q.y:.3f}, z={q.z:.3f}, w={q.w:.3f}")
             self.last_orientation_debug = current_time
         
         # Light rate limiting for dashboard (60 FPS)
@@ -388,7 +388,7 @@ class CubeDashboardServer:
         except Exception as e:
             # Only print errors occasionally to avoid spam
             if current_time - getattr(self, 'last_emit_error', 0) > 5000:
-                print(f"❌ Error emitting orientation: {e}")
+                print(f"Error emitting orientation: {e}")
                 self.last_emit_error = current_time
     
     def _handle_battery_event(self, event: GanCubeBatteryEvent):
@@ -448,7 +448,7 @@ class CubeDashboardServer:
             await asyncio.sleep(0.2)
             state = await self.cube.get_state()
         except Exception as e:
-            print(f"❌ Error requesting initial info: {e}")
+            print(f"Error requesting initial info: {e}")
     
     def emit_status_update(self):
         """Emit status update to all clients."""
@@ -472,16 +472,16 @@ class CubeDashboardServer:
         """Connect to the controller bridge WebSocket server."""
         try:
             uri = f"ws://{host}:{port}"
-            print(f"🎮 Connecting to controller bridge at {uri}")
+            print(f"Connecting to controller bridge at {uri}")
             self.controller_bridge_ws = await websockets.connect(uri)
             self.bridge_connected = True
-            print("✅ Connected to controller bridge")
+            print("Connected to controller bridge")
             
             # Start background task to maintain connection
             asyncio.create_task(self._maintain_bridge_connection())
             
         except Exception as e:
-            print(f"⚠️ Could not connect to controller bridge: {e}")
+            print(f"Could not connect to controller bridge: {e}")
             self.bridge_connected = False
     
     async def _maintain_bridge_connection(self):
@@ -490,11 +490,11 @@ class CubeDashboardServer:
             if self.controller_bridge_ws:
                 await self.controller_bridge_ws.wait_closed()
         except Exception as e:
-            print(f"⚠️ Controller bridge connection lost: {e}")
+            print(f"Controller bridge connection lost: {e}")
         finally:
             self.bridge_connected = False
             self.controller_bridge_ws = None
-            print("🔌 Disconnected from controller bridge")
+            print("Disconnected from controller bridge")
     
     def _forward_to_controller_bridge(self, msg_type: str, data: Dict[str, Any]):
         """Forward message to controller bridge (non-blocking)."""
@@ -599,7 +599,7 @@ class CubeDashboardServer:
         if hasattr(self, 'last_controller_debug') and current_time - self.last_controller_debug > 1000:
             if abs(tilt_x) > 0.1 or abs(tilt_y) > 0.1 or abs(spin_z) > 0.1:
                 b_status = " + B BUTTON" if auto_b_button else ""
-                print(f"🎮 Left Stick: X={tilt_x:.2f}, Y={tilt_y:.2f} | Right Stick: X={spin_z:.2f}{b_status}")
+                print(f"Left Stick: X={tilt_x:.2f}, Y={tilt_y:.2f} | Right Stick: X={spin_z:.2f}{b_status}")
                 self.last_controller_debug = current_time
         elif not hasattr(self, 'last_controller_debug'):
             self.last_controller_debug = current_time
@@ -617,14 +617,14 @@ class CubeDashboardServer:
         if self.orientation_state['current_quaternion']:
             # Reset reference to current transformed orientation
             self.orientation_state['reference_orientation'] = self.orientation_state['current_quaternion'].copy()
-            print("🎮 Controller orientation reset - current position is now neutral")
+            print("Controller orientation reset - current position is now neutral")
             
             self.socketio.emit('message', {
                 'type': 'success', 
                 'text': 'Controller orientation reset - current position is now neutral'
             })
         else:
-            print("⚠️ No orientation data yet - connect cube first")
+            print("No orientation data yet - connect cube first")
             self.socketio.emit('message', {
                 'type': 'warning',
                 'text': 'No orientation data yet - connect cube first'
@@ -639,15 +639,15 @@ class CubeDashboardServer:
             if hasattr(self, 'last_bridge_error_time'):
                 current_time = time.time() * 1000
                 if current_time - self.last_bridge_error_time > 5000:  # Rate limit error messages
-                    print(f"⚠️ Error sending to controller bridge: {e}")
+                    print(f"Error sending to controller bridge: {e}")
                     self.last_bridge_error_time = current_time
             else:
-                print(f"⚠️ Error sending to controller bridge: {e}")
+                print(f"Error sending to controller bridge: {e}")
                 self.last_bridge_error_time = time.time() * 1000
     
     def run(self, host='localhost', port=5000, debug=False):
         """Run the dashboard server."""
-        print(f"🌐 Starting GAN Cube Dashboard at http://{host}:{port}")
+        print(f"Starting GAN Cube Dashboard at http://{host}:{port}")
         self.socketio.run(self.app, host=host, port=port, debug=debug)
 
 
