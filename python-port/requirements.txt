@@ -1,0 +1,15 @@
+# Core dependencies for gan-web-bluetooth Python port
+bleak>=0.21.0           # Bluetooth Low Energy platform-agnostic library
+cryptography>=41.0.0    # AES encryption and cryptographic operations
+numpy>=1.24.0          # Numerical operations for quaternions and linear algebra
+pyee>=11.0.0           # Event emitter for Observable-like patterns
+typing-extensions>=4.7.0  # Enhanced typing support for older Python versions
+dataclasses>=0.6       # Backport for Python < 3.7
+
+# Development dependencies (install with pip install -e .[dev])
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+black>=23.0.0
+mypy>=1.5.0
+ruff>=0.1.0
