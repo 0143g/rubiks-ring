@@ -95,6 +95,12 @@ class CrossPlatformController:
         self.last_input_time = 0
         self.connected_clients: Set = set()
         
+        # Sprint/Roll management
+        self.sprint_mode_active = False
+        self.forward_tilt_threshold = 0.7  # Threshold for auto-sprint activation
+        self.b_button_held_by_sprint = False
+        self.rolling_in_progress = False  # Track if we're currently performing a roll
+        
         # Platform-specific initialization
         self.gamepad = None
         if PLATFORM == "Windows" and WINDOWS_AVAILABLE and GAMEPAD_AVAILABLE:
@@ -128,6 +134,25 @@ class CrossPlatformController:
         move = data.get('move', '')
         print(f"Cube move: {move}")
         
+        # Handle auto sprint commands and update our sprint state
+        if move == "AUTO_B_PRESS":
+            self.sprint_mode_active = True
+            # DON'T set b_button_held_by_sprint = True here, let the normal action handle B press
+            print(f"🏃 SPRINT MODE: ON (dashboard triggered)")
+        elif move == "AUTO_B_RELEASE":
+            self.sprint_mode_active = False  
+            # DON'T set b_button_held_by_sprint = False here, let the normal action handle B release
+            print(f"🚶 SPRINT MODE: OFF (dashboard triggered)")
+        
+        # DEBUG: Check sprint state
+        print(f"DEBUG: move='{move}', sprint_mode_active={self.sprint_mode_active}, b_button_held_by_sprint={self.b_button_held_by_sprint}")
+        
+        # Special handling for U' (roll) when in sprint mode
+        if move == "U'" and self.sprint_mode_active:
+            print(f"🔥 TRIGGERING SMART ROLL for {move}")
+            await self.handle_roll_during_sprint(move)
+            return
+        
         # Get mapped action for this move
         action = self.config.move_mappings.get(move)
         if not action:
@@ -152,8 +177,91 @@ class CrossPlatformController:
             tilt_y = 0.0
         if abs(spin_z) < self.config.deadzone:
             spin_z = 0.0
+        
+        # Sprint mode management disabled - dashboard handles this via AUTO_B_PRESS/RELEASE
+        # await self.manage_sprint_mode(tilt_y)
             
         await self.set_analog_movement(tilt_x, tilt_y, spin_z)
+    
+    async def manage_sprint_mode(self, tilt_y: float):
+        """Manage auto-sprint mode based on forward tilt"""
+        if not self.gamepad or not GAMEPAD_AVAILABLE:
+            return  # Sprint mode only works with gamepad
+            
+        # Don't change sprint state while rolling
+        if self.rolling_in_progress:
+            return
+            
+        forward_tilt = -tilt_y  # Negative tilt_y is forward
+        
+        # Check if we should enter sprint mode
+        if forward_tilt >= self.forward_tilt_threshold and not self.sprint_mode_active:
+            self.sprint_mode_active = True
+            if not self.b_button_held_by_sprint:  # Only hold if not already held
+                self.b_button_held_by_sprint = True
+                await self._gamepad_button_hold(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+                print(f"SPRINT MODE: ON (forward tilt: {forward_tilt:.2f})")
+        
+        # Check if we should exit sprint mode
+        elif forward_tilt < (self.forward_tilt_threshold - 0.1) and self.sprint_mode_active:  # Hysteresis
+            self.sprint_mode_active = False
+            if self.b_button_held_by_sprint:
+                self.b_button_held_by_sprint = False
+                await self._gamepad_button_release(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+                print(f"SPRINT MODE: OFF (forward tilt: {forward_tilt:.2f})")
+    
+    async def handle_roll_during_sprint(self, move: str):
+        """Handle U' (roll) move when sprinting - release B, do B press (roll), then re-hold B"""
+        if not self.gamepad or not GAMEPAD_AVAILABLE:
+            return  # Smart roll only works with gamepad
+        
+        # Prevent concurrent rolls
+        if self.rolling_in_progress:
+            print(f"SMART ROLL: {move} ignored - roll already in progress")
+            return
+            
+        self.rolling_in_progress = True
+        was_sprint_held = self.b_button_held_by_sprint
+        
+        try:
+            print(f"SMART ROLL: {move} while sprinting - executing release→press→hold sequence")
+            
+            # Step 1: Release B button completely (stop sprint hold)
+            if self.b_button_held_by_sprint:
+                self.b_button_held_by_sprint = False
+                await self._gamepad_button_release(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+                print("  Released B hold (stopped sprint)")
+            
+            # Step 2: Wait for button to fully release
+            await asyncio.sleep(0.08)  # Slightly longer to ensure clean release
+            
+            # Step 3: Now do a fresh B press (this triggers the roll in-game)
+            # This is a full press-release cycle while still moving forward
+            self.gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+            self.gamepad.update()
+            print(f"  B PRESSED (roll triggered) - still moving forward")
+            
+            # Step 4: Hold the press for roll duration
+            await asyncio.sleep(0.1)  # Hold for roll execution
+            
+            # Step 5: Release the roll press
+            self.gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+            self.gamepad.update()
+            print(f"  B RELEASED (roll complete)")
+            
+            # Step 6: Wait a moment for roll to finish
+            await asyncio.sleep(0.05)
+            
+            # Step 7: Re-engage sprint hold if still in sprint mode
+            if self.sprint_mode_active and was_sprint_held:
+                self.b_button_held_by_sprint = True
+                await self._gamepad_button_hold(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+                print("  Re-engaged B hold (sprint restored)")
+                
+        finally:
+            # Always clear the rolling flag
+            self.rolling_in_progress = False
+            print(f"SMART ROLL: {move} sequence complete")
     
     async def handle_key_press(self, data: Dict[str, Any]):
         """Handle continuous key press"""
@@ -237,9 +345,11 @@ class CrossPlatformController:
                 print(f"  Gamepad D-Pad Left → {move}")
             elif action == "gamepad_b_hold":
                 await self._gamepad_button_hold(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+                self.b_button_held_by_sprint = True  # Track that we're holding B for sprint
                 print(f"  AUTO B BUTTON: PRESSED (sprint mode)")
             elif action == "gamepad_b_release":
                 await self._gamepad_button_release(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+                self.b_button_held_by_sprint = False  # Track that we released B
                 print(f"  AUTO B BUTTON: RELEASED (normal mode)")
         except Exception as e:
             print(f"Gamepad action failed: {e}")
@@ -486,6 +596,11 @@ class CrossPlatformController:
             await self.key_up(key)
         self.active_keys.clear()
         
+        # Reset sprint state
+        self.sprint_mode_active = False
+        self.b_button_held_by_sprint = False
+        self.rolling_in_progress = False
+        
         if self.gamepad:
             # Release any auto-held buttons
             for attr_name in dir(self):
@@ -496,7 +611,7 @@ class CrossPlatformController:
             
             self.gamepad.reset()
             self.gamepad.update()
-            print("All inputs and gamepad reset")
+            print("All inputs and gamepad reset (including sprint mode)")
         else:
             print("All inputs released")
 
