@@ -6,6 +6,7 @@
     <title>GAN Smart Cube Dashboard</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script type="module" src="https://cdn.cubing.net/v0/js/cubing/twisty"></script>
     <style>
         * {
             margin: 0;
@@ -335,8 +336,7 @@
             <div class="controls">
                 <button id="connectBtn" class="btn btn-primary">🔗 Connect Cube</button>
                 <button id="disconnectBtn" class="btn btn-danger" disabled>🔌 Disconnect</button>
-                <button id="requestStateBtn" class="btn btn-secondary" disabled>📋 Get State</button>
-                <button id="requestBatteryBtn" class="btn btn-secondary" disabled>🔋 Get Battery</button>
+                <button id="resetOrientationBtn" class="btn btn-secondary">🔄 Reset Orientation</button>
                 <button id="clearHistoryBtn" class="btn btn-secondary">🗑️ Clear History</button>
             </div>
             
@@ -447,7 +447,9 @@
 
     <div id="messages" class="messages"></div>
 
-    <script>
+    <script type="module">
+        import { TwistyPlayer } from 'https://cdn.cubing.net/v0/js/cubing/twisty';
+        
         // WebSocket connection
         const socket = io();
         
@@ -455,185 +457,100 @@
         let moveCount = 0;
         let connectionStartTime = null;
         
-        // 3D cube variables
-        let scene, camera, renderer, cubeGroup;
-        let animationId;
-        let currentQuaternion = new THREE.Quaternion();
+        // 3D cube variables (twisty-player)
+        let twistyPlayer;
+        let twistyScene;
+        let twistyVantage;
+        let cubeQuaternion = new THREE.Quaternion();
         let targetQuaternion = new THREE.Quaternion();
         
-        // Cube state for face colors
-        const cubeState = {
-            // Standard solved state colors: White=0, Red=1, Green=2, Yellow=3, Orange=4, Blue=5
-            faces: [
-                // U (top) - White
-                [0,0,0, 0,0,0, 0,0,0],
-                // R (right) - Red  
-                [1,1,1, 1,1,1, 1,1,1],
-                // F (front) - Green
-                [2,2,2, 2,2,2, 2,2,2],
-                // D (bottom) - Yellow
-                [3,3,3, 3,3,3, 3,3,3],
-                // L (left) - Orange
-                [4,4,4, 4,4,4, 4,4,4],
-                // B (back) - Blue
-                [5,5,5, 5,5,5, 5,5,5]
-            ]
-        };
-        
-        // Color mapping for cube faces
-        const FACE_COLORS = [
-            0xffffff, // White
-            0xff0000, // Red
-            0x00ff00, // Green
-            0xffff00, // Yellow
-            0xff8000, // Orange
-            0x0000ff  // Blue
-        ];
+        // Solved state for cube initialization
+        const SOLVED_STATE = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB";
         
         // DOM elements
         const connectBtn = document.getElementById('connectBtn');
         const disconnectBtn = document.getElementById('disconnectBtn');
-        const requestStateBtn = document.getElementById('requestStateBtn');
-        const requestBatteryBtn = document.getElementById('requestBatteryBtn');
+        const resetOrientationBtn = document.getElementById('resetOrientationBtn');
         const clearHistoryBtn = document.getElementById('clearHistoryBtn');
         
-        // Initialize 3D cube visualization
+        // Initialize 3D cube visualization with twisty-player
         function init3DCube() {
             const container = document.getElementById('cubeViewer');
-            const width = container.clientWidth;
-            const height = container.clientHeight;
             
-            // Scene setup
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            // Create twisty player
+            twistyPlayer = new TwistyPlayer({
+                puzzle: '3x3x3',
+                visualization: 'PG3D',
+                alg: '',                    // Start with solved cube
+                experimentalSetupAnchor: 'start',
+                background: 'none',
+                controlPanel: 'none',       // Hide controls
+                hintFacelets: 'none',       // Hide hint facelets
+                cameraLatitude: 20,         // Nice viewing angle
+                cameraLongitude: 30,
+                cameraDistance: 5,
+                cameraLatitudeLimit: 90,
+                tempoScale: 3               // Animation speed
+            });
             
-            renderer.setSize(width, height);
-            renderer.setClearColor(0x000000, 0);
-            container.appendChild(renderer.domElement);
+            // Add player to container
+            container.appendChild(twistyPlayer);
             
-            // Lighting
-            const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
-            scene.add(ambientLight);
-            
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(1, 1, 1);
-            scene.add(directionalLight);
-            
-            // Create cube group
-            cubeGroup = new THREE.Group();
-            scene.add(cubeGroup);
-            
-            // Create 3x3x3 cube structure
-            createRubiksCube();
-            
-            // Position camera
-            camera.position.set(3, 3, 3);
-            camera.lookAt(0, 0, 0);
-            
-            // Start animation loop
-            animate3DCube();
-            
-            // Handle window resize
-            window.addEventListener('resize', onWindowResize);
+            // Start orientation animation loop
+            animateCubeOrientation();
         }
         
-        function createRubiksCube() {
-            const size = 0.9;  // Size of each small cube
-            const gap = 0.05;  // Gap between cubes
-            const spacing = size + gap;
-            
-            // Create 27 small cubes (3x3x3)
-            for (let x = 0; x < 3; x++) {
-                for (let y = 0; y < 3; y++) {
-                    for (let z = 0; z < 3; z++) {
-                        const geometry = new THREE.BoxGeometry(size, size, size);
-                        
-                        // Create materials for each face
-                        const materials = [
-                            new THREE.MeshLambertMaterial({ color: getFaceColor(x, y, z, 'right') }),  // +X
-                            new THREE.MeshLambertMaterial({ color: getFaceColor(x, y, z, 'left') }),   // -X
-                            new THREE.MeshLambertMaterial({ color: getFaceColor(x, y, z, 'top') }),    // +Y
-                            new THREE.MeshLambertMaterial({ color: getFaceColor(x, y, z, 'bottom') }), // -Y
-                            new THREE.MeshLambertMaterial({ color: getFaceColor(x, y, z, 'front') }),  // +Z
-                            new THREE.MeshLambertMaterial({ color: getFaceColor(x, y, z, 'back') })    // -Z
-                        ];
-                        
-                        const cube = new THREE.Mesh(geometry, materials);
-                        
-                        // Position the cube
-                        cube.position.set(
-                            (x - 1) * spacing,
-                            (y - 1) * spacing,
-                            (z - 1) * spacing
-                        );
-                        
-                        // Store position info for later updates
-                        cube.userData = { x, y, z };
-                        
-                        cubeGroup.add(cube);
+        // Animate cube orientation using twisty-player
+        async function animateCubeOrientation() {
+            if (!twistyScene || !twistyVantage) {
+                try {
+                    const vantageList = await twistyPlayer.experimentalCurrentVantages();
+                    twistyVantage = [...vantageList][0];
+                    if (twistyVantage && twistyVantage.scene) {
+                        twistyScene = await twistyVantage.scene.scene();
                     }
+                } catch (error) {
+                    // Ignore errors during initialization
                 }
             }
-        }
-        
-        function getFaceColor(x, y, z, face) {
-            // Only show colors on the outer faces, inner faces are black
-            const isOuter = {
-                right: x === 2,
-                left: x === 0,
-                top: y === 2,
-                bottom: y === 0,
-                front: z === 2,
-                back: z === 0
-            };
             
-            if (!isOuter[face]) {
-                return 0x000000; // Black for inner faces
+            if (twistyScene && twistyVantage) {
+                // Smooth quaternion interpolation for orientation
+                cubeQuaternion.slerp(targetQuaternion, 0.25);
+                twistyScene.quaternion.copy(cubeQuaternion);
+                twistyVantage.render();
             }
             
-            // Map face to color index
-            const faceMap = {
-                top: 0,    // White (U)
-                right: 1,  // Red (R)
-                front: 2,  // Green (F)
-                bottom: 3, // Yellow (D)
-                left: 4,   // Orange (L)
-                back: 5    // Blue (B)
-            };
-            
-            return FACE_COLORS[faceMap[face]];
-        }
-        
-        function animate3DCube() {
-            animationId = requestAnimationFrame(animate3DCube);
-            
-            // Smooth quaternion interpolation
-            currentQuaternion.slerp(targetQuaternion, 0.1);
-            cubeGroup.setRotationFromQuaternion(currentQuaternion);
-            
-            renderer.render(scene, camera);
-        }
-        
-        function onWindowResize() {
-            const container = document.getElementById('cubeViewer');
-            const width = container.clientWidth;
-            const height = container.clientHeight;
-            
-            camera.aspect = width / height;
-            camera.updateProjectionMatrix();
-            renderer.setSize(width, height);
+            requestAnimationFrame(animateCubeOrientation);
         }
         
         function update3DCubeOrientation(quaternion) {
             // Apply axis mapping to match the cube's physical orientation
-            // This maps the cube's coordinate system to the 3D visualization
+            // This maps from the cube's coordinate system to the 3D visualization
             targetQuaternion.set(
-                -quaternion.x,
-                quaternion.z,
-                quaternion.y,
+                -quaternion.x,  // cube x stays x
+                quaternion.z,   // cube z → visual y (up)
+                quaternion.y,   // cube y → visual z (forward)
                 quaternion.w
             );
+        }
+        
+        function resetCubeOrientation() {
+            // Reset to default orientation: green front, white top
+            // This corresponds to the identity quaternion (no rotation)
+            targetQuaternion.set(0, 0, 0, 1);
+            cubeQuaternion.set(0, 0, 0, 1);
+            
+            // Also reset the twisty player to default viewing angle
+            if (twistyPlayer) {
+                try {
+                    // Reset the cube visualization to show green front, white top
+                    twistyPlayer.cameraLatitude = 20;
+                    twistyPlayer.cameraLongitude = 30;
+                } catch (error) {
+                    console.log('Error resetting cube orientation:', error);
+                }
+            }
         }
         
         // Socket event handlers
@@ -685,12 +602,9 @@
             socket.emit('disconnect_cube');
         });
         
-        requestStateBtn.addEventListener('click', () => {
-            socket.emit('request_state');
-        });
-        
-        requestBatteryBtn.addEventListener('click', () => {
-            socket.emit('request_battery');
+        resetOrientationBtn.addEventListener('click', () => {
+            resetCubeOrientation();
+            showMessage('Cube orientation reset to default (green front, white top)', 'success');
         });
         
         clearHistoryBtn.addEventListener('click', () => {
@@ -729,8 +643,6 @@
             const isConnected = data.connected;
             connectBtn.disabled = isConnected;
             disconnectBtn.disabled = !isConnected;
-            requestStateBtn.disabled = !isConnected;
-            requestBatteryBtn.disabled = !isConnected;
             
             if (isConnected && data.connection_info) {
                 connectionStartTime = data.connection_info.connected_at;
@@ -744,55 +656,62 @@
             document.getElementById('lastMove').textContent = data.move;
             document.getElementById('sessionMoves').textContent = moveCount;
             
-            // Animate the move on the 3D cube
-            if (cubeGroup) {
+            // Animate the move on the 3D cube using twisty-player
+            if (twistyPlayer) {
                 animateCubeMove(data.move);
             }
         }
         
         function animateCubeMove(move) {
-            // Parse move notation (R, U', F2, etc.)
-            const face = move.charAt(0);
-            const modifier = move.slice(1);
-            
-            // Determine rotation angle
-            let angle = Math.PI / 2; // 90 degrees
-            if (modifier === "'") {
-                angle = -Math.PI / 2; // Counter-clockwise
-            } else if (modifier === "2") {
-                angle = Math.PI; // 180 degrees
+            try {
+                // Add the move to twisty-player for animation
+                twistyPlayer.experimentalAddMove(move, { cancel: false });
+                
+                // Show move indicator as well
+                showMoveIndicator(move);
+            } catch (error) {
+                console.log('Error animating move:', error);
+                // Fallback to just showing the indicator
+                showMoveIndicator(move);
             }
-            
-            // Create a temporary visual indicator for the move
-            showMoveIndicator(face, angle);
         }
         
-        function showMoveIndicator(face, angle) {
-            // Create a simple visual feedback for moves
-            // This could be enhanced with actual cube rotation animations
+        function showMoveIndicator(move) {
+            // Create a visual feedback indicator for moves
             const moveIndicator = document.createElement('div');
             moveIndicator.style.position = 'absolute';
             moveIndicator.style.top = '10px';
             moveIndicator.style.right = '10px';
-            moveIndicator.style.background = 'rgba(0, 255, 0, 0.8)';
+            moveIndicator.style.background = 'rgba(102, 126, 234, 0.9)';
             moveIndicator.style.color = 'white';
-            moveIndicator.style.padding = '5px 10px';
-            moveIndicator.style.borderRadius = '3px';
-            moveIndicator.style.fontSize = '14px';
+            moveIndicator.style.padding = '8px 12px';
+            moveIndicator.style.borderRadius = '6px';
+            moveIndicator.style.fontSize = '16px';
             moveIndicator.style.fontWeight = 'bold';
             moveIndicator.style.zIndex = '1000';
-            moveIndicator.textContent = `${face}${angle === -Math.PI/2 ? "'" : angle === Math.PI ? "2" : ""}`;
+            moveIndicator.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+            moveIndicator.style.transition = 'all 0.3s ease';
+            moveIndicator.textContent = move;
             
             const cubeViewer = document.getElementById('cubeViewer');
             cubeViewer.style.position = 'relative';
             cubeViewer.appendChild(moveIndicator);
             
+            // Animate in
+            setTimeout(() => {
+                moveIndicator.style.transform = 'translateY(-5px)';
+            }, 10);
+            
             // Remove indicator after animation
             setTimeout(() => {
-                if (moveIndicator.parentNode) {
-                    moveIndicator.parentNode.removeChild(moveIndicator);
-                }
-            }, 1000);
+                moveIndicator.style.opacity = '0';
+                moveIndicator.style.transform = 'translateY(-15px)';
+                setTimeout(() => {
+                    if (moveIndicator.parentNode) {
+                        moveIndicator.parentNode.removeChild(moveIndicator);
+                    }
+                }, 300);
+            }, 1500);
         }
         
         function updateMoveHistory(moves) {
@@ -819,6 +738,15 @@
             document.getElementById('stateSerial').textContent = data.serial;
             document.getElementById('stateTime').textContent = formatTime(data.timestamp);
             document.getElementById('faceletsDisplay').textContent = data.facelets;
+            
+            // Update twisty-player with cube state if it's not solved
+            if (twistyPlayer && data.facelets && data.facelets !== SOLVED_STATE) {
+                try {
+                    twistyPlayer.alg = data.facelets;
+                } catch (error) {
+                    console.log('Error setting cube state:', error);
+                }
+            }
         }
         
         function updateOrientation(data) {
@@ -831,8 +759,8 @@
                     data.quaternion[quatValues[i]].toFixed(3);
             }
             
-            // Update 3D cube orientation
-            if (cubeGroup) {
+            // Update 3D cube orientation using twisty-player
+            if (twistyPlayer) {
                 update3DCubeOrientation(data.quaternion);
             }
         }
