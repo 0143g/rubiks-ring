@@ -551,9 +551,9 @@ class CubeDashboardServer:
         # Process spin axis for right stick (no axis isolation needed)
         spin_z = max(-1.0, min(1.0, raw_spin_z))
         
-        # Apply deadzone (lines 700-704)
+        # Apply deadzone
         deadzone = 0.1
-        spin_deadzone = 0.1
+        spin_deadzone = 0.05
         if abs(tilt_x) < deadzone:
             tilt_x = 0
         if abs(tilt_y) < deadzone:
