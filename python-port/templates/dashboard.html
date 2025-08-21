@@ -140,6 +140,15 @@
             background: #cc1f14;
             border-color: #cc1f14;
         }
+        
+        .btn.success {
+            background: #28a745;
+            border-color: #34ce57;
+        }
+        
+        .btn.success:hover {
+            background: #34ce57;
+        }
 
         .btn:disabled {
             background: #222;
@@ -390,6 +399,7 @@
 
                     <button class="btn primary" id="connectBtn">Connect Cube</button>
                     <button class="btn danger" id="disconnectBtn" disabled>Disconnect</button>
+                    <button class="btn success" id="calibrateBtn" title="Place cube with green face forward, white on top">🎯 Calibrate Cube</button>
                     <button class="btn" id="resetOrientationBtn">Reset Orientation</button>
                     <button class="btn" id="clearHistoryBtn">Clear History</button>
 
@@ -429,6 +439,25 @@
                         <div class="orientation-item">
                             <div class="orientation-label">Quat W</div>
                             <div class="orientation-value" id="orientW">1.000</div>
+                        </div>
+                    </div>
+                    <!-- Calibrated Quaternion Display -->
+                    <div class="orientation-display" id="calibratedDisplay" style="margin-top: 12px; display: none;">
+                        <div class="orientation-item" style="border-color: #00ff88;">
+                            <div class="orientation-label" style="color: #00ff88;">Cal X</div>
+                            <div class="orientation-value" id="calOrientX" style="color: #00ff88;">0.000</div>
+                        </div>
+                        <div class="orientation-item" style="border-color: #00ff88;">
+                            <div class="orientation-label" style="color: #00ff88;">Cal Y</div>
+                            <div class="orientation-value" id="calOrientY" style="color: #00ff88;">0.000</div>
+                        </div>
+                        <div class="orientation-item" style="border-color: #00ff88;">
+                            <div class="orientation-label" style="color: #00ff88;">Cal Z</div>
+                            <div class="orientation-value" id="calOrientZ" style="color: #00ff88;">1.000</div>
+                        </div>
+                        <div class="orientation-item" style="border-color: #00ff88;">
+                            <div class="orientation-label" style="color: #00ff88;">Cal W</div>
+                            <div class="orientation-value" id="calOrientW" style="color: #00ff88;">0.000</div>
                         </div>
                     </div>
                 </div>
@@ -472,6 +501,7 @@
         const statusText = document.getElementById('statusText');
         const connectBtn = document.getElementById('connectBtn');
         const disconnectBtn = document.getElementById('disconnectBtn');
+        const calibrateBtn = document.getElementById('calibrateBtn');
         const resetOrientationBtn = document.getElementById('resetOrientationBtn');
         const clearHistoryBtn = document.getElementById('clearHistoryBtn');
         const controllerToggle = document.getElementById('controllerToggle');
@@ -484,6 +514,11 @@
         const orientY = document.getElementById('orientY');
         const orientZ = document.getElementById('orientZ');
         const orientW = document.getElementById('orientW');
+        const calOrientX = document.getElementById('calOrientX');
+        const calOrientY = document.getElementById('calOrientY');
+        const calOrientZ = document.getElementById('calOrientZ');
+        const calOrientW = document.getElementById('calOrientW');
+        const calibratedDisplay = document.getElementById('calibratedDisplay');
 
         // State
         let isConnected = false;
@@ -570,6 +605,17 @@
             if (data.quaternion) {
                 updateOrientation(data.quaternion);
                 updateOrientationDisplay(data.quaternion);
+            }
+            
+            // Update calibrated quaternion display if available
+            if (data.calibrated_quaternion) {
+                calibratedDisplay.style.display = 'grid';
+                calOrientX.textContent = data.calibrated_quaternion.x.toFixed(3);
+                calOrientY.textContent = data.calibrated_quaternion.y.toFixed(3);
+                calOrientZ.textContent = data.calibrated_quaternion.z.toFixed(3);
+                calOrientW.textContent = data.calibrated_quaternion.w.toFixed(3);
+            } else if (data.is_calibrated === false) {
+                calibratedDisplay.style.display = 'none';
             }
         });
 
@@ -732,6 +778,10 @@
             socket.emit('disconnect_cube');
         });
 
+        calibrateBtn.addEventListener('click', () => {
+            socket.emit('calibrate_cube');
+        });
+        
         resetOrientationBtn.addEventListener('click', () => {
             resetCubeOrientation();
             socket.emit('reset_orientation');

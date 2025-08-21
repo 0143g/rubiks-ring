@@ -185,6 +185,11 @@ class CubeDashboardServer:
         def handle_reset_orientation(data=None):
             """Reset controller orientation reference."""
             self.reset_controller_orientation()
+        
+        @self.socketio.on('calibrate_cube')
+        def handle_calibrate_cube(data=None):
+            """Calibrate cube with green face forward."""
+            self.calibrate_cube()
     
     def connect_to_cube(self, device_address: Optional[str] = None):
         """Connect to GAN Smart Cube."""
@@ -359,12 +364,6 @@ class CubeDashboardServer:
         """Handle orientation event from cube - fast dashboard updates with limited debug output."""
         current_time = now()
         
-        # Debug output to terminal (rate limited to once per second)
-        if current_time - self.last_orientation_debug >= self.orientation_debug_limit:
-            q = event.quaternion
-            print(f"Orientation: x={q.x:.3f}, y={q.y:.3f}, z={q.z:.3f}, w={q.w:.3f}")
-            self.last_orientation_debug = current_time
-        
         # Light rate limiting for dashboard (60 FPS)
         if current_time - self.last_orientation_emit < self.orientation_rate_limit:
             return
@@ -384,9 +383,55 @@ class CubeDashboardServer:
             'timestamp': current_time
         }
         
+        # Always update current orientation state for calibration
+        # Apply axis transformation
+        raw_quat = {
+            'x': -event.quaternion.x,
+            'y': event.quaternion.z,
+            'z': event.quaternion.y,
+            'w': event.quaternion.w
+        }
+        
+        # Apply calibration if we have one
+        if hasattr(self, 'calibration_transform'):
+            cal = self.calibration_transform
+            transformed_quat = {
+                'x': cal['w']*raw_quat['x'] + cal['x']*raw_quat['w'] + cal['y']*raw_quat['z'] - cal['z']*raw_quat['y'],
+                'y': cal['w']*raw_quat['y'] - cal['x']*raw_quat['z'] + cal['y']*raw_quat['w'] + cal['z']*raw_quat['x'],
+                'z': cal['w']*raw_quat['z'] + cal['x']*raw_quat['y'] - cal['y']*raw_quat['x'] + cal['z']*raw_quat['w'],
+                'w': cal['w']*raw_quat['w'] - cal['x']*raw_quat['x'] - cal['y']*raw_quat['y'] - cal['z']*raw_quat['z']
+            }
+        else:
+            transformed_quat = raw_quat
+        
+        # Store current quaternion for calibration
+        self.orientation_state['current_quaternion'] = transformed_quat.copy()
+        
+        # Debug output to terminal (rate limited to once per second) - AFTER calibration
+        if current_time - self.last_orientation_debug >= self.orientation_debug_limit:
+            if hasattr(self, 'calibration_transform'):
+                # Show calibrated values
+                q = transformed_quat
+                print(f"Orientation (calibrated): x={q['x']:.3f}, y={q['y']:.3f}, z={q['z']:.3f}, w={q['w']:.3f}")
+            else:
+                # Show raw values with warning
+                q = event.quaternion
+                print(f"Orientation (RAW - not calibrated): x={q.x:.3f}, y={q.y:.3f}, z={q.z:.3f}, w={q.w:.3f}")
+            self.last_orientation_debug = current_time
+        
         # Emit to dashboard with high frequency for responsiveness
         try:
-            self.socketio.emit('orientation', self.current_orientation)
+            # Add calibrated quaternion to the orientation data
+            orientation_with_calibrated = self.current_orientation.copy()
+            orientation_with_calibrated['calibrated_quaternion'] = {
+                'x': transformed_quat['x'],
+                'y': transformed_quat['y'],
+                'z': transformed_quat['z'],
+                'w': transformed_quat['w']
+            }
+            orientation_with_calibrated['is_calibrated'] = hasattr(self, 'calibration_transform')
+            
+            self.socketio.emit('orientation', orientation_with_calibrated)
             self.last_orientation_emit = current_time
             
             # Forward to controller bridge if enabled and connected
@@ -551,25 +596,45 @@ class CubeDashboardServer:
             )
     
     def _process_orientation_for_controller(self, quaternion, current_time):
-        """Process orientation data for analog joystick control (exact copy of simple-bridge.html logic)"""
+        """Process orientation data for analog joystick control with proper calibration"""
         import math
         
-        # Apply same transformation as working TypeScript (line 631-636)
-        transformed_quat = {
-            'x': -quaternion.x,  # cube x → -x (matches visualization)
-            'y': quaternion.z,   # cube z → y (up)
-            'z': quaternion.y,   # cube y → z (forward)
+        # Apply axis transformation
+        raw_quat = {
+            'x': -quaternion.x,
+            'y': quaternion.z,
+            'z': quaternion.y,
             'w': quaternion.w
         }
+        
+        # Apply calibration if we have one
+        if hasattr(self, 'calibration_transform'):
+            # Apply the calibration transformation
+            # new_quat = calibration_transform * raw_quat
+            cal = self.calibration_transform
+            transformed_quat = {
+                'x': cal['w']*raw_quat['x'] + cal['x']*raw_quat['w'] + cal['y']*raw_quat['z'] - cal['z']*raw_quat['y'],
+                'y': cal['w']*raw_quat['y'] - cal['x']*raw_quat['z'] + cal['y']*raw_quat['w'] + cal['z']*raw_quat['x'],
+                'z': cal['w']*raw_quat['z'] + cal['x']*raw_quat['y'] - cal['y']*raw_quat['x'] + cal['z']*raw_quat['w'],
+                'w': cal['w']*raw_quat['w'] - cal['x']*raw_quat['x'] - cal['y']*raw_quat['y'] - cal['z']*raw_quat['z']
+            }
+        else:
+            transformed_quat = raw_quat
+            print("WARNING: No calibration set! Run calibrate_cube() with green face forward")
         
         # Store current quaternion
         self.orientation_state['current_quaternion'] = transformed_quat.copy()
         
-        # Set reference orientation on first reading or reset
+        # Set reference orientation on first reading
         if not self.orientation_state['reference_orientation']:
-            self.orientation_state['reference_orientation'] = transformed_quat.copy()
-            print("Reference orientation set for controller")
-            return None
+            # Now we use the CALIBRATED green face forward which should be (0,0,1,0)
+            self.orientation_state['reference_orientation'] = {
+                'x': 0.0,
+                'y': 0.0, 
+                'z': 1.0,  # Target reference after calibration
+                'w': 0.0   # Target reference after calibration
+            }
+            print("Reference orientation set to calibrated GREEN FACE FORWARD (0, 0, 1, 0)")
         
         # Calculate relative quaternion from reference (proper quaternion math)
         ref = self.orientation_state['reference_orientation']
@@ -665,10 +730,78 @@ class CubeDashboardServer:
             'timestamp': current_time
         }
     
-    def reset_controller_orientation(self):
-        """Reset the controller orientation reference (like resetOrientation in simple-bridge.html)"""
-        if self.orientation_state['current_quaternion']:
-            # Reset reference to current transformed orientation
+    def calibrate_cube(self):
+        """Calibrate the cube when it's in the known position (green face forward, white on top).
+        This calculates the transformation needed to make the current quaternion become (0,0,1,0).
+        """
+        if not self.orientation_state['current_quaternion']:
+            print("ERROR: No cube data yet. Connect cube first and place it with green face forward")
+            self.socketio.emit('message', {
+                'type': 'error',
+                'text': 'No cube data! Connect cube first'
+            })
+            return
+        
+        # Get the current raw quaternion (what the cube reports when green is forward)
+        current_raw = self.orientation_state['current_quaternion'].copy()
+        
+        print(f"CALIBRATING: Current raw quaternion = ({current_raw['x']:.3f}, {current_raw['y']:.3f}, {current_raw['z']:.3f}, {current_raw['w']:.3f})")
+        
+        # We want to find the rotation that transforms current_raw to (0,0,1,0)
+        # target = calibration * current_raw
+        # calibration = target * inverse(current_raw)
+        
+        target = {'x': 0.0, 'y': 0.0, 'z': 1.0, 'w': 0.0}
+        
+        # Calculate inverse of current_raw
+        norm_sq = current_raw['x']**2 + current_raw['y']**2 + current_raw['z']**2 + current_raw['w']**2
+        raw_inv = {
+            'x': -current_raw['x'] / norm_sq,
+            'y': -current_raw['y'] / norm_sq,
+            'z': -current_raw['z'] / norm_sq,
+            'w': current_raw['w'] / norm_sq
+        }
+        
+        # Calculate calibration = target * inverse(current_raw)
+        self.calibration_transform = {
+            'x': target['w']*raw_inv['x'] + target['x']*raw_inv['w'] + target['y']*raw_inv['z'] - target['z']*raw_inv['y'],
+            'y': target['w']*raw_inv['y'] - target['x']*raw_inv['z'] + target['y']*raw_inv['w'] + target['z']*raw_inv['x'],
+            'z': target['w']*raw_inv['z'] + target['x']*raw_inv['y'] - target['y']*raw_inv['x'] + target['z']*raw_inv['w'],
+            'w': target['w']*raw_inv['w'] - target['x']*raw_inv['x'] - target['y']*raw_inv['y'] - target['z']*raw_inv['z']
+        }
+        
+        print(f"CALIBRATION SET: Transform = ({self.calibration_transform['x']:.3f}, {self.calibration_transform['y']:.3f}, {self.calibration_transform['z']:.3f}, {self.calibration_transform['w']:.3f})")
+        print("✅ Cube calibrated! Green face forward is now (0,0,1,0)")
+        
+        # Reset reference to use calibrated values
+        self.orientation_state['reference_orientation'] = None
+        
+        self.socketio.emit('message', {
+            'type': 'success',
+            'text': '✅ Cube calibrated! Green face forward is now (0,0,1,0)'
+        })
+    
+    def reset_controller_orientation(self, use_green_face=True):
+        """Reset the controller orientation reference
+        Args:
+            use_green_face: If True (default), always reset to green face forward.
+                          If False, reset to current cube position.
+        """
+        if use_green_face:
+            # Reset to ACTUAL green face forward as the cube reports it
+            self.orientation_state['reference_orientation'] = {
+                'x': 0.0,
+                'y': 0.0,
+                'z': 0.765,  # ACTUAL value when green is forward
+                'w': 0.644   # ACTUAL value when green is forward
+            }
+            print("Controller orientation LOCKED to ACTUAL GREEN FACE FORWARD (0, 0, 0.765, 0.644)")
+            self.socketio.emit('message', {
+                'type': 'success',
+                'text': 'Controller locked to GREEN FACE FORWARD - hold cube with green facing you'
+            })
+        elif self.orientation_state['current_quaternion']:
+            # Optional: Reset reference to current position (not recommended)
             self.orientation_state['reference_orientation'] = self.orientation_state['current_quaternion'].copy()
             print("Controller orientation reset - current position is now neutral")
             

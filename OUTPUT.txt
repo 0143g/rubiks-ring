@@ -1,81 +1,66 @@
-Left: (0, 14070) | Right: (0, 0)
-Left: (0, 17035) | Right: (0, 0)
-Left: (0, 20585) | Right: (0, 0)
-Left: (0, 22448) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Cube move: AUTO_B_PRESS
-🏃 SPRINT MODE: ON (via AUTO_B_PRESS)
-DEBUG: move='AUTO_B_PRESS', sprint_mode_active=True, b_button_held_by_sprint=True
-  AUTO B BUTTON: PRESSED (sprint mode)
-🚶 SPRINT MODE: OFF (forward tilt: -1.00)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (0, 0)
-Left: (0, 32767) | Right: (3283, 0)
-Left: (0, 32767) | Right: (3480, 0)
-Left: (0, 32767) | Right: (3684, 0)
-Left: (0, 32767) | Right: (3812, 0)
-Left: (0, 32767) | Right: (3946, 0)
-Left: (0, 32767) | Right: (4246, 0)
-Left: (0, 32767) | Right: (4226, 0)
-Left: (0, 32767) | Right: (4231, 0)
-Left: (0, 32767) | Right: (4255, 0)
-Cube move: U'
-DEBUG: move='U'', sprint_mode_active=False, b_button_held_by_sprint=False
-  Gamepad B Button → U'
-Left: (0, 32767) | Right: (4276, 0)
-Left: (0, 32767) | Right: (4254, 0)
-Left: (0, 32767) | Right: (5163, 0)
-Left: (0, 32767) | Right: (5188, 0)
-Left: (0, 32767) | Right: (5172, 0)
-Left: (0, 32767) | Right: (5127, 0)
-Left: (0, 32767) | Right: (5110, 0)
-Left: (0, 32767) | Right: (5127, 0)
-Left: (0, 32767) | Right: (5149, 0)
-Left: (0, 32767) | Right: (4576, 0)
-Left: (0, 32767) | Right: (4504, 0)
-Left: (0, 32767) | Right: (4439, 0)
-Left: (0, 32767) | Right: (4387, 0)
-Left: (0, 32767) | Right: (4360, 0)
-Left: (0, 32767) | Right: (4373, 0)
-Left: (0, 32767) | Right: (4374, 0)
-Left: (0, 32767) | Right: (4277, 0)
-Left: (0, 32767) | Right: (4285, 0)
-Left: (0, 32767) | Right: (4314, 0)
-Left: (0, 32767) | Right: (4484, 0)
-Left: (0, 32767) | Right: (4285, 0)
-Left: (0, 32767) | Right: (4234, 0)
-Left: (0, 32767) | Right: (4088, 0)
-Left: (0, 32767) | Right: (3950, 0)
-Left: (0, 32767) | Right: (3874, 0)
-Cube move: AUTO_B_RELEASE
-🚶 SPRINT MODE: OFF (via AUTO_B_RELEASE)
-DEBUG: move='AUTO_B_RELEASE', sprint_mode_active=False, b_button_held_by_sprint=False
-  AUTO B BUTTON: RELEASED (normal mode)
-All inputs and gamepad reset (including sprint mode)
-All inputs and gamepad reset (including sprint mode)
-
-Controller bridge stopped
+PS M:\mikerson\rubiks\python-port> python .\run_dashboard.py
+========================================
+Dashboard at: http://localhost:5000
+Loaded config from controller_config.json
+Starting GAN Cube Dashboard at http://0.0.0.0:5000
+ * Serving Flask app 'cube_dashboard'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.14:5000
+Press CTRL+C to quit
+127.0.0.1 - - [20/Aug/2025 18:35:51] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2025 18:35:51] "GET /socket.io/?EIO=4&transport=polling&t=PZAH9yq HTTP/1.1" 200 -
+Client connected: A3hxFSaigpedqZVXAAAB
+127.0.0.1 - - [20/Aug/2025 18:35:51] "POST /socket.io/?EIO=4&transport=polling&t=PZAH9_O&sid=lM0Ndi8Mo-hnt1mTAAAA HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2025 18:35:52] "GET /socket.io/?EIO=4&transport=polling&t=PZAH9_O.0&sid=lM0Ndi8Mo-hnt1mTAAAA HTTP/1.1" 200 -
+127.0.0.1 - - [20/Aug/2025 18:35:52] "POST /socket.io/?EIO=4&transport=polling&t=PZAHA4F&sid=lM0Ndi8Mo-hnt1mTAAAA HTTP/1.1" 200 -
+Scanning for devices...
+127.0.0.1 - - [20/Aug/2025 18:35:52] "GET /socket.io/?EIO=4&transport=polling&t=PZAHA4E&sid=lM0Ndi8Mo-hnt1mTAAAA HTTP/1.1" 200 -
+Found 15 devices:
+  D4:9D:C0:84:04:D1: Unknown
+  4A:E6:C5:39:16:2A: Unknown
+  CD:37:B7:C1:C8:A8: Unknown
+  71:64:CC:4B:F3:61: Unknown
+  A4:C1:38:A8:19:72: Petkit_W4X
+  70:90:3A:71:81:F1: Unknown
+  5C:92:18:53:56:A7: Unknown
+  79:02:1F:91:61:F4: Unknown
+  9C:04:A0:9F:6C:64: ihoment_H6075_6C64
+  4C:2F:2B:AD:47:83: Unknown
+  E9:4E:FB:A2:3A:A1: Unknown
+  0B:8C:34:FF:E3:73: Unknown
+  44:7F:D2:AC:34:8F: Unknown
+  AB:12:34:62:BC:15: GANi39Jl
+  2C:99:75:BD:F3:9D: Unknown
+Found potential GAN cube: GANi39Jl at AB:12:34:62:BC:15
+Connecting to device at AB:12:34:62:BC:15...
+Connected! Device is connected: True
+Discovering services...
+Found 4 services:
+  Service: 00001800-0000-1000-8000-00805f9b34fb
+  Service: 00001801-0000-1000-8000-00805f9b34fb
+  Service: f95a48e6-a721-11e9-a2a3-022ae2dbcce4
+  Service: 6e400001-b5a3-f393-e0a9-e50e24dc4179
+Looking for Gen2 service: 6e400001-b5a3-f393-e0a9-e50e24dc4179
+✓ Found Gen2 service
+✓ Gen2 protocol configured
+Orientation (RAW - not calibrated): x=0.046, y=-0.007, z=0.874, w=0.484
+State update: Serial 88
+Orientation (RAW - not calibrated): x=0.019, y=-0.011, z=0.874, w=0.485
+Orientation (RAW - not calibrated): x=0.007, y=-0.013, z=0.874, w=0.485
+Orientation (RAW - not calibrated): x=0.003, y=-0.014, z=0.874, w=0.485
+CALIBRATING: Current raw quaternion = (-0.001, 0.874, -0.014, 0.486)
+CALIBRATION SET: Transform = (0.874, 0.001, 0.486, -0.014)
+✅ Cube calibrated! Green face forward is now (0,0,1,0)
+Orientation (calibrated): x=0.000, y=0.001, z=1.000, w=-0.001
+Orientation (calibrated): x=0.001, y=0.001, z=1.000, w=-0.002
+Orientation (calibrated): x=0.001, y=0.002, z=1.000, w=-0.002
+Orientation (calibrated): x=0.002, y=0.002, z=1.000, w=-0.002
+Orientation (calibrated): x=0.304, y=-0.000, z=0.953, w=-0.004
+Orientation (calibrated): x=0.248, y=0.006, z=0.969, w=-0.007
+Orientation (calibrated): x=-0.196, y=0.007, z=0.981, w=-0.006
+Orientation (calibrated): x=-0.114, y=-0.001, z=0.993, w=-0.001
+Orientation (calibrated): x=0.002, y=0.000, z=1.000, w=-0.001
+Orientation (calibrated): x=0.002, y=0.002, z=1.000, w=0.000

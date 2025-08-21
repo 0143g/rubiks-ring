@@ -82,8 +82,10 @@ class ControllerConfig:
         """Load configuration from JSON file"""
         config_file = Path(config_path)
         if not config_file.exists():
-            print(f"Config file {config_path} not found, using defaults")
-            return cls()
+            print(f"ERROR: Config file {config_path} not found!")
+            print(f"Please create a {config_path} file with your move_mappings")
+            # Return instance with empty mappings instead of defaults
+            return cls(move_mappings={})
             
         try:
             with open(config_file, 'r') as f:
@@ -99,7 +101,11 @@ class ControllerConfig:
             if active_mapping in data:
                 move_mappings = data[active_mapping]
             else:
-                move_mappings = data.get('move_mappings', {})
+                move_mappings = data.get('move_mappings', None)
+                
+            if move_mappings is None:
+                print(f"ERROR: No '{active_mapping}' found in config file!")
+                move_mappings = {}
             
             return cls(
                 mouse_sensitivity=sensitivity.get('mouse_sensitivity', 2.0),
@@ -110,34 +116,21 @@ class ControllerConfig:
                 tilt_x_sensitivity=sensitivity.get('tilt_x_sensitivity', 2.5),
                 tilt_y_sensitivity=sensitivity.get('tilt_y_sensitivity', 2.5),
                 spin_z_sensitivity=sensitivity.get('spin_z_sensitivity', 2.0),
-                spin_deadzone=deadzone_settings.get('spin_deadzone', 0.02),
+                spin_deadzone=deadzone_settings.get('spin_deadzone', 0.1),
                 move_mappings=move_mappings,
                 active_mapping=active_mapping
             )
             
         except Exception as e:
-            print(f"Error loading config from {config_path}: {e}")
-            print("Using default configuration")
-            return cls()
+            print(f"ERROR loading config from {config_path}: {e}")
+            # Return instance with empty mappings instead of defaults
+            return cls(move_mappings={})
     
     def __post_init__(self):
         if self.move_mappings is None:
-            self.move_mappings = {
-                "R": "gamepad_r1",      # Right shoulder button
-                "R'": "gamepad_r2",     # Right trigger  
-                "L": "gamepad_b",       # B button
-                "L'": "gamepad_a",      # A button
-                "U": "gamepad_r1",      # R1 (light)
-                "U'": "gamepad_b",      # B button (rollRight)
-                "D": "gamepad_x",       # X button (heal)
-                "D'": "gamepad_b",      # B button (roll)
-                "F": "gamepad_dpad_right",  # D-pad right
-                "F'": "gamepad_dpad_left",  # D-pad left
-                "B": "gamepad_l2",      # Left trigger 
-                "B'": "gamepad_r3",     # Right stick press
-                "AUTO_B_PRESS": "gamepad_b_hold",    # Auto B button press (sprint)
-                "AUTO_B_RELEASE": "gamepad_b_release", # Auto B button release
-            }
+            print("ERROR: No move_mappings found in config file!")
+            print(f"Please ensure {self.active_mapping} exists in your controller_config.json")
+            self.move_mappings = {}  # Empty dict instead of defaults
 
 class CrossPlatformController:
     """Cross-platform gaming input controller"""
