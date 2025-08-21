@@ -254,7 +254,7 @@ class CrossPlatformController:
         if self.rolling_in_progress:
             return
             
-        forward_tilt = -tilt_y  # Negative tilt_y is forward
+        forward_tilt = tilt_y
         
         # Check if we should enter sprint mode
         if forward_tilt >= self.config.forward_tilt_threshold and not self.sprint_mode_active:
@@ -361,7 +361,9 @@ class CrossPlatformController:
     
     async def execute_action(self, action: str, move: str):
         """Execute a mapped gaming action"""
-        if action.startswith('gamepad_') and self.gamepad:
+        if action.startswith('gamepad_combo_') and self.gamepad:
+            await self._execute_gamepad_combo(action, move)
+        elif action.startswith('gamepad_') and self.gamepad:
             await self._execute_gamepad_action(action, move)
         elif action.startswith('key_'):
             key = action[4:]  # Remove 'key_' prefix
@@ -419,13 +421,87 @@ class CrossPlatformController:
         except Exception as e:
             print(f"Gamepad action failed: {e}")
     
+    async def _execute_gamepad_combo(self, action: str, move: str):
+        """Execute gamepad button combos like Y+DpadDown"""
+        if not self.gamepad:
+            return
+            
+        # Parse combo format: gamepad_combo_y+dpad_down
+        combo_part = action.replace('gamepad_combo_', '')
+        
+        # Map button names to vgamepad constants
+        button_map = {
+            'a': vg.XUSB_BUTTON.XUSB_GAMEPAD_A,
+            'b': vg.XUSB_BUTTON.XUSB_GAMEPAD_B,
+            'x': vg.XUSB_BUTTON.XUSB_GAMEPAD_X,
+            'y': vg.XUSB_BUTTON.XUSB_GAMEPAD_Y,
+            'l1': vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_SHOULDER,
+            'r1': vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER,
+            'l3': vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_THUMB,
+            'r3': vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_THUMB,
+            'dpad_up': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP,
+            'dpad_down': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN,
+            'dpad_left': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT,
+            'dpad_right': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT,
+            'back': vg.XUSB_BUTTON.XUSB_GAMEPAD_BACK,
+            'start': vg.XUSB_BUTTON.XUSB_GAMEPAD_START,
+        }
+        
+        try:
+            # Split by + to get the buttons
+            buttons = combo_part.split('+')
+            if len(buttons) != 2:
+                print(f"Invalid combo format: {action}. Use format: gamepad_combo_button1+button2")
+                return
+                
+            hold_button_name = buttons[0].strip()
+            press_button_name = buttons[1].strip()
+            
+            hold_button = button_map.get(hold_button_name)
+            press_button = button_map.get(press_button_name)
+            
+            if not hold_button or not press_button:
+                print(f"Unknown button in combo: {action}")
+                return
+            
+            # Execute the combo: hold first button, press second, release both
+            print(f"  Gamepad Combo: {hold_button_name.upper()} + {press_button_name.upper()} → {move}")
+            
+            # Step 1: Press and hold the first button
+            self.gamepad.press_button(button=hold_button)
+            self.gamepad.update()
+            
+            # Step 2: Small delay to ensure the hold registers
+            await asyncio.sleep(0.05)
+            
+            # Step 3: Press the second button while still holding first
+            self.gamepad.press_button(button=press_button)
+            self.gamepad.update()
+            
+            # Step 4: Hold both buttons briefly
+            await asyncio.sleep(0.1)
+            
+            # Step 5: Release second button first
+            self.gamepad.release_button(button=press_button)
+            self.gamepad.update()
+            
+            # Step 6: Small delay
+            await asyncio.sleep(0.05)
+            
+            # Step 7: Release first button
+            self.gamepad.release_button(button=hold_button)
+            self.gamepad.update()
+            
+        except Exception as e:
+            print(f"Gamepad combo failed: {e}")
+    
     async def set_analog_movement(self, tilt_x: float, tilt_y: float, spin_z: float):
         """Set analog stick positions based on cube orientation"""
         if self.gamepad:
             # Convert to gamepad range (-32768 to 32767)
-            # Swap X and Y: tilt_y controls left/right, -tilt_x controls forward/back (inverted)
-            left_stick_x = max(-32768, min(32767, int(tilt_y * 32767 * self.config.movement_sensitivity)))
-            left_stick_y = max(-32768, min(32767, int(-tilt_x * 32767 * self.config.movement_sensitivity)))
+            # tilt_x controls left/right, tilt_y controls forward/back
+            left_stick_x = max(-32768, min(32767, int(tilt_x * 32767 * self.config.movement_sensitivity)))
+            left_stick_y = max(-32768, min(32767, int(tilt_y * 32767 * self.config.movement_sensitivity)))
             right_stick_x = max(-32768, min(32767, int(spin_z * 32767 * self.config.movement_sensitivity)))
             
             self.gamepad.left_joystick(x_value=left_stick_x, y_value=left_stick_y)

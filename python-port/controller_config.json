@@ -10,7 +10,7 @@
   },
   "deadzone": {
     "general_deadzone": 0.1,
-    "spin_deadzone": 0.1,
+    "spin_deadzone": 0.15,
     "bridge_deadzone": 0.1
   },
   "timing": {
@@ -19,7 +19,7 @@
   },
   "move_mappings": {
     "R": "gamepad_r1",
-    "R'": "gamepad_r2",
+    "R'": "gamepad_combo_y+dpad_down",
     "L": "gamepad_b",
     "L'": "gamepad_a",
     "U": "gamepad_b",

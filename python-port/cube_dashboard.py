@@ -626,12 +626,18 @@ class CubeDashboardServer:
         # Apply deadzone from config
         deadzone_settings = self.config.get('deadzone', {})
         deadzone = deadzone_settings.get('general_deadzone', 0.1)
-        spin_deadzone = deadzone_settings.get('spin_deadzone', 0.02)
+        spin_deadzone = deadzone_settings.get('spin_deadzone', 0.1)  # Use consistent default
+        
+        # Apply more aggressive filtering to prevent drift
         if abs(tilt_x) < deadzone:
             tilt_x = 0
         if abs(tilt_y) < deadzone:
             tilt_y = 0
-        if abs(spin_z) < spin_deadzone:
+        
+        # More aggressive spin filtering to prevent perpetual spinning
+        if abs(spin_z) < spin_deadzone * 1.5:  # Increase effective deadzone for spin
+            spin_z = 0
+        elif abs(raw_spin_z) < 0.05:  # Also check raw value for very small movements
             spin_z = 0
         
         # Check for maximum stick input to trigger B button (sprint/run modifier)
