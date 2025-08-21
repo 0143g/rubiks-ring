@@ -423,8 +423,9 @@ class CrossPlatformController:
         """Set analog stick positions based on cube orientation"""
         if self.gamepad:
             # Convert to gamepad range (-32768 to 32767)
-            left_stick_x = max(-32768, min(32767, int(tilt_x * 32767 * self.config.movement_sensitivity)))
-            left_stick_y = max(-32768, min(32767, int(tilt_y * 32767 * self.config.movement_sensitivity)))
+            # Swap X and Y: tilt_y controls left/right, -tilt_x controls forward/back (inverted)
+            left_stick_x = max(-32768, min(32767, int(tilt_y * 32767 * self.config.movement_sensitivity)))
+            left_stick_y = max(-32768, min(32767, int(-tilt_x * 32767 * self.config.movement_sensitivity)))
             right_stick_x = max(-32768, min(32767, int(spin_z * 32767 * self.config.movement_sensitivity)))
             
             self.gamepad.left_joystick(x_value=left_stick_x, y_value=left_stick_y)
