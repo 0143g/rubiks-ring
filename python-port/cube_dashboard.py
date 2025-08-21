@@ -701,7 +701,7 @@ class CubeDashboardServer:
         # INVERTED: Forward tilt should move forward, left tilt should move left
         raw_tilt_y = -relative['x'] * tilt_y_sens * 2  # Forward/back: INVERTED
         raw_tilt_x = relative['y'] * tilt_x_sens * 2  # Left/right: INVERTED 
-        raw_spin_z = relative['z'] * spin_z_sens  # Spin around vertical axis: NOT INVERTED
+        raw_spin_z = -relative['z'] * spin_z_sens  # Spin around vertical axis: NOW INVERTED FOR CONTROLS
         
         # Isolate primary axis to prevent diagonal movement (lines 677-688)
         tilt_x = 0.0
