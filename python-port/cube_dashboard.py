@@ -470,8 +470,20 @@ class CubeDashboardServer:
             
             # Forward to controller bridge if enabled and connected
             if self.enable_controller and self.bridge_connected:
-                # Process orientation using exact same logic as working simple-bridge.html
-                controller_data = self._process_orientation_for_controller(event.quaternion, current_time)
+                # Use calibrated quaternion if available, otherwise raw
+                quat_for_controller = calibrated_quat if calibrated_quat is not None else raw_quat
+                
+                # Create a quaternion object for the controller processing
+                from gan_web_bluetooth.utils import Quaternion
+                controller_quat = Quaternion(
+                    x=quat_for_controller['x'],
+                    y=quat_for_controller['y'], 
+                    z=quat_for_controller['z'],
+                    w=quat_for_controller['w']
+                )
+                
+                # Process orientation using calibrated quaternion
+                controller_data = self._process_orientation_for_controller(controller_quat, current_time)
                 if controller_data:
                     self._forward_to_controller_bridge('CUBE_ORIENTATION', controller_data)
                     
@@ -630,33 +642,19 @@ class CubeDashboardServer:
             )
     
     def _process_orientation_for_controller(self, quaternion, current_time):
-        """Process orientation data for analog joystick control with proper calibration"""
+        """Process orientation data for analog joystick control. 
+        Quaternion is already calibrated when passed to this function."""
         import math
         
-        # Apply axis transformation
-        raw_quat = {
-            'x': -quaternion.x,
-            'y': quaternion.z,
-            'z': quaternion.y,
+        # The quaternion passed here is already calibrated, so just use it directly
+        transformed_quat = {
+            'x': quaternion.x,
+            'y': quaternion.y,
+            'z': quaternion.z,
             'w': quaternion.w
         }
         
-        # Apply calibration if we have one
-        if hasattr(self, 'calibration_transform'):
-            # Apply the calibration transformation
-            # new_quat = calibration_transform * raw_quat
-            cal = self.calibration_transform
-            transformed_quat = {
-                'x': cal['w']*raw_quat['x'] + cal['x']*raw_quat['w'] + cal['y']*raw_quat['z'] - cal['z']*raw_quat['y'],
-                'y': cal['w']*raw_quat['y'] - cal['x']*raw_quat['z'] + cal['y']*raw_quat['w'] + cal['z']*raw_quat['x'],
-                'z': cal['w']*raw_quat['z'] + cal['x']*raw_quat['y'] - cal['y']*raw_quat['x'] + cal['z']*raw_quat['w'],
-                'w': cal['w']*raw_quat['w'] - cal['x']*raw_quat['x'] - cal['y']*raw_quat['y'] - cal['z']*raw_quat['z']
-            }
-        else:
-            transformed_quat = raw_quat
-            print("WARNING: No calibration set! Run calibrate_cube() with green face forward")
-        
-        # Store current quaternion
+        # Store current quaternion (this may be redundant now but keeping for compatibility)
         self.orientation_state['current_quaternion'] = transformed_quat.copy()
         
         # Set reference orientation on first reading
