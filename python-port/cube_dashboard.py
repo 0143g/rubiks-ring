@@ -657,38 +657,10 @@ class CubeDashboardServer:
         # Store current quaternion (this may be redundant now but keeping for compatibility)
         self.orientation_state['current_quaternion'] = transformed_quat.copy()
         
-        # Set reference orientation on first reading
-        if not self.orientation_state['reference_orientation']:
-            # Now we use the CALIBRATED green face forward which should be (0,0,1,0)
-            self.orientation_state['reference_orientation'] = {
-                'x': 0.0,
-                'y': 0.0, 
-                'z': 1.0,  # Target reference after calibration
-                'w': 0.0   # Target reference after calibration
-            }
-            print("Reference orientation set to calibrated GREEN FACE FORWARD (0, 0, 1, 0)")
-        
-        # Calculate relative quaternion from reference (proper quaternion math)
-        ref = self.orientation_state['reference_orientation']
-        curr = transformed_quat
-        
-        # Relative = current * inverse(reference)
-        # inverse(q) = (-x, -y, -z, w) / (x² + y² + z² + w²)
-        ref_norm_sq = ref['x']**2 + ref['y']**2 + ref['z']**2 + ref['w']**2
-        ref_inv = {
-            'x': -ref['x'] / ref_norm_sq,
-            'y': -ref['y'] / ref_norm_sq, 
-            'z': -ref['z'] / ref_norm_sq,
-            'w': ref['w'] / ref_norm_sq
-        }
-        
-        # Quaternion multiplication: relative = curr * ref_inv
-        relative = {
-            'x': curr['w']*ref_inv['x'] + curr['x']*ref_inv['w'] + curr['y']*ref_inv['z'] - curr['z']*ref_inv['y'],
-            'y': curr['w']*ref_inv['y'] - curr['x']*ref_inv['z'] + curr['y']*ref_inv['w'] + curr['z']*ref_inv['x'],
-            'z': curr['w']*ref_inv['z'] + curr['x']*ref_inv['y'] - curr['y']*ref_inv['x'] + curr['z']*ref_inv['w'],
-            'w': curr['w']*ref_inv['w'] - curr['x']*ref_inv['x'] - curr['y']*ref_inv['y'] - curr['z']*ref_inv['z']
-        }
+        # The incoming quaternion is already calibrated, so use it directly
+        # When green face is forward, transformed_quat should be approximately (0, 0, 1, 0)
+        # Use the calibrated quaternion directly for tilt calculations
+        relative = transformed_quat
         
         # Check for config updates
         self._check_and_reload_config()

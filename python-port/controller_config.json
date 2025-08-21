@@ -18,17 +18,17 @@
     "forward_tilt_threshold": 0.7
   },
   "move_mappings": {
-    "R": "gamepad_r1",
+    "R": "gamepad_l2",
     "R'": "gamepad_combo_y+dpad_down",
     "L": "gamepad_x",
     "L'": "gamepad_y",
     "U": "gamepad_b",
     "U'": "gamepad_b",
     "D": "gamepad_a",
-    "D'": "gamepad_r1",
+    "D'": "gamepad_r2",
     "F": "gamepad_dpad_right",
     "F'": "gamepad_dpad_left",
-    "B": "gamepad_l2",
+    "B": "gamepad_combo_y+r1",
     "B'": "gamepad_r3",
     "AUTO_B_PRESS": "gamepad_b_hold",
     "AUTO_B_RELEASE": "gamepad_b_release"
