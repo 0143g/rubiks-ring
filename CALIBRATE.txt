@@ -1,0 +1,187 @@
+1. Green face forward, white on top:
+CAL XYZW (0, 0, 1, 0)
+
+2. Blue face forward (green in back):
+CAL XYZW (1, 0, 0, 0)
+
+3. Red face forward (green on left):
+CAL XYZW (-0.705, 0, 0.709, 0)
+
+4. Orange face forward (green on right):
+CAL XYZW (0.716, 0, 0.695, 0)
+
+5. White face forward (green on bottom):
+CAL XYZW (0.041, -0.356, 0.684, -0.635)
+
+6. Yellow face forward (green on top):
+CAL XYZW (0.041, 0.368, 0.699, 0.612)
+
+
+CUBE ROTATIONS:
+DEFAULT -> FORWARD TILT:
+Left: (0, 0) | Right: (10400, 0)
+Left: (0, 5370) | Right: (10909, 0)
+Left: (0, 5653) | Right: (11196, 0)
+Left: (0, 9486) | Right: (14182, 0)
+Left: (0, 10049) | Right: (14571, 0)
+Left: (0, 10342) | Right: (14804, 0)
+Left: (0, 10676) | Right: (15048, 0)
+Left: (0, 11018) | Right: (15281, 0)
+Left: (0, 13073) | Right: (16908, 0)
+Left: (0, 13085) | Right: (16920, 0)
+Left: (0, 13153) | Right: (16954, 0)
+Left: (0, 13184) | Right: (16962, 0)
+Left: (0, 12798) | Right: (16812, 0)
+Left: (0, 12515) | Right: (16693, 0)
+Left: (0, 12137) | Right: (16526, 0)
+Left: (0, 11523) | Right: (16213, 0)
+Left: (0, 10787) | Right: (15823, 0)
+Left: (0, 10166) | Right: (15475, 0)
+
+DEFAULT -> BACKWARD TILT:
+Left: (0, 0) | Right: (-8964, 0)
+Left: (0, 0) | Right: (-9398, 0)
+Left: (0, 7566) | Right: (-12937, 0)
+Left: (0, 7822) | Right: (-13196, 0)
+Left: (0, 8031) | Right: (-13358, 0)
+Left: (0, 8707) | Right: (-13882, 0)
+Left: (0, 11304) | Right: (-15697, 0)
+Left: (0, 11375) | Right: (-15760, 0)
+Left: (0, 11485) | Right: (-15885, 0)
+Left: (0, 11573) | Right: (-15961, 0)
+Left: (0, 12981) | Right: (-16900, 0)
+Left: (0, 13126) | Right: (-17002, 0)
+Left: (0, 13208) | Right: (-17090, 0)
+Left: (0, 13261) | Right: (-17148, 0)
+Left: (0, 13332) | Right: (-17199, 0)
+Left: (0, 13889) | Right: (-17451, 0)
+Left: (0, 13698) | Right: (-17388, 0)
+Left: (0, 13191) | Right: (-17249, 0)
+
+DEFAULT -> LEFT TILT:
+Left: (0, 0) | Right: (11203, 0)
+Left: (0, 5355) | Right: (12685, 0)
+Left: (0, 5861) | Right: (13257, 0)
+Left: (0, 6314) | Right: (13790, 0)
+Left: (0, 6763) | Right: (14291, 0)
+Left: (0, 10736) | Right: (17882, 0)
+Left: (0, 10733) | Right: (17857, 0)
+Left: (0, 10751) | Right: (17869, 0)
+Left: (0, 10787) | Right: (17895, 0)
+Left: (0, 10827) | Right: (17911, 0)
+Left: (0, 10850) | Right: (17902, 0)
+Left: (0, 10840) | Right: (17852, 0)
+Left: (0, 6932) | Right: (13887, 0)
+Left: (0, 6092) | Right: (12876, 0)
+Left: (0, 5292) | Right: (11897, 0)
+Left: (0, 4922) | Right: (11431, 0)
+
+DEFAULT -> RIGHT TILT:
+Left: (0, 0) | Right: (11054, 0)
+Left: (0, 0) | Right: (-10845, 0)
+Left: (0, 5265) | Right: (-11857, 0)
+Left: (0, 7088) | Right: (-13582, 0)
+Left: (0, 7901) | Right: (-14309, 0)
+Left: (0, 8557) | Right: (-14907, 0)
+Left: (0, 8822) | Right: (-15158, 0)
+Left: (0, 10945) | Right: (-17172, 0)
+Left: (0, 10664) | Right: (-17043, 0)
+Left: (0, 10605) | Right: (-16999, 0)
+Left: (0, 10366) | Right: (-16807, 0)
+
+DEFAULT -> RIGHT SPIN:
+Left: (-11611, 0) | Right: (0, 0)
+Left: (-13068, 0) | Right: (0, 0)
+Left: (-14421, 0) | Right: (0, 0)
+Left: (-15699, 0) | Right: (0, 0)
+Left: (-17005, 0) | Right: (0, 0)
+Left: (-18310, 0) | Right: (0, 0)
+Left: (-18979, 0) | Right: (0, 0)
+Left: (-32767, 0) | Right: (0, 0)
+Cube move: AUTO_B_PRESS
+🏃 SPRINT MODE: ON (dashboard triggered)
+DEBUG: move='AUTO_B_PRESS', sprint_mode_active=True, b_button_held_by_sprint=False
+No mapping for move: AUTO_B_PRESS
+Left: (-32767, 0) | Right: (0, 0)
+Left: (-32767, 0) | Right: (0, 0)
+Left: (-32767, 0) | Right: (0, 0)
+Left: (-32767, 0) | Right: (0, 0)
+Left: (-32767, 0) | Right: (0, 0)
+Left: (-32767, 0) | Right: (0, 0)
+Left: (-32767, 0) | Right: (0, 0)
+Left: (-32767, 0) | Right: (0, 0)
+Left: (-32767, 0) | Right: (0, 0)
+Left: (-13051, 0) | Right: (0, 0)
+Cube move: AUTO_B_RELEASE
+🚶 SPRINT MODE: OFF (dashboard triggered)
+DEBUG: move='AUTO_B_RELEASE', sprint_mode_active=False, b_button_held_by_sprint=False
+No mapping for move: AUTO_B_RELEASE
+Left: (-9561, 0) | Right: (0, 0)
+Left: (-7213, 0) | Right: (0, 0)
+Left: (-5631, 0) | Right: (0, 0)
+
+DEFAULT -> LEFT SPIN:
+Left: (9202, 0) | Right: (0, 0)
+Left: (19202, 0) | Right: (0, 0)
+Left: (26634, 0) | Right: (0, 0)
+Left: (31762, 0) | Right: (0, 0)
+Cube move: AUTO_B_PRESS
+🏃 SPRINT MODE: ON (dashboard triggered)
+DEBUG: move='AUTO_B_PRESS', sprint_mode_active=True, b_button_held_by_sprint=False
+No mapping for move: AUTO_B_PRESS
+Left: (32767, 0) | Right: (0, 0)
+Left: (32767, 0) | Right: (0, 0)
+Left: (32767, 0) | Right: (0, 0)
+Left: (32767, 0) | Right: (0, 0)
+Left: (32767, 0) | Right: (0, 0)
+Left: (32767, 0) | Right: (0, 0)
+Left: (32767, 0) | Right: (0, 0)
+Left: (32767, 0) | Right: (0, 0)
+Left: (32767, 0) | Right: (0, 0)
+Left: (32767, 0) | Right: (0, 0)
+Left: (32767, 0) | Right: (0, 0)
+Left: (32767, 0) | Right: (0, 0)
+Left: (32767, 0) | Right: (0, 0)
+Left: (32767, 0) | Right: (0, 0)
+Left: (32767, 0) | Right: (0, 0)
+Cube move: AUTO_B_RELEASE
+🚶 SPRINT MODE: OFF (dashboard triggered)
+DEBUG: move='AUTO_B_RELEASE', sprint_mode_active=False, b_button_held_by_sprint=False
+No mapping for move: AUTO_B_RELEASE
+
+DESIRED BEHAVIOR:
+BEFORE FORWARD TILT:
+Left: (0, 0) | Right: (0, 0)
+
+AFTER FORWARD TILT:
+Left: (0, 32767) | Right: (0, 0)
+
+BEFORE BACKWARD TILT:
+Left: (0, 0) | Right: (0, 0)
+
+AFTER BACKWARD TILT:
+Left: (0, -32767) | Right: (0, 0)
+
+BEFORE LEFT TILT:
+Left: (0, 0) | Right: (0, 0)
+
+AFTER LEFT TILT:
+Left: (-32767, 0) | Right: (0, 0)
+
+BEFORE RIGHT TILT:
+Left: (0, 0) | Right: (0, 0)
+
+AFTER RIGHT TILT:
+Left: (32767, 0) | Right: (0, 0)
+
+BEFORE LEFT SPIN:
+Left: (0, 0) | Right: (0, 0)
+
+AFTER LEFT SPIN:
+Left: (0, 0) | Right: (-32767, 0)
+
+BEFORE RIGHT SPIN:
+Left: (0, 0) | Right: (0, 0)
+
+AFTER RIGHT SPIN:
+Left: (0, 0) | Right: (32767, 0)

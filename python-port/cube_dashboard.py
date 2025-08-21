@@ -419,12 +419,11 @@ class CubeDashboardServer:
             }
             
             # When current == reference, relative_quat should be (0,0,0,1) (identity)
-            # We want our target to be (0,0,1,0) for green face forward
-            # So we need to transform (0,0,0,1) -> (0,0,1,0)
-            # This is a 180-degree rotation around X or Y axis
+            # We want our target to be (0,0,0,1) for green face forward (identity quaternion)
+            # Identity quaternion represents no rotation from the calibrated position
             
-            # Apply final transform to get (0,0,1,0) as our "forward" orientation
-            target_transform = {'x': 0, 'y': 0, 'z': 1, 'w': 0}  # Our desired forward orientation
+            # Apply identity transform to get (0,0,0,1) as our "forward" orientation
+            target_transform = {'x': 0, 'y': 0, 'z': 0, 'w': 1}  # Identity quaternion (no rotation)
             
             # Multiply relative * target_transform to get final calibrated quaternion
             calibrated_quat = {
@@ -751,11 +750,11 @@ class CubeDashboardServer:
         self.calibration_reference = self._last_raw_quaternion.copy()
         
         print(f"CALIBRATION: Storing green-face-forward reference = ({self.calibration_reference['x']:.3f}, {self.calibration_reference['y']:.3f}, {self.calibration_reference['z']:.3f}, {self.calibration_reference['w']:.3f})")
-        print("✅ Cube calibrated! This position is now (0,0,1,0)")
+        print("✅ Cube calibrated! This position is now (0,0,0,1)")
         
         self.socketio.emit('message', {
             'type': 'success',
-            'text': '✅ Cube calibrated! Green face forward is now (0,0,1,0)'
+            'text': '✅ Cube calibrated! Green face forward is now (0,0,0,1)'
         })
     
     def reset_controller_orientation(self, use_green_face=True):
