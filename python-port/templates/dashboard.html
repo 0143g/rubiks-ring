@@ -601,9 +601,15 @@
         });
 
         socket.on('orientation', (data) => {
-            // Update both the 3D visualization AND the text display
+            // Use CALIBRATED quaternion for visualization if available, otherwise use raw
+            const quatForViz = data.calibrated_quaternion || data.quaternion;
+            
+            if (quatForViz) {
+                updateOrientation(quatForViz);  // Use calibrated for 3D cube
+            }
+            
+            // Still show RAW quaternion in the text display
             if (data.quaternion) {
-                updateOrientation(data.quaternion);
                 updateOrientationDisplay(data.quaternion);
             }
             
@@ -725,11 +731,11 @@
             
             let { x: qx, y: qy, z: qz, w: qw } = quaternion;
             
-            // Apply the same axis mapping as the original simple-bridge.html
+            // INVERTED: Fix the visualization to match actual cube movement
             let visualQuat = new THREE.Quaternion(
-                -qx,  // cube x → -x (matches working visualization)
-                qz,   // cube z → visual y (up)
-                qy,   // cube y → visual z (forward)
+                qx,   // Forward/back - KEEP AS IS (working)
+                qz,   // Left/right - DON'T INVERT (was -qz, now qz)
+                -qy,  // Spin - INVERT (was qy, now -qy)
                 qw
             ).normalize();
             
