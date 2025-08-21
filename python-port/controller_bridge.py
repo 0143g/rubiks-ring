@@ -495,7 +495,7 @@ class CrossPlatformController:
             # tilt_x controls left/right, tilt_y controls forward/back
             left_stick_x = max(-32768, min(32767, int(tilt_x * 32767 * self.config.movement_sensitivity)))
             left_stick_y = max(-32768, min(32767, int(tilt_y * 32767 * self.config.movement_sensitivity)))
-            right_stick_x = max(-32768, min(32767, int(spin_z * 32767 * self.config.movement_sensitivity)))
+            right_stick_x = max(-32768, min(32767, int(spin_z * 32767 * self.config.movement_sensitivity)))  # Inverted for correct camera direction
             
             self.gamepad.left_joystick(x_value=left_stick_x, y_value=left_stick_y)
             self.gamepad.right_joystick(x_value=right_stick_x, y_value=0)
@@ -537,7 +537,7 @@ class CrossPlatformController:
     async def _set_mouse_camera(self, spin_z: float):
         """Convert spin to mouse camera movement"""
         if abs(spin_z) > 0.1:
-            delta_x = int(spin_z * 10 * self.config.mouse_sensitivity)
+            delta_x = int(spin_z * 10 * self.config.mouse_sensitivity)  # Inverted for correct camera direction
             await self.mouse_move_relative(delta_x, 0)
     
     # Platform-specific input implementations
