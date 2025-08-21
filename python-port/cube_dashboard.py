@@ -383,8 +383,7 @@ class CubeDashboardServer:
             'timestamp': current_time
         }
         
-        # Always update current orientation state for calibration
-        # Apply axis transformation
+        # Store the raw quaternion with axis transformation
         raw_quat = {
             'x': -event.quaternion.x,
             'y': event.quaternion.z,
@@ -392,26 +391,63 @@ class CubeDashboardServer:
             'w': event.quaternion.w
         }
         
-        # Apply calibration if we have one
-        if hasattr(self, 'calibration_transform'):
-            cal = self.calibration_transform
-            transformed_quat = {
-                'x': cal['w']*raw_quat['x'] + cal['x']*raw_quat['w'] + cal['y']*raw_quat['z'] - cal['z']*raw_quat['y'],
-                'y': cal['w']*raw_quat['y'] - cal['x']*raw_quat['z'] + cal['y']*raw_quat['w'] + cal['z']*raw_quat['x'],
-                'z': cal['w']*raw_quat['z'] + cal['x']*raw_quat['y'] - cal['y']*raw_quat['x'] + cal['z']*raw_quat['w'],
-                'w': cal['w']*raw_quat['w'] - cal['x']*raw_quat['x'] - cal['y']*raw_quat['y'] - cal['z']*raw_quat['z']
-            }
-        else:
-            transformed_quat = raw_quat
+        # Always store the last raw quaternion for calibration
+        self._last_raw_quaternion = raw_quat.copy()
         
-        # Store current quaternion for calibration
+        # Calculate calibrated quaternion
+        if hasattr(self, 'calibration_reference'):
+            # Simple approach: when cube matches calibration position, output (0,0,1,0)
+            # Calculate difference from calibration position
+            ref = self.calibration_reference
+            
+            # Calculate relative rotation: current relative to reference
+            # relative = current * inverse(reference)
+            ref_norm = ref['x']**2 + ref['y']**2 + ref['z']**2 + ref['w']**2
+            ref_inv = {
+                'x': -ref['x'] / ref_norm,
+                'y': -ref['y'] / ref_norm,
+                'z': -ref['z'] / ref_norm,
+                'w': ref['w'] / ref_norm
+            }
+            
+            # This gives us the rotation FROM reference TO current
+            relative_quat = {
+                'x': raw_quat['w']*ref_inv['x'] + raw_quat['x']*ref_inv['w'] + raw_quat['y']*ref_inv['z'] - raw_quat['z']*ref_inv['y'],
+                'y': raw_quat['w']*ref_inv['y'] - raw_quat['x']*ref_inv['z'] + raw_quat['y']*ref_inv['w'] + raw_quat['z']*ref_inv['x'],
+                'z': raw_quat['w']*ref_inv['z'] + raw_quat['x']*ref_inv['y'] - raw_quat['y']*ref_inv['x'] + raw_quat['z']*ref_inv['w'],
+                'w': raw_quat['w']*ref_inv['w'] - raw_quat['x']*ref_inv['x'] - raw_quat['y']*ref_inv['y'] - raw_quat['z']*ref_inv['z']
+            }
+            
+            # When current == reference, relative_quat should be (0,0,0,1) (identity)
+            # We want our target to be (0,0,1,0) for green face forward
+            # So we need to transform (0,0,0,1) -> (0,0,1,0)
+            # This is a 180-degree rotation around X or Y axis
+            
+            # Apply final transform to get (0,0,1,0) as our "forward" orientation
+            target_transform = {'x': 0, 'y': 0, 'z': 1, 'w': 0}  # Our desired forward orientation
+            
+            # Multiply relative * target_transform to get final calibrated quaternion
+            calibrated_quat = {
+                'x': relative_quat['w']*target_transform['x'] + relative_quat['x']*target_transform['w'] + relative_quat['y']*target_transform['z'] - relative_quat['z']*target_transform['y'],
+                'y': relative_quat['w']*target_transform['y'] - relative_quat['x']*target_transform['z'] + relative_quat['y']*target_transform['w'] + relative_quat['z']*target_transform['x'],
+                'z': relative_quat['w']*target_transform['z'] + relative_quat['x']*target_transform['y'] - relative_quat['y']*target_transform['x'] + relative_quat['z']*target_transform['w'],
+                'w': relative_quat['w']*target_transform['w'] - relative_quat['x']*target_transform['x'] - relative_quat['y']*target_transform['y'] - relative_quat['z']*target_transform['z']
+            }
+            
+            transformed_quat = calibrated_quat
+        else:
+            # No calibration - just use raw
+            transformed_quat = raw_quat
+            calibrated_quat = None
+        
+        # Store current quaternion for other uses
         self.orientation_state['current_quaternion'] = transformed_quat.copy()
         
         # Debug output to terminal (rate limited to once per second) - AFTER calibration
         if current_time - self.last_orientation_debug >= self.orientation_debug_limit:
-            if hasattr(self, 'calibration_transform'):
+            if calibrated_quat is not None:
                 # Show calibrated values
-                q = transformed_quat
+                q = calibrated_quat
                 print(f"Orientation (calibrated): x={q['x']:.3f}, y={q['y']:.3f}, z={q['z']:.3f}, w={q['w']:.3f}")
             else:
                 # Show raw values with warning
@@ -423,13 +459,11 @@ class CubeDashboardServer:
         try:
             # Add calibrated quaternion to the orientation data
             orientation_with_calibrated = self.current_orientation.copy()
-            orientation_with_calibrated['calibrated_quaternion'] = {
-                'x': transformed_quat['x'],
-                'y': transformed_quat['y'],
-                'z': transformed_quat['z'],
-                'w': transformed_quat['w']
-            }
-            orientation_with_calibrated['is_calibrated'] = hasattr(self, 'calibration_transform')
+            if calibrated_quat is not None:
+                orientation_with_calibrated['calibrated_quaternion'] = calibrated_quat
+                orientation_with_calibrated['is_calibrated'] = True
+            else:
+                orientation_with_calibrated['is_calibrated'] = False
             
             self.socketio.emit('orientation', orientation_with_calibrated)
             self.last_orientation_emit = current_time
@@ -732,9 +766,10 @@ class CubeDashboardServer:
     
     def calibrate_cube(self):
         """Calibrate the cube when it's in the known position (green face forward, white on top).
-        This calculates the transformation needed to make the current quaternion become (0,0,1,0).
+        This stores the current quaternion as the calibration reference.
         """
-        if not self.orientation_state['current_quaternion']:
+        # Get the raw quaternion directly from the event, not the transformed one
+        if not hasattr(self, '_last_raw_quaternion'):
             print("ERROR: No cube data yet. Connect cube first and place it with green face forward")
             self.socketio.emit('message', {
                 'type': 'error',
@@ -742,39 +777,11 @@ class CubeDashboardServer:
             })
             return
         
-        # Get the current raw quaternion (what the cube reports when green is forward)
-        current_raw = self.orientation_state['current_quaternion'].copy()
+        # Store the current RAW quaternion as our "green face forward" reference
+        self.calibration_reference = self._last_raw_quaternion.copy()
         
-        print(f"CALIBRATING: Current raw quaternion = ({current_raw['x']:.3f}, {current_raw['y']:.3f}, {current_raw['z']:.3f}, {current_raw['w']:.3f})")
-        
-        # We want to find the rotation that transforms current_raw to (0,0,1,0)
-        # target = calibration * current_raw
-        # calibration = target * inverse(current_raw)
-        
-        target = {'x': 0.0, 'y': 0.0, 'z': 1.0, 'w': 0.0}
-        
-        # Calculate inverse of current_raw
-        norm_sq = current_raw['x']**2 + current_raw['y']**2 + current_raw['z']**2 + current_raw['w']**2
-        raw_inv = {
-            'x': -current_raw['x'] / norm_sq,
-            'y': -current_raw['y'] / norm_sq,
-            'z': -current_raw['z'] / norm_sq,
-            'w': current_raw['w'] / norm_sq
-        }
-        
-        # Calculate calibration = target * inverse(current_raw)
-        self.calibration_transform = {
-            'x': target['w']*raw_inv['x'] + target['x']*raw_inv['w'] + target['y']*raw_inv['z'] - target['z']*raw_inv['y'],
-            'y': target['w']*raw_inv['y'] - target['x']*raw_inv['z'] + target['y']*raw_inv['w'] + target['z']*raw_inv['x'],
-            'z': target['w']*raw_inv['z'] + target['x']*raw_inv['y'] - target['y']*raw_inv['x'] + target['z']*raw_inv['w'],
-            'w': target['w']*raw_inv['w'] - target['x']*raw_inv['x'] - target['y']*raw_inv['y'] - target['z']*raw_inv['z']
-        }
-        
-        print(f"CALIBRATION SET: Transform = ({self.calibration_transform['x']:.3f}, {self.calibration_transform['y']:.3f}, {self.calibration_transform['z']:.3f}, {self.calibration_transform['w']:.3f})")
-        print("✅ Cube calibrated! Green face forward is now (0,0,1,0)")
-        
-        # Reset reference to use calibrated values
-        self.orientation_state['reference_orientation'] = None
+        print(f"CALIBRATION: Storing green-face-forward reference = ({self.calibration_reference['x']:.3f}, {self.calibration_reference['y']:.3f}, {self.calibration_reference['z']:.3f}, {self.calibration_reference['w']:.3f})")
+        print("✅ Cube calibrated! This position is now (0,0,1,0)")
         
         self.socketio.emit('message', {
             'type': 'success',
