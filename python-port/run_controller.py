@@ -26,17 +26,14 @@ def main():
     
     args = parser.parse_args()
     
-    # Create controller configuration
-    config = ControllerConfig(
-        mouse_sensitivity=args.mouse_sensitivity,
-        movement_sensitivity=args.movement_sensitivity,
-        deadzone=args.deadzone,
-        rate_limit_ms=args.rate_limit
-    )
-    
     # Create and start server
     server = ControllerBridgeServer(port=args.port, host=args.host)
-    server.controller.config = config
+    
+    # Override config settings from command line args if provided
+    server.controller.config.mouse_sensitivity = args.mouse_sensitivity
+    server.controller.config.movement_sensitivity = args.movement_sensitivity
+    server.controller.config.deadzone = args.deadzone
+    server.controller.config.rate_limit_ms = args.rate_limit
     
     print(f"Starting controller bridge on {args.host}:{args.port}")
     print("Press Ctrl+C to stop")

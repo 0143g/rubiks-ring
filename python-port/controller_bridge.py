@@ -54,8 +54,12 @@ class ControllerConfig:
             return cls(move_mappings={})
             
         try:
-            with open(config_file, 'r') as f:
-                data = json.load(f)
+            with open(config_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+                if not content.strip():
+                    print(f"WARNING: Config file {config_path} is empty")
+                    return cls(move_mappings={})
+                data = json.loads(content)
             
             # Extract settings from JSON structure
             sensitivity = data.get('sensitivity', {})
@@ -67,10 +71,10 @@ class ControllerConfig:
             if active_mapping in data:
                 move_mappings = data[active_mapping]
             else:
-                move_mappings = data.get('move_mappings', None)
+                move_mappings = data.get('move_mappings', {})
                 
-            if move_mappings is None:
-                print(f"ERROR: No '{active_mapping}' found in config file!")
+            if not move_mappings:
+                print(f"WARNING: No move_mappings found in config file, using empty mappings")
                 move_mappings = {}
             
             return cls(
@@ -87,15 +91,20 @@ class ControllerConfig:
                 active_mapping=active_mapping
             )
             
+        except json.JSONDecodeError as e:
+            print(f"ERROR: Invalid JSON in {config_path}: {e}")
+            print(f"Please check the syntax of your config file")
+            return cls(move_mappings={})
         except Exception as e:
             print(f"ERROR loading config from {config_path}: {e}")
             # Return instance with empty mappings instead of defaults
             return cls(move_mappings={})
     
     def __post_init__(self):
-        if self.move_mappings is None:
-            print("ERROR: No move_mappings found in config file!")
-            print(f"Please ensure {self.active_mapping} exists in your controller_config.json")
+        if self.move_mappings is None or not self.move_mappings:
+            if self.move_mappings is None:
+                print("ERROR: No move_mappings found in config file!")
+                print(f"Please ensure {self.active_mapping} exists in your controller_config.json")
             self.move_mappings = {}  # Empty dict instead of defaults
 
 class CrossPlatformController:

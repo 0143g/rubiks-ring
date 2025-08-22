@@ -1,7 +1,14 @@
 PS M:\mikerson\rubiks\python-port> python .\run_controller.py
-Traceback (most recent call last):
-  File "M:\mikerson\rubiks\python-port\run_controller.py", line 11, in <module>
-    from controller_bridge import ControllerBridgeServer, ControllerConfig
-  File "M:\mikerson\rubiks\python-port\controller_bridge.py", line 349
-    if len(buttons) != 2:
-IndentationError: unexpected indent
+ERROR: No move_mappings found in config file!
+Please ensure move_mappings exists in your controller_config.json
+Virtual Xbox controller created
+Gamepad controller bridge initialized
+Loaded 14 move mappings
+Starting controller bridge on localhost:8083
+Press Ctrl+C to stop
+Gamepad Controller Bridge
+Starting server on localhost:8083
+Server ready
+Client connected: ('::1', 53586, 0, 0)
+
+Controller bridge stopped

@@ -10,7 +10,7 @@
   },
   "deadzone": {
     "general_deadzone": 0.1,
-    "spin_deadzone": 0.1,
+    "spin_deadzone": 0.05,
     "bridge_deadzone": 0.1
   },
   "timing": {
