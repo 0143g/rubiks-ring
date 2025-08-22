@@ -737,12 +737,41 @@ class CubeDashboardServer:
             spin_z = 0
         
         # Check for maximum stick input to trigger B button (sprint/run modifier)
-        max_stick_threshold = 0.95  # 95% of max stick range triggers B button
-        auto_b_button = False
+        # Using hysteresis to prevent rapid on/off transitions
+        sprint_on_threshold = 0.95   # Activate sprint at 95% stick
+        sprint_off_threshold = 0.85  # Deactivate sprint at 85% stick (hysteresis)
         
-        # If either forward/back (tilt_y) OR left/right (tilt_x) is near maximum, auto-press B button
-        if abs(tilt_x) >= max_stick_threshold or abs(tilt_y) >= max_stick_threshold:
-            auto_b_button = True
+        # Initialize sprint state tracking if not exists
+        if not hasattr(self, '_auto_sprint_active'):
+            self._auto_sprint_active = False
+            self._auto_sprint_start_time = 0
+        
+        # Calculate current maximum stick deflection
+        max_stick_deflection = max(abs(tilt_x), abs(tilt_y))
+        
+        # Determine if we should activate/deactivate sprint
+        auto_b_button = self._auto_sprint_active  # Default to current state
+        
+        if not self._auto_sprint_active:
+            # Not sprinting - check if we should start
+            # Require threshold to be held for at least 100ms to prevent accidental triggers
+            if max_stick_deflection >= sprint_on_threshold:
+                if self._auto_sprint_start_time == 0:
+                    self._auto_sprint_start_time = current_time
+                elif current_time - self._auto_sprint_start_time >= 100:  # 100ms debounce
+                    self._auto_sprint_active = True
+                    auto_b_button = True
+            else:
+                self._auto_sprint_start_time = 0  # Reset timer if below threshold
+        else:
+            # Currently sprinting - check if we should stop
+            # Use lower threshold for hysteresis to prevent rapid toggling
+            if max_stick_deflection < sprint_off_threshold:
+                self._auto_sprint_active = False
+                self._auto_sprint_start_time = 0
+                auto_b_button = False
+            else:
+                auto_b_button = True  # Keep sprint active
         
         # Debug output (rate limited)
         if hasattr(self, 'last_controller_debug') and current_time - self.last_controller_debug > 1000:

@@ -158,24 +158,37 @@ class CrossPlatformController:
         """Handle cube face moves and convert to game input"""
         move = data.get('move', '')
         
-        # Handle auto sprint commands and update our sprint state
-        if move == "AUTO_B_PRESS":
-            self.sprint_mode_active = True
-        elif move == "AUTO_B_RELEASE":
-            self.sprint_mode_active = False
-        
-        
         # Special handling for U' (roll) when in sprint mode
+        # Check BEFORE processing AUTO_B commands to avoid conflicts
         if move == "U'" and self.sprint_mode_active:
             await self.handle_roll_during_sprint(move)
             return
         
-        # Get mapped action for this move
+        # Get mapped action for this move (including AUTO_B_PRESS/RELEASE)
         action = self.config.move_mappings.get(move)
         if not action:
             return
-            
-        await self.execute_action(action, move)
+        
+        # Update sprint state tracking for AUTO_B commands
+        if move == "AUTO_B_PRESS":
+            # Only update state and execute action if not already sprinting
+            if not self.sprint_mode_active:
+                self.sprint_mode_active = True
+                print(f"SPRINT: Activating (auto-triggered)")
+                await self.execute_action(action, move)
+        elif move == "AUTO_B_RELEASE":
+            # Only update state and execute action if currently sprinting
+            if self.sprint_mode_active:
+                self.sprint_mode_active = False
+                # Don't release if we're in the middle of a roll
+                if not self.rolling_in_progress:
+                    print(f"SPRINT: Deactivating (auto-triggered)")
+                    await self.execute_action(action, move)
+                else:
+                    print(f"SPRINT: Skipping release (roll in progress)")
+        else:
+            # Normal move execution
+            await self.execute_action(action, move)
     
     async def handle_orientation(self, data: Dict[str, Any]):
         """Handle cube orientation for analog movement"""
@@ -237,6 +250,7 @@ class CrossPlatformController:
             
         self.rolling_in_progress = True
         was_sprint_held = self.b_button_held_by_sprint
+        was_sprint_active = self.sprint_mode_active
         
         try:
             # Step 1: Release B button completely (stop sprint hold)
@@ -262,7 +276,8 @@ class CrossPlatformController:
             await asyncio.sleep(0.05)
             
             # Step 7: Re-engage sprint hold if still in sprint mode
-            if self.sprint_mode_active and was_sprint_held:
+            # Only re-hold if sprint mode is still active and we were holding before
+            if self.sprint_mode_active and was_sprint_active and was_sprint_held:
                 self.b_button_held_by_sprint = True
                 await self._gamepad_button_hold(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
                 
@@ -320,11 +335,15 @@ class CrossPlatformController:
             elif action == "gamepad_dpad_left":
                 await self._gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT)
             elif action == "gamepad_b_hold":
-                await self._gamepad_button_hold(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
-                self.b_button_held_by_sprint = True
+                # Only hold if not already held and not rolling
+                if not self.b_button_held_by_sprint and not self.rolling_in_progress:
+                    await self._gamepad_button_hold(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+                    self.b_button_held_by_sprint = True
             elif action == "gamepad_b_release":
-                await self._gamepad_button_release(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
-                self.b_button_held_by_sprint = False
+                # Only release if currently held and not rolling
+                if self.b_button_held_by_sprint and not self.rolling_in_progress:
+                    await self._gamepad_button_release(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+                    self.b_button_held_by_sprint = False
         except Exception as e:
             pass  # Ignore gamepad errors
     
