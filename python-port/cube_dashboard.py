@@ -703,18 +703,21 @@ class CubeDashboardServer:
         raw_tilt_x = relative['y'] * tilt_x_sens * 2  # Left/right: INVERTED 
         raw_spin_z = -relative['z'] * spin_z_sens  # Spin around vertical axis: NOW INVERTED FOR CONTROLS
         
-        # Isolate primary axis to prevent diagonal movement (lines 677-688)
-        tilt_x = 0.0
-        tilt_y = 0.0
-        abs_x = abs(raw_tilt_x)
-        abs_y = abs(raw_tilt_y)
+        # Allow both axes for diagonal movement
+        # Apply deadzone threshold independently to each axis
+        deadzone_threshold = 0.15
         
-        # Only use the dominant axis, ignore the weaker one to prevent diagonal drift
-        if abs_x > abs_y and abs_x > 0.15:
-            tilt_x = max(-1.0, min(1.0, raw_tilt_x))  # Forward/back only
-        elif abs_y > abs_x and abs_y > 0.15:
-            tilt_y = max(-1.0, min(1.0, raw_tilt_y))  # Left/right only
-        # If both are weak or equal, send zero (neutral position)
+        # Process X axis (left/right)
+        if abs(raw_tilt_x) > deadzone_threshold:
+            tilt_x = max(-1.0, min(1.0, raw_tilt_x))
+        else:
+            tilt_x = 0.0
+        
+        # Process Y axis (forward/back)
+        if abs(raw_tilt_y) > deadzone_threshold:
+            tilt_y = max(-1.0, min(1.0, raw_tilt_y))
+        else:
+            tilt_y = 0.0
         
         # Process spin axis for right stick (no axis isolation needed)
         spin_z = max(-1.0, min(1.0, raw_spin_z))
