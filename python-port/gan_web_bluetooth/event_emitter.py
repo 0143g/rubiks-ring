@@ -23,7 +23,10 @@ except ImportError:
             def emit(self, event: str, *args, **kwargs):
                 """Emit event, handling both sync and async handlers."""
                 if event in self._events:
-                    for handler in self._events[event][:]:  # Copy to avoid modification during iteration
+                    # _events[event] is an OrderedDict in pyee, not a list
+                    # Get handlers safely whether it's OrderedDict or list
+                    handlers = list(self._events[event].keys()) if hasattr(self._events[event], 'keys') else list(self._events[event])
+                    for handler in handlers:
                         try:
                             if asyncio.iscoroutinefunction(handler):
                                 # Schedule async handler

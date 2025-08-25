@@ -1,0 +1,12 @@
+(venv) PS M:\mikerson\rubiks\python-port> python .\test_pyee_internals.py
+Creating EventEmitter...
+EventEmitter attributes: ['_add_event_handler', '_call_handlers', '_emit_handle_potential_error', '_emit_run', '_events', '_lock', '_remove_listener', 'add_listener', 'emit', 'event_names', 'listeners', 'listens_to', 'on', 'once', 'remove_all_listeners', 'remove_listener']
+Has _events: <class 'dict'>
+_events value: {}
+
+Trying to register a handler...
+After registration, _events: {'test': OrderedDict({<function test_handler at 0x000001172AEB16C0>: <function test_handler at 0x000001172AEB16C0>})}
+test event handlers: OrderedDict({<function test_handler at 0x000001172AEB16C0>: <function test_handler at 0x000001172AEB16C0>})
+
+Emitting event...
+Handler called with: hello

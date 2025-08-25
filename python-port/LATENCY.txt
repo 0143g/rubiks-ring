@@ -1,0 +1,610 @@
+PS M:\mikerson\rubiks\python-port> python .\ble_packet_analyzer.py
+🔍 Scanning for GAN cube...
+✅ Found: GANi39Jl at AB:12:34:62:BC:15
+🔗 Connecting to AB:12:34:62:BC:15...
+✅ Connected!
+
+📋 Available services:
+  Service: 00001800-0000-1000-8000-00805f9b34fb
+    Char: 00002a00-0000-1000-8000-00805f9b34fb - Properties: ['read']
+    Char: 00002a01-0000-1000-8000-00805f9b34fb - Properties: ['read']
+    Char: 00002a04-0000-1000-8000-00805f9b34fb - Properties: ['read']
+    Char: 00002ac9-0000-1000-8000-00805f9b34fb - Properties: ['read']
+  Service: 00001801-0000-1000-8000-00805f9b34fb
+    Char: 00002a05-0000-1000-8000-00805f9b34fb - Properties: ['read', 'indicate']
+  Service: f95a48e6-a721-11e9-a2a3-022ae2dbcce4
+    Char: f95a4b66-a721-11e9-a2a3-022ae2dbcce4 - Properties: ['read']
+    Char: f95a5034-a721-11e9-a2a3-022ae2dbcce4 - Properties: ['write']
+    Char: ec4cff6d-81fc-4e5b-91e0-8103885c9ae3 - Properties: ['read', 'notify']
+  Service: 6e400001-b5a3-f393-e0a9-e50e24dc4179
+    Char: 28be4a4a-cd67-11e9-a32f-2a2ae2dbcce4 - Properties: ['write-without-response', 'write']
+    Char: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4 - Properties: ['notify']
+
+📡 Starting notifications on 6e400003-b5a3-f393-e0a9-e50e24dc4179...
+⚠️  Direct approach failed: Characteristic 6e400003-b5a3-f393-e0a9-e50e24dc4179 not found!
+📡 Trying characteristic: ec4cff6d-81fc-4e5b-91e0-8103885c9ae3
+📡 Trying characteristic: 28be4cb6-cd67-11e9-a32f-2a2ae2dbcce4
+
+======================================================================
+STREAMING RAW BLE PACKETS - Press Ctrl+C to stop
+Format: [timestamp] delay | size | hex_data | type
+======================================================================
+
+[1756074726.590]    ---   | 20 bytes | 783095789948e85fec96bb90f5a6d9f3f4d82ced | UNKNOWN(0x78)
+[1756074726.679]   89.6ms | 20 bytes | 3d7d5cdfc528202be3cbd5c7304b544b13ba4e3b | UNKNOWN(0x3d)
+[1756074726.754]   74.8ms | 20 bytes | 552a1450501df821c1f465d5cb2540c6b5700ad5 | UNKNOWN(0x55)
+[1756074726.799]   45.3ms | 20 bytes | a80d301d1eeaeabbf1975443c7f524b5722c243d | UNKNOWN(0xa8)
+[1756074726.859]   60.1ms | 20 bytes | 8d13517308f37839b0601b1071f8a3bda3a44c32 | UNKNOWN(0x8d)
+[1756074726.934]   74.3ms | 20 bytes | 81850cc378a902fbd85fc7e764d86a1ba41cfb62 | UNKNOWN(0x81)
+[1756074726.995]   60.7ms | 20 bytes | 2e6b8d6eae21187870e19cdf0ae0c155ae6d2ffc | UNKNOWN(0x2e)
+[1756074727.069]   74.2ms | 20 bytes | bc48fb5c00a06d2e753e561d35ef234d0f422af2 | UNKNOWN(0xbc)
+[1756074727.130]   60.8ms | 20 bytes | 05facd903c08fd95f0eb417f7d9fcbe57f052c35 | UNKNOWN(0x05)
+[1756074727.220]   90.1ms | 20 bytes | 412b528141fc1032d99c8675738ea4ae08bfadbb | UNKNOWN(0x41)
+[1756074727.264]   44.1ms | 20 bytes | 3f43aa2c52b8140a027c0e6fa72caf47dbec5ee6 | UNKNOWN(0x3f)
+[1756074727.355]   90.9ms | 20 bytes | 36f87ded3b7380f52ad1784551737adeca9b1d18 | UNKNOWN(0x36)
+[1756074727.414]   59.8ms | 20 bytes | 21d8736517daeba234d7da85e282190923b835af | UNKNOWN(0x21)
+[1756074727.460]   45.2ms | 20 bytes | fd01c40523b6d2d551b493f895c6f0e5e5a63dc2 | UNKNOWN(0xfd)
+[1756074727.534]   74.4ms | 20 bytes | cb82667f7db0623d09d1a655a292459cf0cfc97d | UNKNOWN(0xcb)
+[1756074727.624]   90.5ms | 20 bytes | bffdbf5bbd1c6dae35fd04aba445a68327defeb1 | UNKNOWN(0xbf)
+[1756074727.684]   59.4ms | 20 bytes | 3a4bc6615633402b930b120643bd9fb237475781 | UNKNOWN(0x3a)
+[1756074727.775]   91.0ms | 20 bytes | f267c6ea8916e1c8240e2486de12dab0fe4ca30a | UNKNOWN(0xf2)
+[1756074727.895]  119.8ms ⚠️ SLOW | 20 bytes | 2b17f58aee9e27ed13f4e03bb8d4534b43e4022b | UNKNOWN(0x2b)
+[1756074727.895]    0.0ms ⚡FAST | 20 bytes | 3a36bb224ada306b0287c5bbccf640cbe2ba4b04 | UNKNOWN(0x3a)
+
+======================================================================
+📊 STATS: 15.3 pkt/s | Avg size: 20.0 bytes
+⏱️  DELAYS: Avg: 68.7ms | Min: 0.0ms | Max: 119.8ms
+📦 TOTAL: 20 packets | 0 duplicates
+======================================================================
+
+[1756074727.955]   60.1ms | 20 bytes | 258b2ce1dff8d8f18cbf94f9ecd4dc59a65d2b65 | UNKNOWN(0x25)
+[1756074728.134]  179.7ms ⚠️ SLOW | 20 bytes | 8952b276f115bc02052e9dd5e1c22c4700718896 | UNKNOWN(0x89)
+[1756074728.254]  120.0ms ⚠️ SLOW | 20 bytes | ed23b24e1423cc406ff7073c1f47eb1589c4539d | UNKNOWN(0xed)
+[1756074728.254]    0.0ms ⚡FAST | 20 bytes | da6bd98897108eff79200062c892ec662da37a98 | UNKNOWN(0xda)
+[1756074728.255]    1.0ms ⚡FAST | 20 bytes | a4b6251f1b7198020eeaaa3d1dde06f5d709e1fa | UNKNOWN(0xa4)
+[1756074728.375]  119.0ms ⚠️ SLOW | 20 bytes | 1469843e5dc75c64507bbe35eb669183eaf9fae3 | UNKNOWN(0x14)
+[1756074728.375]    0.0ms ⚡FAST | 20 bytes | caafa88af2afd18c7b9afb42d21a91a152c87fe4 | UNKNOWN(0xca)
+[1756074728.434]   59.7ms | 20 bytes | 4d7dfcdbebe26397714945c64c9d9eae38f8b1f5 | UNKNOWN(0x4d)
+[1756074728.614]  180.3ms ⚠️ SLOW | 20 bytes | 6237ef64c408711671c7ae571c8790a5186e32dc | UNKNOWN(0x62)
+[1756074728.614]    0.0ms ⚡FAST | 20 bytes | 3ce2fe3e9855af7f40e573cc3ec1511d0e873fa6 | UNKNOWN(0x3c)
+[1756074728.615]    1.0ms ⚡FAST | 20 bytes | 8ed0989bb0a73910b2e4780de5de976b49a53f29 | UNKNOWN(0x8e)
+[1756074728.734]  118.9ms ⚠️ SLOW | 20 bytes | 5de219c1d8f7248c60e820752f56c08a4c460103 | UNKNOWN(0x5d)
+[1756074728.854]  120.1ms ⚠️ SLOW | 20 bytes | c3975e20f9bfd4d45e33f35358e7fbce9805f180 | UNKNOWN(0xc3)
+[1756074728.854]    0.0ms ⚡FAST | 20 bytes | 2523887e16c07c34088ad059aeaff22467dfce06 | UNKNOWN(0x25)
+[1756074728.914]   59.3ms | 20 bytes | 0c333cac0e0d4d3e6a8e2c7d58e748b23664d732 | UNKNOWN(0x0c)
+[1756074728.974]   60.6ms | 20 bytes | a61c64236f4ee6965cf3cfa806184167bbeb28f2 | UNKNOWN(0xa6)
+[1756074729.035]   60.1ms | 20 bytes | 9b4cc5274fd29f343abe340f6cff61b7e890e82c | UNKNOWN(0x9b)
+[1756074729.094]   59.9ms | 20 bytes | a97389d8ae6f6025a5e6ef613d0b7dd9f64460b3 | UNKNOWN(0xa9)
+[1756074729.695]  600.1ms ⚠️ SLOW | 20 bytes | c1208b5155a8d3c3b5f1c2a35cc35c2c1f623100 | UNKNOWN(0xc1)
+[1756074729.695]    0.0ms ⚡FAST | 20 bytes | 5ea7cb0688edb9123a714e1280f820fb3b9ad7a9 | UNKNOWN(0x5e)
+
+======================================================================
+📊 STATS: 12.9 pkt/s | Avg size: 20.0 bytes
+⏱️  DELAYS: Avg: 79.6ms | Min: 0.0ms | Max: 600.1ms
+📦 TOTAL: 40 packets | 0 duplicates
+======================================================================
+
+[1756074729.696]    1.0ms ⚡FAST | 20 bytes | 94e2b90937595955584df29b6b5b340c4dc9190b | UNKNOWN(0x94)
+[1756074729.696]    0.0ms ⚡FAST | 20 bytes | 45e26b5cc7f97d6b16263393dc112e9658df9240 | UNKNOWN(0x45)
+[1756074729.755]   59.1ms | 20 bytes | 56c9b82aa5fcd155be40d1a737accae2115a8719 | UNKNOWN(0x56)
+[1756074729.755]    0.0ms ⚡FAST | 20 bytes | fd2c8d9fcc674cea04a61ff2725c03d94cc480dd | UNKNOWN(0xfd)
+[1756074729.756]    1.0ms ⚡FAST | 20 bytes | 8c59f403fe563ca8ddfaf4d0325ee67269df8c87 | UNKNOWN(0x8c)
+[1756074729.756]    0.0ms ⚡FAST | 20 bytes | 8c59f403fe563ca8ddfaf4d0325ee67269df8c87 | UNKNOWN(0x8c) [DUPLICATE]
+[1756074729.815]   59.2ms | 20 bytes | 9191dfbc069fb1ec7daec98aee95bd162b167bcc | UNKNOWN(0x91)
+[1756074729.815]    0.0ms ⚡FAST | 20 bytes | d3ed593776e06bd16a333134bd3827c930b583eb | UNKNOWN(0xd3)
+[1756074729.874]   58.7ms | 20 bytes | fc978d048b993ea9e49bb13c178833435299db53 | UNKNOWN(0xfc)
+[1756074729.934]   60.2ms | 20 bytes | 50cf2316c974e3a7fccaf0595722ab0893738d3d | UNKNOWN(0x50)
+[1756074730.054]  120.4ms ⚠️ SLOW | 20 bytes | ed9653d7955fe75d19e3fe1006406be12c9dc97b | UNKNOWN(0xed)
+[1756074730.054]    0.0ms ⚡FAST | 20 bytes | e06957590dbd9990ada411f5ff68aca5f8b662ff | UNKNOWN(0xe0)
+[1756074730.294]  239.7ms ⚠️ SLOW | 20 bytes | 5ca9dccab238a0ab4e3a72ab9589d9b66ffbe3f4 | UNKNOWN(0x5c)
+[1756074730.295]    1.0ms ⚡FAST | 20 bytes | 9a7c116c8efc7e0f43041dbcba912a46aa33160d | UNKNOWN(0x9a)
+[1756074730.295]    0.0ms ⚡FAST | 20 bytes | 88f4dba0aae23be817a4d17ca3d89f7028103acf | UNKNOWN(0x88)
+[1756074730.354]   59.2ms | 20 bytes | 25d2f1848f6f67772b6f0fa5d80ed325926d25a1 | UNKNOWN(0x25)
+[1756074730.355]    0.9ms ⚡FAST | 20 bytes | 671b04e472b46e6c05b4ae482b0a81891a794a4a | UNKNOWN(0x67)
+[1756074730.414]   59.4ms | 20 bytes | ba510c6717088682bf47bd9c60c10b17735c4415 | UNKNOWN(0xba)
+[1756074730.474]   59.7ms | 20 bytes | 73f37b1b530a138d21580a808f17c284b2e8818c | UNKNOWN(0x73)
+[1756074730.654]  179.8ms ⚠️ SLOW | 20 bytes | af5fed36ce7b69fef04b512497bb7c38c4e8d23e | UNKNOWN(0xaf)
+
+======================================================================
+📊 STATS: 14.8 pkt/s | Avg size: 20.0 bytes
+⏱️  DELAYS: Avg: 68.9ms | Min: 0.0ms | Max: 600.1ms
+📦 TOTAL: 60 packets | 1 duplicates
+======================================================================
+
+[1756074730.655]    1.0ms ⚡FAST | 20 bytes | e6ce6241bf63b0c9b9a1879cda5e04c1519f6fc6 | UNKNOWN(0xe6)
+[1756074730.714]   59.5ms | 20 bytes | b2fb59f2fe8958c9d1a2086f83505f513241f5a1 | UNKNOWN(0xb2)
+[1756074730.775]   60.3ms | 20 bytes | 7788d03194dc7c50b3055e6ca042794846e4744a | UNKNOWN(0x77)
+[1756074730.775]    0.0ms ⚡FAST | 20 bytes | 4a5b1c20abbeb668e4a8884157f51eb4e1204cdf | UNKNOWN(0x4a)
+[1756074731.194]  419.5ms ⚠️ SLOW | 20 bytes | cfc7c738b270ba92d8e9a867b5ef983f34914a10 | UNKNOWN(0xcf)
+[1756074731.254]   59.6ms | 20 bytes | 80d5345c9b9ab47e252f321c331c17a3e50bba79 | UNKNOWN(0x80)
+[1756074731.255]    1.0ms ⚡FAST | 20 bytes | 8da0e48034c90b5e43004c71ac4ffeffbd95ff31 | UNKNOWN(0x8d)
+[1756074731.255]    0.0ms ⚡FAST | 20 bytes | aa2c8092c7247ebb73be8db2fe9cf77dc207cef1 | UNKNOWN(0xaa)
+[1756074731.256]    1.0ms ⚡FAST | 20 bytes | aa5e44c763faa408794acf98f08eba8036985999 | UNKNOWN(0xaa)
+[1756074731.795]  538.9ms ⚠️ SLOW | 20 bytes | 7094a96db854bef25156806535245498ce65cae6 | UNKNOWN(0x70)
+[1756074731.795]    0.0ms ⚡FAST | 20 bytes | a22302e216162049e46153d9094ff1fef75e2356 | UNKNOWN(0xa2)
+[1756074731.795]    0.0ms ⚡FAST | 20 bytes | 6dbf4d60ed29ea757932fb77a14439bc80587623 | UNKNOWN(0x6d)
+[1756074731.796]    1.0ms ⚡FAST | 20 bytes | 51d358ecd02df8bed724bb34d2278947360ab665 | UNKNOWN(0x51)
+[1756074732.094]  298.3ms ⚠️ SLOW | 20 bytes | 9147a535936975e88eb192f9cdd5c75c4aade902 | UNKNOWN(0x91)
+[1756074732.095]    1.0ms ⚡FAST | 20 bytes | 1b8be014a49bd4ac2574b77e0940fe068997fd52 | UNKNOWN(0x1b)
+[1756074732.095]    0.0ms ⚡FAST | 20 bytes | 71fef25036744e6d7ce5cff02a88ef6c808c7f41 | UNKNOWN(0x71)
+[1756074732.097]    2.0ms ⚡FAST | 20 bytes | 30bf36c6e254ab239b5f4db56e6762ef7e6589ee | UNKNOWN(0x30)
+[1756074732.335]  237.8ms ⚠️ SLOW | 20 bytes | 30bf36c6e254ab239b5f4db56e6762ef7e6589ee | UNKNOWN(0x30) [DUPLICATE]
+[1756074732.335]    0.0ms ⚡FAST | 20 bytes | 1fb5b087470f9bdbd65585698de1f428d7fe9570 | UNKNOWN(0x1f)
+[1756074732.335]    0.0ms ⚡FAST | 20 bytes | 259f829de90f41795364e103884dfe5435caacdf | UNKNOWN(0x25)
+
+======================================================================
+📊 STATS: 13.9 pkt/s | Avg size: 20.0 bytes
+⏱️  DELAYS: Avg: 72.7ms | Min: 0.0ms | Max: 600.1ms
+📦 TOTAL: 80 packets | 2 duplicates
+======================================================================
+
+[1756074732.336]    1.0ms ⚡FAST | 20 bytes | 6c4e396097dafae5bfd296098baaa6cebea235e9 | UNKNOWN(0x6c)
+[1756074732.394]   58.3ms | 20 bytes | c79021bc92c907ee3fc5fb15bf8439a13569632f | UNKNOWN(0xc7)
+[1756074732.394]    0.0ms ⚡FAST | 20 bytes | 53d6ce22d2cd7108f84d0a29977cb2fba626cf07 | UNKNOWN(0x53)
+[1756074732.395]    1.0ms ⚡FAST | 20 bytes | 78f62d6a3ccd6e97b76ff47c6154f2f3b9cb7153 | UNKNOWN(0x78)
+[1756074732.395]    0.0ms ⚡FAST | 20 bytes | 1bda36a4f77d51c4d370b8dd7488e206ed2aa562 | UNKNOWN(0x1b)
+[1756074732.454]   59.3ms | 20 bytes | 7840877da8cfdb0acfd368a2937d741dc78a5185 | UNKNOWN(0x78)
+[1756074732.454]    0.0ms ⚡FAST | 20 bytes | ca3d39a2946977a97761cff6e38065dfb3e02581 | UNKNOWN(0xca)
+[1756074732.455]    1.0ms ⚡FAST | 20 bytes | 5b455c33ea1ffc9ed582f96de490fe035e282163 | UNKNOWN(0x5b)
+[1756074732.455]    0.0ms ⚡FAST | 20 bytes | e9c51d6b6428fef42006c274ec26baf824a10e41 | UNKNOWN(0xe9)
+[1756074732.515]   59.1ms | 20 bytes | 4ee4039aabba010e267d4429296f98fab848408f | UNKNOWN(0x4e)
+[1756074732.516]    1.0ms ⚡FAST | 20 bytes | 7e90836be884fdf0a1ceca4e0084159bce06db98 | UNKNOWN(0x7e)
+[1756074732.516]    0.0ms ⚡FAST | 20 bytes | d57c1ca5001d538bd8546d4160016dd1e17e00e6 | UNKNOWN(0xd5)
+[1756074732.517]    1.0ms ⚡FAST | 20 bytes | 4c3aba8daee9ede169c42bbdcbebc35d2925cca5 | UNKNOWN(0x4c)
+[1756074732.518]    1.0ms ⚡FAST | 20 bytes | 1f8e1c4d49f49a7d11bc493945f00ea9579d9a24 | UNKNOWN(0x1f)
+[1756074732.574]   56.9ms | 20 bytes | 3eb889ba59ea544461acff833a0979b18ac59fa5 | UNKNOWN(0x3e)
+[1756074732.874]  300.1ms ⚠️ SLOW | 20 bytes | a0dae1b659f0b9728081aaba986b61cb9d8d58db | UNKNOWN(0xa0)
+[1756074732.874]    0.0ms ⚡FAST | 20 bytes | cb27ecb5ef55a15536fb04f70c20bfe39119e9d0 | UNKNOWN(0xcb)
+[1756074732.875]    1.0ms ⚡FAST | 20 bytes | 048f94c6c01b00de8874bfe1ddcadaeb5c17905e | UNKNOWN(0x04)
+[1756074732.875]    0.0ms ⚡FAST | 20 bytes | 56ce6fc1b015b5cbc5fe778773c363d6f6b69285 | UNKNOWN(0x56)
+[1756074732.934]   58.5ms | 20 bytes | e5a6d85fa8a06cd8aec356a6de4a19ff5827e227 | UNKNOWN(0xe5)
+
+======================================================================
+📊 STATS: 15.8 pkt/s | Avg size: 20.0 bytes
+⏱️  DELAYS: Avg: 64.1ms | Min: 0.0ms | Max: 600.1ms
+📦 TOTAL: 100 packets | 2 duplicates
+======================================================================
+
+[1756074732.935]    1.0ms ⚡FAST | 20 bytes | 1ba1eb1d38c61c21154c5d53c6c8bf47641bd89a | UNKNOWN(0x1b)
+[1756074733.054]  119.4ms ⚠️ SLOW | 20 bytes | 142502e41edfb2d2f44a1ac68f066ede93434a35 | UNKNOWN(0x14)
+[1756074733.054]    0.0ms ⚡FAST | 20 bytes | 42f1d8dfb1facc6df6d5507e546cbe628234097f | UNKNOWN(0x42)
+[1756074733.174]  119.3ms ⚠️ SLOW | 20 bytes | de0a538df1d25e059eee231de3c1c5b58c4dc093 | UNKNOWN(0xde)
+[1756074733.294]  120.6ms ⚠️ SLOW | 20 bytes | 3e64a92280920601b6c024af1ac37a9729646d7a | UNKNOWN(0x3e)
+[1756074733.354]   59.7ms | 20 bytes | 013f4d42eaba322b609fe50dbdeced2b422904fc | UNKNOWN(0x01)
+[1756074733.355]    1.0ms ⚡FAST | 20 bytes | d5fb51405d4b0059641312a8cd12c99067c67f17 | UNKNOWN(0xd5)
+[1756074733.356]    1.0ms ⚡FAST | 20 bytes | 99ccf733d69b41d6925d565b57e17f20afcaf515 | UNKNOWN(0x99)
+[1756074733.534]  178.1ms ⚠️ SLOW | 20 bytes | 3aa3156856c4ab1a309342dd3950b075635d60d6 | UNKNOWN(0x3a)
+[1756074733.534]    0.0ms ⚡FAST | 20 bytes | f497cc39e8089952e3b42bd29e7b67c39a28fed1 | UNKNOWN(0xf4)
+[1756074733.535]    1.0ms ⚡FAST | 20 bytes | 519db1c741dab83d522bea9ae1d3d7e3a6865704 | UNKNOWN(0x51)
+[1756074733.536]    0.5ms ⚡FAST | 20 bytes | b9fde8732978ea59fc75cfdc0e832519e7643713 | UNKNOWN(0xb9)
+[1756074733.654]  118.7ms ⚠️ SLOW | 20 bytes | 05060eda53d22f20c5348a1646e30f54883985f2 | UNKNOWN(0x05)
+[1756074733.714]   60.0ms | 20 bytes | 50f72058ec26d9fa7031b3cd1a618817d14d1ee9 | UNKNOWN(0x50)
+[1756074733.775]   60.3ms | 20 bytes | b82a7e6dd711a21dc91e97e3f0628d054f588fbe | UNKNOWN(0xb8)
+[1756074733.775]    0.0ms ⚡FAST | 20 bytes | 47ffa630f4a760458ee0aa44c5ada0d380e5ed9b | UNKNOWN(0x47)
+[1756074734.135]  360.2ms ⚠️ SLOW | 20 bytes | 25f47076c2102f7ba5458ff00e74d5405a218310 | UNKNOWN(0x25)
+[1756074734.135]    0.0ms ⚡FAST | 20 bytes | 0932642cdbd2cb17d1869b984a408062ac5640d2 | UNKNOWN(0x09)
+[1756074734.135]    0.0ms ⚡FAST | 20 bytes | 94d49f7df53de59fd784ec0187efdccfeb82b1d4 | UNKNOWN(0x94)
+[1756074734.136]    1.0ms ⚡FAST | 20 bytes | ca08c18acacc12f8f47b875778e1621e881c1934 | UNKNOWN(0xca)
+
+======================================================================
+📊 STATS: 16.2 pkt/s | Avg size: 20.0 bytes
+⏱️  DELAYS: Avg: 62.4ms | Min: 0.0ms | Max: 600.1ms
+📦 TOTAL: 120 packets | 2 duplicates
+======================================================================
+
+[1756074734.194]   58.1ms | 20 bytes | e5036c523cf9a9115af2bab6f834948937812e5e | UNKNOWN(0xe5)
+[1756074734.554]  360.6ms ⚠️ SLOW | 20 bytes | 23dfddc4f307e077fe277b4560a4f118cac73eab | HARDWARE
+[1756074734.554]    0.0ms ⚡FAST | 20 bytes | 760297890295522ca7f7978a3048f0f28de54e50 | UNKNOWN(0x76)
+[1756074734.554]    0.0ms ⚡FAST | 20 bytes | 2fdbb41bb676b6567c52048330403df9cb7fe918 | UNKNOWN(0x2f)
+[1756074734.615]   60.1ms | 20 bytes | 4d000685239ed93321a4b2c240fc4201b65b81d5 | UNKNOWN(0x4d)
+[1756074734.616]    1.2ms ⚡FAST | 20 bytes | d20a616762a10b3481080acfe63b3c28e7f87339 | UNKNOWN(0xd2)
+[1756074734.616]    0.5ms ⚡FAST | 20 bytes | 3aff69232fbf6466e421e20a1bd7e540befcbc01 | UNKNOWN(0x3a)
+[1756074734.616]    0.0ms ⚡FAST | 20 bytes | 2e13e396fa9cb91a671f99ab97630894e57b99a3 | UNKNOWN(0x2e)
+[1756074734.617]    1.0ms ⚡FAST | 20 bytes | fdf92acdc01dc178e6911c39fa3e38da7d3450c8 | UNKNOWN(0xfd)
+[1756074734.675]   57.3ms | 20 bytes | e1d1eb3355e924a5688c39fe5e45a8ce3cc07999 | UNKNOWN(0xe1)
+[1756074734.795]  120.3ms ⚠️ SLOW | 20 bytes | 8aaa1791f62228631032725f058e9571abba4d2c | UNKNOWN(0x8a)
+[1756074734.795]    0.0ms ⚡FAST | 20 bytes | e92c1c4a0cd01c0f98de32cea651f4c9d6d11ac1 | UNKNOWN(0xe9)
+[1756074734.796]    1.0ms ⚡FAST | 20 bytes | 688dd5bc55407a240901e69191250cf6f688ebab | UNKNOWN(0x68)
+[1756074734.796]    0.0ms ⚡FAST | 20 bytes | 4605a56d10e16a019954dbe00d98139c036f10b0 | UNKNOWN(0x46)
+[1756074734.854]   58.0ms | 20 bytes | d6f5d94a38c3e081c8bd97fbd9891ca3ec3999d6 | UNKNOWN(0xd6)
+[1756074734.915]   60.9ms | 20 bytes | 6060e9e81ad63482e86993a952bd6bec41aae3b5 | UNKNOWN(0x60)
+[1756074735.454]  539.3ms ⚠️ SLOW | 20 bytes | 8a2ae606fb1be031329c978c80e674ddcd779420 | UNKNOWN(0x8a)
+[1756074735.456]    1.5ms ⚡FAST | 20 bytes | 4e1b999cf729364fa70855eee87cc861942c25b1 | UNKNOWN(0x4e)
+[1756074735.514]   58.0ms | 20 bytes | ee08d5e3fdf3906f09d44179091ec0f3046a2b02 | UNKNOWN(0xee)
+[1756074735.515]    1.5ms ⚡FAST | 20 bytes | 8572012fa20183689389a934c73d285f2e272a51 | UNKNOWN(0x85)
+
+======================================================================
+📊 STATS: 17.2 pkt/s | Avg size: 20.0 bytes
+⏱️  DELAYS: Avg: 58.2ms | Min: 0.0ms | Max: 539.3ms
+📦 TOTAL: 140 packets | 2 duplicates
+======================================================================
+
+[1756074735.574]   59.3ms | 20 bytes | 96b63c561b750579795bfb0e57b4754effd7dff1 | UNKNOWN(0x96)
+[1756074735.574]    0.0ms ⚡FAST | 20 bytes | 0fd8e84c513a54681195e71db9ae1668834b0269 | UNKNOWN(0x0f)
+[1756074735.575]    1.0ms ⚡FAST | 20 bytes | bef96de50914658542a9627cf1c38c220311597b | UNKNOWN(0xbe)
+[1756074735.575]    0.0ms ⚡FAST | 20 bytes | 2570af0bef150ad7d58a8eefde1aaaea152fd3f4 | UNKNOWN(0x25)
+[1756074735.634]   58.9ms | 20 bytes | 6a71574cfea31b41757cadca4996bd987598c740 | UNKNOWN(0x6a)
+[1756074735.634]    0.0ms ⚡FAST | 20 bytes | 031ae27999b7f093cdc46f9bb44d33a35789bfaf | UNKNOWN(0x03)
+[1756074735.635]    1.0ms ⚡FAST | 20 bytes | b6e091108023910ddd5dd815ae106b01afaf1150 | UNKNOWN(0xb6)
+[1756074735.635]    0.0ms ⚡FAST | 20 bytes | 229321cca62e034a9d83108543021bade3c93650 | UNKNOWN(0x22)
+[1756074735.694]   59.3ms | 20 bytes | 822ea4b456cdc604e353f9945ee5fdfedfa21d84 | UNKNOWN(0x82)
+[1756074735.694]    0.0ms ⚡FAST | 20 bytes | 903ddbce2fa6b51d084b9162d26397c79ba44fd3 | UNKNOWN(0x90)
+[1756074735.754]   59.8ms | 20 bytes | c83fa771a7b06b63906a1ff5aa124980bd85c596 | UNKNOWN(0xc8)
+[1756074735.814]   59.6ms | 20 bytes | b7fb33d8abd827bfbddd160d5873987e6a2f5db0 | UNKNOWN(0xb7)
+[1756074735.874]   60.4ms | 20 bytes | ee6382e07caabba695c9defe5af0699ee09a9ba1 | UNKNOWN(0xee)
+[1756074735.935]   60.5ms | 20 bytes | 0535ca08c3a5660e0c2c985e3801b61c1b6f8ba4 | UNKNOWN(0x05)
+[1756074735.995]   59.8ms | 20 bytes | f4d9df8260d694625d465242d79588b5561359e2 | UNKNOWN(0xf4)
+[1756074736.114]  119.1ms ⚠️ SLOW | 20 bytes | 0dcfc82212de9546b66d5ff17e90db216dc385dd | UNKNOWN(0x0d)
+[1756074736.115]    1.0ms ⚡FAST | 20 bytes | 1bed71a401f212c2d1cfb16d010c55b240ec62fc | UNKNOWN(0x1b)
+[1756074736.235]  120.2ms ⚠️ SLOW | 20 bytes | 8647f83d718b8a9f036ed921b0cc200ef71aa3aa | UNKNOWN(0x86)
+[1756074736.235]    0.0ms ⚡FAST | 20 bytes | 68e917ddaed423a0ec7e941a39bfbdb46f1205e7 | UNKNOWN(0x68)
+[1756074736.534]  298.9ms ⚠️ SLOW | 20 bytes | ae63720fd824726bda61c045b7899c60b102fed0 | UNKNOWN(0xae)
+
+======================================================================
+📊 STATS: 17.0 pkt/s | Avg size: 20.0 bytes
+⏱️  DELAYS: Avg: 58.8ms | Min: 0.0ms | Max: 539.3ms
+📦 TOTAL: 160 packets | 2 duplicates
+======================================================================
+
+[1756074736.534]    0.0ms ⚡FAST | 20 bytes | b5efe1ca8479e34343afd5fc803b9bb1432ff234 | UNKNOWN(0xb5)
+[1756074736.535]    1.4ms ⚡FAST | 20 bytes | 67a853509e65b15c3e40ca8acf4d93182bfa0b17 | UNKNOWN(0x67)
+[1756074736.536]    1.0ms ⚡FAST | 20 bytes | 00a8dcea904d61943b8487e0a4eeee0002026718 | UNKNOWN(0x00)
+[1756074736.654]  117.6ms ⚠️ SLOW | 20 bytes | 6d0a57812a88b328aeb7cdfed20923f4851ad321 | UNKNOWN(0x6d)
+[1756074736.654]    0.0ms ⚡FAST | 20 bytes | 405195e96d5b54f7dbff5e9c18292f5531841a6c | UNKNOWN(0x40)
+[1756074736.655]    1.0ms ⚡FAST | 20 bytes | dd6d1299675a6df86f22f8a45e9d2560835540f3 | UNKNOWN(0xdd)
+[1756074736.714]   59.3ms | 20 bytes | 330758a25c8ad56be4fb2db35b7646c38a1deb97 | MOVE
+[1756074736.714]    0.0ms ⚡FAST | 20 bytes | 78757386c454ffd5c84db007eab508fef4688d1e | UNKNOWN(0x78)
+[1756074736.773]   59.4ms | 20 bytes | 8a62f1ae6f0cc56ea08099f1f400bcaa44a31a42 | UNKNOWN(0x8a)
+[1756074736.834]   60.6ms | 20 bytes | 59a3113d22e2d49aaed01de468d2f1d2eb0e5588 | UNKNOWN(0x59)
+[1756074736.954]  119.7ms ⚠️ SLOW | 20 bytes | 384bb3eeab61952b48e13cd62388ceeea3e407b5 | UNKNOWN(0x38)
+[1756074737.015]   61.3ms | 20 bytes | aa021f114934829fe3ddefc68eb75014f00684ce | UNKNOWN(0xaa)
+[1756074737.073]   58.4ms | 20 bytes | d0b355bbed2b15da628006b865498276addae882 | UNKNOWN(0xd0)
+[1756074737.134]   60.0ms | 20 bytes | a41bf9b41d275281466c1cbf1b4b80d1d33873f5 | UNKNOWN(0xa4)
+[1756074737.135]    1.0ms ⚡FAST | 20 bytes | 381f171f6e6eefed46c910f801db939911706f98 | UNKNOWN(0x38)
+[1756074737.194]   59.6ms | 20 bytes | 4b9b26754b7b2323b971396229a94342222d104c | UNKNOWN(0x4b)
+[1756074737.255]   61.1ms | 20 bytes | d8a4d452e2a934aaf7bd0dced95ab32174c1272e | UNKNOWN(0xd8)
+[1756074737.314]   59.2ms | 20 bytes | e38577a92eef8c5243373d183fcbfef1476f3205 | UNKNOWN(0xe3)
+[1756074737.375]   60.2ms | 20 bytes | 76a9996d73a8633fb1a7605349d6f41d2c1db69a | UNKNOWN(0x76)
+[1756074737.435]   60.2ms | 20 bytes | bb357069ee48decf8e7ecbf6c6aeefd58f7d080a | UNKNOWN(0xbb)
+
+======================================================================
+📊 STATS: 19.6 pkt/s | Avg size: 20.0 bytes
+⏱️  DELAYS: Avg: 51.0ms | Min: 0.0ms | Max: 539.3ms
+📦 TOTAL: 180 packets | 2 duplicates
+======================================================================
+
+[1756074737.554]  119.6ms ⚠️ SLOW | 20 bytes | ac6ea64c494690922d9a8203807fb6087f88d416 | UNKNOWN(0xac)
+[1756074737.554]    0.0ms ⚡FAST | 20 bytes | a02caaefa831cd9e006f18e66ce9bc5fb0a90015 | UNKNOWN(0xa0)
+[1756074737.615]   60.2ms | 20 bytes | ef52fa3dd6535346933298aaf681cbfe21641410 | UNKNOWN(0xef)
+[1756074737.675]   59.9ms | 20 bytes | e769f46a902d4a5998f8284a29e8b850d251ccb6 | UNKNOWN(0xe7)
+[1756074737.914]  239.9ms ⚠️ SLOW | 20 bytes | b055b7d5b4c8faf8ed1564be3b95a7d1eb7905ea | UNKNOWN(0xb0)
+[1756074737.914]    0.0ms ⚡FAST | 20 bytes | 8ff99cc864a87c06d86bbe0e0409aa075b3cdef5 | UNKNOWN(0x8f)
+[1756074737.915]    1.0ms ⚡FAST | 20 bytes | 78c221636e057edd7a268c13e0a0ced0a9e55543 | UNKNOWN(0x78)
+[1756074737.915]    0.0ms ⚡FAST | 20 bytes | a58d17fd1ee685355d77b4444846a230124c4483 | UNKNOWN(0xa5)
+[1756074738.094]  178.3ms ⚠️ SLOW | 20 bytes | 59cde56d1a6d264f85c45758b2a5b5bc1ec549f3 | UNKNOWN(0x59)
+[1756074738.095]    1.0ms ⚡FAST | 20 bytes | 975d347b3736927a29cde86a203402c3fb4fe69d | UNKNOWN(0x97)
+[1756074738.095]    0.0ms ⚡FAST | 20 bytes | 01cace274eb52a0f60412ddfc96759e8deb53c4f | UNKNOWN(0x01)
+[1756074738.395]  299.9ms ⚠️ SLOW | 20 bytes | 20e4f95cb7964541af2048054c77e6a4a8f9abb5 | UNKNOWN(0x20)
+[1756074738.574]  179.8ms ⚠️ SLOW | 20 bytes | 640886144bb240a9e0b51ac172dbf87f5d4be7be | UNKNOWN(0x64)
+[1756074738.574]    0.0ms ⚡FAST | 20 bytes | 920b7b865c1b5f2552c43ae3ea9857df15ab2227 | UNKNOWN(0x92)
+[1756074738.574]    0.0ms ⚡FAST | 20 bytes | e3a6061a28ad25f9254af367c7308d99aa464c08 | UNKNOWN(0xe3)
+[1756074738.575]    1.0ms ⚡FAST | 20 bytes | 495349517cbd5f6dc049c8eb78ccbba85ddfb921 | UNKNOWN(0x49)
+[1756074738.634]   58.2ms | 20 bytes | 66e7291f06eb49c42506058fa4846c7ca89ddcc4 | UNKNOWN(0x66)
+[1756074738.635]    1.0ms ⚡FAST | 20 bytes | 380fd56211d3d6a829ab68c4d7a16e324f04f644 | UNKNOWN(0x38)
+[1756074738.635]    0.0ms ⚡FAST | 20 bytes | fa52335dc39e9c05fcc332bedea5073d4bb99315 | UNKNOWN(0xfa)
+[1756074738.694]   59.2ms | 20 bytes | b09b64d4d59b49117ecd16fe95bfec65a93f150f | UNKNOWN(0xb0)
+
+======================================================================
+📊 STATS: 17.4 pkt/s | Avg size: 20.0 bytes
+⏱️  DELAYS: Avg: 57.6ms | Min: 0.0ms | Max: 539.3ms
+📦 TOTAL: 200 packets | 2 duplicates
+======================================================================
+
+[1756074738.695]    1.1ms ⚡FAST | 20 bytes | 9814ac0451ac59105c0a87e9f0d5ce248d3e95c6 | UNKNOWN(0x98)
+[1756074738.695]    0.0ms ⚡FAST | 20 bytes | 1a1270623467141d2218c06f0adc67e3fa1a4d96 | UNKNOWN(0x1a)
+[1756074738.753]   58.6ms | 20 bytes | d757c20a2eadeac771afab0dbc45163e70e5f3ba | UNKNOWN(0xd7)
+[1756074738.814]   60.8ms | 20 bytes | 52caea12f3e8bbe66161b3e791d5042c3e955383 | UNKNOWN(0x52)
+[1756074738.874]   59.3ms | 20 bytes | 9ab21fe4abd3bd494bdecff8ea26580eb0a653a5 | UNKNOWN(0x9a)
+[1756074738.935]   60.9ms | 20 bytes | 863cda78aeeeef16668a5aa6c6f211b166defebc | UNKNOWN(0x86)
+[1756074739.114]  179.5ms ⚠️ SLOW | 20 bytes | 66f8105077f662512c6617fe61be908910b43b52 | UNKNOWN(0x66)
+[1756074739.114]    0.0ms ⚡FAST | 20 bytes | af906ea5ad1485e9adcf0de10a4a399eb8f8c0b3 | UNKNOWN(0xaf)
+[1756074739.115]    1.2ms ⚡FAST | 20 bytes | a3d206327b25e1c5e0925ef05d335ded318cedfb | UNKNOWN(0xa3)
+[1756074739.414]  299.0ms ⚠️ SLOW | 20 bytes | fb7eb2279f7929473e288ab0305c7edd4c5f383e | UNKNOWN(0xfb)
+[1756074739.415]    1.0ms ⚡FAST | 20 bytes | 8179a177ec82b15c916b6b7ee4f0873e27165df8 | UNKNOWN(0x81)
+[1756074739.415]    0.0ms ⚡FAST | 20 bytes | 2aed58fcf1611f65e5285848ef1145f05f7f88d6 | ORIENTATION
+[1756074739.416]    1.0ms ⚡FAST | 20 bytes | 9d9ddc115bf233502ba9d2187e7b9adf3d98d5e5 | UNKNOWN(0x9d)
+[1756074739.417]    1.0ms ⚡FAST | 20 bytes | 6d8253dfaf22c83344f0a686666a19d142921a2f | UNKNOWN(0x6d)
+[1756074739.654]  237.1ms ⚠️ SLOW | 20 bytes | b246f213a84348e469fa5531ad580c53ccb4aa8e | UNKNOWN(0xb2)
+[1756074739.654]    0.0ms ⚡FAST | 20 bytes | efd7f8383feccb170f8eb2e0aebb1cd3ebd13ce3 | UNKNOWN(0xef)
+[1756074739.714]   59.8ms | 20 bytes | 75924bbe5b81fbc01aa2a63d591cb8d036a119e7 | UNKNOWN(0x75)
+[1756074739.714]    0.0ms ⚡FAST | 20 bytes | b3b164e9c8635d26bfe5079f94da173fcec0200e | UNKNOWN(0xb3)
+[1756074739.715]    1.0ms ⚡FAST | 20 bytes | 36d39f845e60f6640e7320e7dddbf1f9fcc4f7e8 | UNKNOWN(0x36)
+[1756074739.774]   59.1ms | 20 bytes | 850765ca9b2a3109b6a578d95e15bff582da4116 | UNKNOWN(0x85)
+
+======================================================================
+📊 STATS: 17.9 pkt/s | Avg size: 20.0 bytes
+⏱️  DELAYS: Avg: 56.4ms | Min: 0.0ms | Max: 539.3ms
+📦 TOTAL: 220 packets | 2 duplicates
+======================================================================
+
+[1756074739.835]   60.3ms | 20 bytes | 52ea123d0dbb589ad5bbbcb27c59d6068266b733 | UNKNOWN(0x52)
+[1756074739.954]  119.3ms ⚠️ SLOW | 20 bytes | 7d5b6ee50a06b1fbb4785fd9019c44358677469f | UNKNOWN(0x7d)
+[1756074740.134]  179.9ms ⚠️ SLOW | 20 bytes | f913ae25b5c77087b11f529cd894d7f4be841398 | UNKNOWN(0xf9)
+[1756074740.135]    1.0ms ⚡FAST | 20 bytes | 45e46681c69392d41afc6b3f9cb5bc8c1f579352 | UNKNOWN(0x45)
+[1756074740.135]    0.0ms ⚡FAST | 20 bytes | 0d01de43b357f6e21708838f01b7905fc4cea065 | UNKNOWN(0x0d)
+[1756074740.136]    1.0ms ⚡FAST | 20 bytes | ea47ff28809a29c0e862b6eaf55b7907cd1e73f0 | UNKNOWN(0xea)
+[1756074740.194]   58.3ms | 20 bytes | 9c2c73f2ef68003511de5359445a252162d0fa06 | UNKNOWN(0x9c)
+[1756074740.194]    0.0ms ⚡FAST | 20 bytes | 26c8c791ccd254a8da13825a458255ab86fc3116 | UNKNOWN(0x26)
+[1756074740.195]    1.0ms ⚡FAST | 20 bytes | c12d3854c127eaaec25fb69531982204f6768cb0 | UNKNOWN(0xc1)
+[1756074740.254]   59.4ms | 20 bytes | e557055d148498b2d7c10fa67c20e9f4ecbbd4bc | UNKNOWN(0xe5)
+[1756074740.434]  179.4ms ⚠️ SLOW | 20 bytes | 0aef13778daf2333038974176530fc70af025b44 | UNKNOWN(0x0a)
+[1756074740.434]    0.0ms ⚡FAST | 20 bytes | 4218c5c13b949f5aabf1fdc3824ce50d1991fbf0 | UNKNOWN(0x42)
+[1756074740.554]  119.9ms ⚠️ SLOW | 20 bytes | 865677208c5cb4b4b374b33c1144753d89425ed8 | UNKNOWN(0x86)
+[1756074740.555]    1.0ms ⚡FAST | 20 bytes | ccade9d2f34b108fff6937dbb35f55e929920f81 | UNKNOWN(0xcc)
+[1756074740.555]    0.0ms ⚡FAST | 20 bytes | 78e00ed8a236ee146bc5102c0fba0e3c98c2af06 | UNKNOWN(0x78)
+[1756074740.556]    1.0ms ⚡FAST | 20 bytes | 67aa71c432f3b054228c57e4f73813838f8a390e | UNKNOWN(0x67)
+[1756074740.614]   57.8ms | 20 bytes | 9214d981af95377faaaeb1c1a4bff2dfc04a74ca | UNKNOWN(0x92)
+[1756074740.674]   60.3ms | 20 bytes | e06c90b11196a65bf946f1fd4904b51ded03283a | UNKNOWN(0xe0)
+[1756074740.733]   58.7ms | 20 bytes | d16d5c0b2a91b9805e1e9444922966dd1e70331d | UNKNOWN(0xd1)
+[1756074740.794]   60.9ms | 20 bytes | f2de593390b6e81bfd82104a71461da0451a08d2 | UNKNOWN(0xf2)
+
+======================================================================
+📊 STATS: 19.2 pkt/s | Avg size: 20.0 bytes
+⏱️  DELAYS: Avg: 52.8ms | Min: 0.0ms | Max: 299.9ms
+📦 TOTAL: 240 packets | 2 duplicates
+======================================================================
+
+[1756074740.854]   60.9ms | 20 bytes | cdb896c1b1dea04d5758833331b69ca32538708c | UNKNOWN(0xcd)
+[1756074740.914]   60.0ms | 20 bytes | 67a3f54b22dbcdc4b89f9f15f55e8ca94a759717 | UNKNOWN(0x67)
+[1756074740.974]   59.3ms | 20 bytes | afd068b7e948880b868412fcb86ba7ee668acd86 | UNKNOWN(0xaf)
+[1756074741.034]   60.5ms | 20 bytes | 40de3c7d4c4b6d213600e217949cd7c15e7fbd15 | UNKNOWN(0x40)
+[1756074741.034]    0.0ms ⚡FAST | 20 bytes | b5d5446d799c295262781b66957baeee9fadabb6 | UNKNOWN(0xb5)
+[1756074741.094]   59.6ms | 20 bytes | 32016aae07df3824eea8277cdc59fa7b00aac408 | BATTERY
+[1756074741.154]   60.0ms | 20 bytes | 5c5ebab905d5e2d08ceb00487cd9861949681c30 | UNKNOWN(0x5c)
+[1756074741.155]    1.0ms ⚡FAST | 20 bytes | 544c3e728d8e13b3c3009976317333f1760d997b | UNKNOWN(0x54)
+[1756074741.274]  119.6ms ⚠️ SLOW | 20 bytes | 81a670d0b7676cec46518735fb38f822059609f8 | UNKNOWN(0x81)
+[1756074741.334]   59.9ms | 20 bytes | 44d137d1b1db012305807aaef84863d9a2cc2ba3 | UNKNOWN(0x44)
+[1756074741.394]   60.0ms | 20 bytes | c61906e3f926aefe7371f95339475bf5ec202f15 | UNKNOWN(0xc6)
+[1756074741.454]   60.2ms | 20 bytes | f6cc81b5f54462aee8fee36b19f7e513e0f5b564 | UNKNOWN(0xf6)
+[1756074741.514]   59.6ms | 20 bytes | bc691a088a2a8488803bd2e70b7ae2a33de1b53f | UNKNOWN(0xbc)
+[1756074741.574]   60.1ms | 20 bytes | 08e77569a0901d4356a7122ce5e8021f7b57dafa | UNKNOWN(0x08)
+[1756074741.574]    0.0ms ⚡FAST | 20 bytes | afb668530782421f90a6328d867abc11b6673ff3 | UNKNOWN(0xaf)
+[1756074741.634]   60.1ms | 20 bytes | b47a206c7292ffd789208ddc7cc6d1901b3affac | UNKNOWN(0xb4)
+[1756074741.754]  120.1ms ⚠️ SLOW | 20 bytes | 8f848107c3aca963cc3e8d6b752f6a9d1493d87e | UNKNOWN(0x8f)
+[1756074741.874]  119.6ms ⚠️ SLOW | 20 bytes | ed6cdce1e58bed7f30d2735944fd125b09c87c1b | UNKNOWN(0xed)
+[1756074741.875]    1.0ms ⚡FAST | 20 bytes | f0512332477c464283ec3bff156d2bfdfdc4a227 | UNKNOWN(0xf0)
+[1756074741.934]   59.2ms | 20 bytes | ad4c60377ccd58efa5b0e8f3101a4374b8a0aa0f | UNKNOWN(0xad)
+
+======================================================================
+📊 STATS: 18.5 pkt/s | Avg size: 20.0 bytes
+⏱️  DELAYS: Avg: 54.0ms | Min: 0.0ms | Max: 299.9ms
+📦 TOTAL: 260 packets | 2 duplicates
+======================================================================
+
+[1756074741.994]   59.4ms | 20 bytes | 4d76d98bf659d49fe4e3f6abe84fd1c6eac8febd | UNKNOWN(0x4d)
+[1756074742.054]   60.0ms | 20 bytes | a5427f5e7095e6f386781858d1ef6655bc736b2b | UNKNOWN(0xa5)
+[1756074742.113]   59.8ms | 20 bytes | 14e2deabc7c282ebb709ac3f6cd8e1913e55793a | UNKNOWN(0x14)
+[1756074742.174]   60.7ms | 20 bytes | e1bf01d88923d1f8008fad07c8262e5a1a3abf57 | UNKNOWN(0xe1)
+[1756074742.174]    0.0ms ⚡FAST | 20 bytes | ab7da583898c3f6894912a1f9f2c939303f65dbd | UNKNOWN(0xab)
+[1756074742.294]  120.0ms ⚠️ SLOW | 20 bytes | 31b247eed271b7027427a3e0b60393382a31e7b0 | UNKNOWN(0x31)
+[1756074742.414]  119.4ms ⚠️ SLOW | 20 bytes | 56bebed9df38cfe9b62c934bc0db4eb8e8c6a77e | UNKNOWN(0x56)
+[1756074742.474]   60.3ms | 20 bytes | 322f56e57290c592c4f342227dd241c0567435bc | BATTERY
+[1756074742.474]    0.0ms ⚡FAST | 20 bytes | c60c21c5e66e4d52171026695c9273bf2cdc2fb5 | UNKNOWN(0xc6)
+[1756074742.534]   60.3ms | 20 bytes | ec92082db28ebe2c06145c7b95bbe143e34aa8e7 | UNKNOWN(0xec)
+[1756074742.534]    0.0ms ⚡FAST | 20 bytes | 2a947746f0ccd7707d748807f8453a6ee9eae91d | ORIENTATION
+[1756074742.594]   60.1ms | 20 bytes | e5a68c38cc866d7713b69039abc298ba9db6574f | UNKNOWN(0xe5)
+[1756074742.714]  120.0ms ⚠️ SLOW | 20 bytes | 789b505827e6e32e7400c0a3e9e7fcf757370eaa | UNKNOWN(0x78)
+[1756074742.714]    0.0ms ⚡FAST | 20 bytes | ccaadc189e6bc16c646fe9af4264ab89ee24be8f | UNKNOWN(0xcc)
+[1756074742.774]   60.2ms | 20 bytes | e12297522fa66dd1dd1de14244743406c285cc4b | UNKNOWN(0xe1)
+[1756074742.894]  119.4ms ⚠️ SLOW | 20 bytes | 948b94b20c38eeebfe70c0f8002959cbb757d793 | UNKNOWN(0x94)
+[1756074742.955]   60.7ms | 20 bytes | f340e65b645809d96bbfe51dcb61dc870a7888f0 | UNKNOWN(0xf3)
+[1756074743.014]   59.6ms | 20 bytes | c3a384827d4547d67f4615510ae7576e6513f623 | UNKNOWN(0xc3)
+[1756074743.014]    0.0ms ⚡FAST | 20 bytes | b440fa7740ae89aa20de4415b4f09055f913e451 | UNKNOWN(0xb4)
+[1756074743.075]   60.7ms | 20 bytes | c79dae1bb6666c902994732a5f99e2047e9fba73 | UNKNOWN(0xc7)
+
+======================================================================
+📊 STATS: 18.1 pkt/s | Avg size: 20.0 bytes
+⏱️  DELAYS: Avg: 56.4ms | Min: 0.0ms | Max: 299.9ms
+📦 TOTAL: 280 packets | 2 duplicates
+======================================================================
+
+[1756074743.134]   59.6ms | 20 bytes | 65a2acbdc4102014091b45af0b980a8d2c1e3672 | UNKNOWN(0x65)
+[1756074743.194]   59.3ms | 20 bytes | f203013e6bfdda0aaa0ae35d3f7b1bc0350183d7 | UNKNOWN(0xf2)
+[1756074743.254]   60.2ms | 20 bytes | 23f576a4acc8d474e7fb673b6b3655d6a5ceb1f4 | HARDWARE
+[1756074743.315]   60.9ms | 20 bytes | d82ff3306634d083924b2fa1e2ecb163f664b302 | UNKNOWN(0xd8)
+[1756074743.434]  119.5ms ⚠️ SLOW | 20 bytes | 6ea5443c45c52e47580fcd6cd28725cb21a600ee | UNKNOWN(0x6e)
+[1756074743.495]   60.3ms | 20 bytes | 52e8a2423fe71a042aecb1f1a5ee10418c1df5c9 | UNKNOWN(0x52)
+[1756074743.554]   59.7ms | 20 bytes | 057d4d29477ed161a8f15118f346dc7b2f335693 | UNKNOWN(0x05)
+[1756074743.554]    0.0ms ⚡FAST | 20 bytes | e0b819f944246eb78a6b272b2ab2e2e237edf205 | UNKNOWN(0xe0)
+[1756074743.614]   59.9ms | 20 bytes | 9af99a8b13f6ae34bcd2f8b7e31adf6b13d7a692 | UNKNOWN(0x9a)
+[1756074743.674]   60.1ms | 20 bytes | 1ab6820952fe62f1416e936adccaa5bf9508eaf3 | UNKNOWN(0x1a)
+[1756074743.734]   59.5ms | 20 bytes | 902c95e6e7fda1ccb829221377e44ff64aa67e35 | UNKNOWN(0x90)
+[1756074743.794]   60.8ms | 20 bytes | 79630566b3f265bd52d5e57cb40d0a762ac23c44 | UNKNOWN(0x79)
+[1756074743.854]   59.9ms | 20 bytes | 8235a50e315476868ee9e9a2358a3a408e81a978 | UNKNOWN(0x82)
+[1756074743.914]   60.0ms | 20 bytes | cfb3eda03f7dfcb3c052e2f2913e760e61d19d7c | UNKNOWN(0xcf)
+[1756074743.914]    0.0ms ⚡FAST | 20 bytes | 8396a9fd48ec468582ddda54c0c063f8dc8866d9 | UNKNOWN(0x83)
+[1756074744.034]  119.6ms ⚠️ SLOW | 20 bytes | 890780fc28a332173b652ea8256173b9e634c48b | UNKNOWN(0x89)
+[1756074744.094]   59.9ms | 20 bytes | ea58bf46f176111389387471cbcccb8242d04161 | UNKNOWN(0xea)
+[1756074744.154]   60.0ms | 20 bytes | 9fc51398beb67919ada590f86eefed66d2bdbd7c | UNKNOWN(0x9f)
+[1756074744.214]   60.5ms | 20 bytes | 160aa37a8b0372866d226596c056811772de1a32 | UNKNOWN(0x16)
+[1756074744.334]  119.5ms ⚠️ SLOW | 20 bytes | e9e3577b460b50e21bef38e3afe65b5ea96c60ec | UNKNOWN(0xe9)
+
+======================================================================
+📊 STATS: 17.7 pkt/s | Avg size: 20.0 bytes
+⏱️  DELAYS: Avg: 56.4ms | Min: 0.0ms | Max: 299.0ms
+📦 TOTAL: 300 packets | 2 duplicates
+======================================================================
+
+[1756074744.335]    1.0ms ⚡FAST | 20 bytes | 9d700286fa2f067dea96284e178dc9f31b5b177b | UNKNOWN(0x9d)
+[1756074744.335]    0.0ms ⚡FAST | 20 bytes | df966cee1741bc433a0e35535560ad1663cd4522 | UNKNOWN(0xdf)
+[1756074744.514]  178.6ms ⚠️ SLOW | 20 bytes | f86e0aed98cb1ea85a366aef32a5c69df1102c45 | UNKNOWN(0xf8)
+[1756074744.515]    1.0ms ⚡FAST | 20 bytes | 29f4f84274dc1401438323365df46075ed197bd6 | UNKNOWN(0x29)
+[1756074744.574]   59.3ms | 20 bytes | 912478ed1d21e6ae24f4ebc4d16ad7921f6e0397 | UNKNOWN(0x91)
+[1756074744.634]   59.8ms | 20 bytes | 494b386133975d5ca0355e6af468f922dcca3ce2 | UNKNOWN(0x49)
+[1756074744.694]   60.7ms | 20 bytes | c1bedb107ccef1349bffbd7e31d1db6e9f573565 | UNKNOWN(0xc1)
+[1756074744.754]   59.3ms | 20 bytes | 8c8f080b6ae28c27cf73493cac45af4aba393ea9 | UNKNOWN(0x8c)
+[1756074744.814]   60.1ms | 20 bytes | 60ac21b085227d005eda64bf19fff8e270725296 | UNKNOWN(0x60)
+[1756074744.815]    1.0ms ⚡FAST | 20 bytes | f3be90057336c8f029b645949ab3d6679f02b737 | UNKNOWN(0xf3)
+[1756074744.873]   58.0ms | 20 bytes | 6f73d3695399040d4b5618026c6c8cc33eb42e44 | UNKNOWN(0x6f)
+[1756074744.994]  121.3ms ⚠️ SLOW | 20 bytes | db0d6babede4b020464af4ce85435b0a70ee78da | UNKNOWN(0xdb)
+[1756074745.114]  119.5ms ⚠️ SLOW | 20 bytes | 0c0009284e746f77abcd398cb69a330329723ca0 | UNKNOWN(0x0c)
+[1756074745.174]   60.7ms | 20 bytes | df4975dec6f08bf576bd91264922a352fe6a2f28 | UNKNOWN(0xdf)
+[1756074745.174]    0.0ms ⚡FAST | 20 bytes | b12e9bd11697c14500e4054c33df13d78e50a970 | UNKNOWN(0xb1)
+[1756074745.175]    1.0ms ⚡FAST | 20 bytes | 776c274cf7f8fa438ad0f938934a52b59f6f91c5 | UNKNOWN(0x77)
+[1756074745.234]   59.0ms | 20 bytes | e536b3c60253280ac7dc2d29804f93776cec2c87 | UNKNOWN(0xe5)
+[1756074745.294]   59.3ms | 20 bytes | 5b6ff987b0e7779ec9906e1e9c37d5eeeb28e2e5 | UNKNOWN(0x5b)
+[1756074745.474]  180.8ms ⚠️ SLOW | 20 bytes | 9cd4844668555bc530d2e7a8abfa5747d07e71f5 | UNKNOWN(0x9c)
+[1756074745.474]    0.0ms ⚡FAST | 20 bytes | f6800e82bb4cdc4a9c076ee7739bcbec001ee1bd | UNKNOWN(0xf6)
+
+======================================================================
+📊 STATS: 17.7 pkt/s | Avg size: 20.0 bytes
+⏱️  DELAYS: Avg: 57.0ms | Min: 0.0ms | Max: 180.8ms
+📦 TOTAL: 320 packets | 2 duplicates
+======================================================================
+
+[1756074745.534]   59.9ms | 20 bytes | cfc1cb2f88b72ca1f407b742599005e4fe98c6dd | UNKNOWN(0xcf)
+[1756074745.534]    0.0ms ⚡FAST | 20 bytes | 5a667ff784bd3494e726ab4427c8004eb6b80e57 | UNKNOWN(0x5a)
+[1756074745.594]   59.5ms | 20 bytes | 29a10bd574e73cb5ca66cca52a9fb430d37c939e | UNKNOWN(0x29)
+[1756074745.654]   60.3ms | 20 bytes | 1c89fe35ec18cb16fa83d0067f4f34a5bd9a21b4 | UNKNOWN(0x1c)
+[1756074745.714]   59.8ms | 20 bytes | c6085a15ef3b09a6cb01753ee4b95d064bcffc50 | UNKNOWN(0xc6)
+[1756074745.774]   60.3ms | 20 bytes | 823f48a60ec6feb685f52b57162db2d17cae5167 | UNKNOWN(0x82)
+[1756074745.834]   59.6ms | 20 bytes | 415286eef3fbe3c2840e7970dc4642114be1528a | UNKNOWN(0x41)
+[1756074745.835]    1.0ms ⚡FAST | 20 bytes | 486b87ed4723d92a7890107507cf6bb877a22888 | UNKNOWN(0x48)
+[1756074745.954]  119.7ms ⚠️ SLOW | 20 bytes | 71b1016e74f10266eb08f4d90372c1eaf68cc86d | UNKNOWN(0x71)
+[1756074746.013]   59.0ms | 20 bytes | 17be40a0ce122eebc49aec8fafb49213efc1f0b7 | UNKNOWN(0x17)
+[1756074746.073]   59.9ms | 20 bytes | 0cc99485d08d91592df97f89746ea8d22b56364f | UNKNOWN(0x0c)
+[1756074746.134]   60.2ms | 20 bytes | b46a22d0c962ecc129f7bb9eb34571c59e94b947 | UNKNOWN(0xb4)
+[1756074746.135]    1.0ms ⚡FAST | 20 bytes | 602e6563ef12d1bb5a72738968ff9c781476dd07 | UNKNOWN(0x60)
+[1756074746.194]   59.6ms | 20 bytes | 3ef5b36b110fe814f0e9c1cb5b0a0220d1b3fc84 | UNKNOWN(0x3e)
+[1756074746.254]   59.4ms | 20 bytes | 79f8c891fb3c801fe598fbf1397311009bdc988d | UNKNOWN(0x79)
+[1756074746.314]   60.9ms | 20 bytes | 9f38317e9060e1a84543ffe073eaebef2877f7de | UNKNOWN(0x9f)
+[1756074746.435]  120.2ms ⚠️ SLOW | 20 bytes | b891f9b277b5d041b26998b1563b2c897d4eef2f | UNKNOWN(0xb8)
+[1756074746.614]  179.6ms ⚠️ SLOW | 20 bytes | 7d6d1e1f2d4acba7fcc3f84fc6b38817909d834a | UNKNOWN(0x7d)
+[1756074746.614]    0.0ms ⚡FAST | 20 bytes | edc8fcf5d9dba6c48174524e5c2eaa1fd7a197cf | UNKNOWN(0xed)
+[1756074746.615]    1.0ms ⚡FAST | 20 bytes | 8736ce2d8fb8ea4927b56e8c4b8db092856a4c89 | UNKNOWN(0x87)
+
+======================================================================
+📊 STATS: 17.4 pkt/s | Avg size: 20.0 bytes
+⏱️  DELAYS: Avg: 58.2ms | Min: 0.0ms | Max: 180.8ms
+📦 TOTAL: 340 packets | 2 duplicates
+======================================================================
+
+[1756074746.615]    0.0ms ⚡FAST | 20 bytes | f17f07f6b797ed4744ef2d872ea8f6cdcbf6bcd3 | UNKNOWN(0xf1)
+[1756074746.674]   58.8ms | 20 bytes | e3e5623a1612edf854cb256a30a8bb074d6de8d4 | UNKNOWN(0xe3)
+[1756074746.735]   60.7ms | 20 bytes | 617c4d0e32cb0d7b90577e1bf2aabf08c454cc89 | UNKNOWN(0x61)
+[1756074746.855]  119.9ms ⚠️ SLOW | 20 bytes | d92c21e291f53cba905ae784a74adb47c14c23b9 | UNKNOWN(0xd9)
+[1756074746.914]   59.0ms | 20 bytes | d47151922e0c90e548e2ab8df8e6446f120fa972 | UNKNOWN(0xd4)
+[1756074746.974]   60.6ms | 20 bytes | 276f5dfc7abcd198bd77bf88f4bf676778c5d7a4 | UNKNOWN(0x27)
+[1756074747.094]  119.8ms ⚠️ SLOW | 20 bytes | 0128dcd44aa223f4df5eafb93615f897d93938d0 | UNKNOWN(0x01)
+[1756074747.095]    1.0ms ⚡FAST | 20 bytes | 96c48c7571ff2c8c5c28ed7e6f0ba6177fe44a13 | UNKNOWN(0x96)
+[1756074747.095]    0.0ms ⚡FAST | 20 bytes | 627aa13eda81eddba956abf07576bf3e70cf1e0b | UNKNOWN(0x62)
+[1756074747.158]   63.4ms | 20 bytes | 0eb03ba5c0ce9da4465e04c63998970bd140ce5a | UNKNOWN(0x0e)
+[1756074747.335]  176.2ms ⚠️ SLOW | 20 bytes | 7f5f6a2681b2d4edc3268fa37f1d442bcb76cff4 | UNKNOWN(0x7f)
+[1756074747.335]    0.0ms ⚡FAST | 20 bytes | 7b4fca4ee86a0687c2bf3fb84695ead53abc9627 | UNKNOWN(0x7b)
+[1756074747.335]    0.0ms ⚡FAST | 20 bytes | 2b82a56c9b40d12f2521c466114e07493c6889e4 | UNKNOWN(0x2b)
+[1756074747.336]    1.0ms ⚡FAST | 20 bytes | e108eddd7ba8b2c0057db7acef94045de15ed5b2 | UNKNOWN(0xe1)
+[1756074747.394]   58.6ms | 20 bytes | 1be7932eca70a5bc04be2637d271a10440fa1132 | UNKNOWN(0x1b)
+[1756074747.394]    0.0ms ⚡FAST | 20 bytes | 6fe6cdb67dd93219a05ec145b5b4aa68e88d3c8d | UNKNOWN(0x6f)
+[1756074747.455]   60.7ms | 20 bytes | 57acdaf0d05a82b3dbe764eb64d55c7e7cbaa205 | UNKNOWN(0x57)
+[1756074747.455]    0.0ms ⚡FAST | 20 bytes | 7a3e453f9529c4b087b1099a5d35dfd0c15459a0 | UNKNOWN(0x7a)
+[1756074747.514]   59.1ms | 20 bytes | 9e1fd04caee5b7d1b2a347a81770dd9afeb2c982 | UNKNOWN(0x9e)
+[1756074747.574]   59.8ms | 20 bytes | c1fd7ac9d32063e4425e0cc13f145bff3c101e6a | UNKNOWN(0xc1)
+
+======================================================================
+📊 STATS: 17.9 pkt/s | Avg size: 20.0 bytes
+⏱️  DELAYS: Avg: 56.4ms | Min: 0.0ms | Max: 180.8ms
+📦 TOTAL: 360 packets | 2 duplicates
+======================================================================
+
+[1756074747.634]   60.4ms | 20 bytes | fadd55f5c19d0142ae7edcf4941eaeb6e105468b | UNKNOWN(0xfa)
+[1756074747.694]   59.7ms | 20 bytes | 39ca9a16ea68afe14da23b2f753072b2b8013b1e | UNKNOWN(0x39)
+[1756074747.754]   59.8ms | 20 bytes | 15234b024d71f2a5bac7add9fe04fae37fcf135f | UNKNOWN(0x15)
+[1756074747.813]   59.8ms | 20 bytes | b1029cac2fb104b193d32e97ff0ea5966308df8e | UNKNOWN(0xb1)
+[1756074747.874]   60.2ms | 20 bytes | 4df681ed47a9ab957c55ef1f9a72efc7cee788a4 | UNKNOWN(0x4d)
+[1756074747.934]   60.5ms | 20 bytes | 8070ee0d4b67d0e6bb58c310c1889b99a2d4a572 | UNKNOWN(0x80)
+[1756074747.934]    0.0ms ⚡FAST | 20 bytes | 1c437ea2ef53bcf18f8b53dc510ee9d2aea8afb7 | UNKNOWN(0x1c)
+[1756074747.994]   60.2ms | 20 bytes | c3c747e178ed1ed631292ccde265de6335f0fef8 | UNKNOWN(0xc3)
+[1756074748.054]   60.0ms | 20 bytes | 1f9b52b60ed5c3110d8e4ab71719f342de20b110 | UNKNOWN(0x1f)
+[1756074748.114]   59.7ms | 20 bytes | 60e7843326e644569150ba5a26dfeff56ed0cac2 | UNKNOWN(0x60)
+[1756074748.174]   60.4ms | 20 bytes | 9c9528df9ea54ef771b1e47edc7059f55c054741 | UNKNOWN(0x9c)
+[1756074748.234]   59.3ms | 20 bytes | 10a9c7c692e95a762c07b7d891d6a3acaaf0c25c | UNKNOWN(0x10)
+[1756074748.235]    1.0ms ⚡FAST | 20 bytes | ea5d5a27053525397923c2fe76dc510297332912 | UNKNOWN(0xea)
+[1756074748.293]   58.8ms | 20 bytes | bbdfde099c5dd8e3a8044955752aab50fba5c333 | UNKNOWN(0xbb)
+[1756074748.414]  120.9ms ⚠️ SLOW | 20 bytes | 642e74dae2b7dbabd22eef7d93122389c8d9ffc4 | UNKNOWN(0x64)
+[1756074748.774]  359.3ms ⚠️ SLOW | 20 bytes | 291e381e098b094fde81dee889002f82b5278e76 | UNKNOWN(0x29)
+[1756074748.774]    0.0ms ⚡FAST | 20 bytes | c9f17088acd1bbaebece2401ec2df637f66578f0 | UNKNOWN(0xc9)
+[1756074748.775]    1.4ms ⚡FAST | 20 bytes | 249f835ef1f2742640d9d54c375d8ecb7f98b229 | UNKNOWN(0x24)
+[1756074748.775]    0.0ms ⚡FAST | 20 bytes | 45069a026ff034f22fd7b71804217eddf341502b | UNKNOWN(0x45)
+[1756074748.894]  119.5ms ⚠️ SLOW | 20 bytes | beeceff4601cfe7b64e243ce793f6d8027d07f63 | UNKNOWN(0xbe)
+
+======================================================================
+📊 STATS: 17.4 pkt/s | Avg size: 20.0 bytes
+⏱️  DELAYS: Avg: 58.2ms | Min: 0.0ms | Max: 359.3ms
+📦 TOTAL: 380 packets | 2 duplicates
+======================================================================
+
+[1756074748.894]    0.0ms ⚡FAST | 20 bytes | 6cb4d7d761a3e856eab6376700092636676041ce | UNKNOWN(0x6c)
+[1756074748.894]    0.0ms ⚡FAST | 20 bytes | 8836e743a0832245c4b32dfd6d5ac26ba79ffb89 | UNKNOWN(0x88)
+[1756074748.954]   59.1ms | 20 bytes | 37192f76c7869af3dd36743e2fa5b236cd0bd2d3 | FACELETS
+[1756074748.955]    1.0ms ⚡FAST | 20 bytes | 77a40fee95a00bebacec9f2845d056f4da397e76 | UNKNOWN(0x77)
+[1756074749.015]   60.0ms | 20 bytes | 5b3711904efeb6b3672d22eb6c7751bdec8321ad | UNKNOWN(0x5b)
+[1756074749.134]  119.1ms ⚠️ SLOW | 20 bytes | ad54a2cf3390f7cfdd17cbfae11dbde8027ed239 | UNKNOWN(0xad)
+[1756074749.134]    0.0ms ⚡FAST | 20 bytes | 5f72ec24b5be0e5c6c3e4c6fef208738c6671425 | UNKNOWN(0x5f)
+[1756074749.194]   60.2ms | 20 bytes | 9db94fa224ee46683785764f03a4a060483e76eb | UNKNOWN(0x9d)
+[1756074749.254]   59.8ms | 20 bytes | d64545488418232766afda6fcc0371d21430d61e | UNKNOWN(0xd6)
+[1756074749.494]  240.0ms ⚠️ SLOW | 20 bytes | f084e94388fc72746345243466f8ae231e8244b3 | UNKNOWN(0xf0)
+[1756074749.495]    1.0ms ⚡FAST | 20 bytes | 5e64f446a1afb513dfc837e2e031bd897a0efdd4 | UNKNOWN(0x5e)
+[1756074749.495]    0.0ms ⚡FAST | 20 bytes | cf2a56189baa23fafd9a519c769686cc8970b884 | UNKNOWN(0xcf)
+[1756074749.554]   59.2ms | 20 bytes | ef9df518ba8e0c2381219c76d0e1408774f81434 | UNKNOWN(0xef)
+[1756074749.614]   60.6ms | 20 bytes | 643aa6878c9dc991068575eab40778e95c4a14b7 | UNKNOWN(0x64)
+[1756074750.334]  719.8ms ⚠️ SLOW | 20 bytes | 87387ea2b70ac07773bdbe72e1917cc8f15f9676 | UNKNOWN(0x87)
+[1756074750.334]    0.0ms ⚡FAST | 20 bytes | 46127dc9204ddd7055b82ec62681bde5c95922cb | UNKNOWN(0x46)
+[1756074750.335]    1.0ms ⚡FAST | 20 bytes | cc5f707e8d5283e227cbb4b9bd20cae0c1c42b8f | UNKNOWN(0xcc)
+[1756074750.335]    0.0ms ⚡FAST | 20 bytes | 492cb650941675922199c4a422eb214d17a4efe3 | UNKNOWN(0x49)
+[1756074750.394]   59.2ms | 20 bytes | aff65c930767940a2941c2b688b1beebf399ae2b | UNKNOWN(0xaf)
+[1756074750.394]    0.0ms ⚡FAST | 20 bytes | 6a743dc25f680783f84d50eeec8dca55d0f2f032 | UNKNOWN(0x6a)
+
+======================================================================
+📊 STATS: 16.5 pkt/s | Avg size: 20.0 bytes
+⏱️  DELAYS: Avg: 60.6ms | Min: 0.0ms | Max: 719.8ms
+📦 TOTAL: 400 packets | 2 duplicates
+======================================================================
+
+[1756074750.395]    1.0ms ⚡FAST | 20 bytes | b153c652dfc52ff944aaef8c825d31405d058e9e | UNKNOWN(0xb1)
+[1756074750.395]    0.0ms ⚡FAST | 20 bytes | 71c81a0ce8827716f92204124e6473bbd8296e79 | UNKNOWN(0x71)
+[1756074750.455]   59.2ms | 20 bytes | 71c81a0ce8827716f92204124e6473bbd8296e79 | UNKNOWN(0x71) [DUPLICATE]
+[1756074750.455]    0.0ms ⚡FAST | 20 bytes | 5f18e4a93252c999b80bb56bc79d573fc72bd2a5 | UNKNOWN(0x5f)
+[1756074750.455]    0.0ms ⚡FAST | 20 bytes | 13bb7216af76a80b44a593d8343e8a2f1424b560 | UNKNOWN(0x13)
+[1756074750.456]    1.0ms ⚡FAST | 20 bytes | 5118f4063a2488482adb6f5f3050bd31ad0ceee5 | UNKNOWN(0x51)
+[1756074750.574]  118.8ms ⚠️ SLOW | 20 bytes | 30943f5ae73d952e5b8f6d9815c856d4a8df213a | UNKNOWN(0x30)
+[1756074750.574]    0.0ms ⚡FAST | 20 bytes | 13becca2722465e4b902d601afff30a6cf7cb620 | UNKNOWN(0x13)
+[1756074750.634]   59.7ms | 20 bytes | e4baaaed4d5dc454a1a544e03689437db9fe5ebc | UNKNOWN(0xe4)
+[1756074750.694]   60.1ms | 20 bytes | 17838284aa5f4e4b79e66c334c74cc859035a5bb | UNKNOWN(0x17)
+[1756074750.934]  239.9ms ⚠️ SLOW | 20 bytes | d7d275a7a5e7b7e48077523cac13ad833db86534 | UNKNOWN(0xd7)
+[1756074750.934]    0.0ms ⚡FAST | 20 bytes | aab650ccb38cff0737e0a91ffb418dba4c5984dc | UNKNOWN(0xaa)
+[1756074750.935]    1.0ms ⚡FAST | 20 bytes | 755e7d8c427773233b0c0126929c8c4848e61280 | UNKNOWN(0x75)
+[1756074751.054]  118.9ms ⚠️ SLOW | 20 bytes | 3e84d036d19defdec040dd6a23cb9893ca1b8241 | UNKNOWN(0x3e)
+[1756074751.054]    0.0ms ⚡FAST | 20 bytes | c11b90e282604f4e60c07e38497d7ae22ed0d7a9 | UNKNOWN(0xc1)
+[1756074751.114]   60.0ms | 20 bytes | f59bf394d0f225040208fadfb63a81437a0b30c7 | UNKNOWN(0xf5)
+[1756074751.174]   60.0ms | 20 bytes | 05dec17e03c4e78347e59162037126231800ece1 | UNKNOWN(0x05)
+[1756074751.234]   60.1ms | 20 bytes | e02e5bda4a19a8c0c5974c85488db39b721af6fb | UNKNOWN(0xe0)
+[1756074751.294]   60.3ms | 20 bytes | a2f2d542c1852c1355eb193c6dadbfb81201692e | UNKNOWN(0xa2)
+[1756074751.354]   59.7ms | 20 bytes | bb4b96db43e04cd37f31c843e34e43e97892491f | UNKNOWN(0xbb)
+
+======================================================================
+📊 STATS: 17.2 pkt/s | Avg size: 20.0 bytes
+⏱️  DELAYS: Avg: 58.8ms | Min: 0.0ms | Max: 719.8ms
+📦 TOTAL: 420 packets | 3 duplicates
+======================================================================
+
+[1756074751.474]  119.7ms ⚠️ SLOW | 20 bytes | b2fa89969964b02c3560bbba3dc8f9c05f17803d | UNKNOWN(0xb2)
+[1756074751.594]  120.3ms ⚠️ SLOW | 20 bytes | 351af1b6c281ac31ebd8c5a984d8c3f4a5946a1e | UNKNOWN(0x35)
+[1756074751.594]    0.0ms ⚡FAST | 20 bytes | f27e52cdabafa709794c01987b41ba083e3ca244 | UNKNOWN(0xf2)
+[1756074751.714]  120.4ms ⚠️ SLOW | 20 bytes | ec101eb633366e89c096af07701f12ccaeb7f669 | UNKNOWN(0xec)
+[1756074751.714]    0.0ms ⚡FAST | 20 bytes | c8b40dca2b15bdabf50ecc5ad060e287f462ecab | UNKNOWN(0xc8)
+[1756074751.775]   60.1ms | 20 bytes | 28d3639666612439f0ade3a5f34e99a0b594ab4f | UNKNOWN(0x28)
+[1756074752.014]  239.8ms ⚠️ SLOW | 20 bytes | 088143e964ad50e3fde81362c0fab842968addae | UNKNOWN(0x08)
+[1756074752.014]    0.0ms ⚡FAST | 20 bytes | 974a33f24ba4fa5efa65214ee41b894d8bead3cb | UNKNOWN(0x97)
+[1756074752.015]    1.0ms ⚡FAST | 20 bytes | e89d636ebb525e16a419469e90c82ef9ff28de16 | UNKNOWN(0xe8)
+
+👋 Exiting...

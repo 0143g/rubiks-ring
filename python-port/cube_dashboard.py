@@ -15,21 +15,11 @@ from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit
 import sys
 from pathlib import Path
-
-try:
-    from gan_web_bluetooth import GanSmartCube
-    from gan_web_bluetooth.protocols.base import (
-        GanCubeMoveEvent, GanCubeFaceletsEvent, GanCubeOrientationEvent,
-        GanCubeBatteryEvent, GanCubeHardwareEvent
-    )
-    from gan_web_bluetooth.utils import now
-except ImportError as e:
-    print(f"Error importing gan_web_bluetooth: {e}")
-    sys.exit(1)
-
+from gan_web_bluetooth import GanSmartCube
+from gan_web_bluetooth.protocols.base import (GanCubeMoveEvent, GanCubeFaceletsEvent, GanCubeOrientationEvent, GanCubeBatteryEvent, GanCubeHardwareEvent)
+from gan_web_bluetooth.utils import now
 
 class CubeDashboardServer:
-    """Web dashboard server for GAN Smart Cube."""
     
     def __init__(self, config_path="controller_config.json"):
         self.app = Flask(__name__, template_folder='templates', static_folder='static')
@@ -57,8 +47,6 @@ class CubeDashboardServer:
             'last_quaternion': None
         }
         
-        # Debug output rate limiting (for terminal only)
-        
         # Controller bridge connection
         self.controller_bridge_ws = None
         self.bridge_connected = False
@@ -80,7 +68,6 @@ class CubeDashboardServer:
         self.setup_socketio_events()
     
     def _load_config(self):
-        """Load configuration from JSON file"""
         try:
             config_file = Path(self.config_path)
             if config_file.exists():
@@ -96,21 +83,18 @@ class CubeDashboardServer:
             self.config = {}
     
     def _check_and_reload_config(self):
-        """Check if config file has been modified and reload if necessary"""
         try:
             current_mtime = os.path.getmtime(self.config_path)
             if current_mtime > self.config_mtime:
-                print(f"\n🔄 Dashboard config file changed, reloading...")
+                print(f"\nDashboard config file changed, reloading...")
                 self._load_config()
-                print("✅ Dashboard config reloaded")
+                print("Dashboard config reloaded")
         except (OSError, FileNotFoundError):
             pass  # Config file may not exist
         except Exception as e:
             print(f"Error checking config: {e}")
     
     def setup_routes(self):
-        """Setup Flask routes."""
-        
         @self.app.route('/')
         def index():
             return render_template('dashboard.html')
@@ -162,7 +146,6 @@ class CubeDashboardServer:
             self.enable_controller = enable
             print(f"Controller {'enabled' if enable else 'disabled'}")
             
-            # Try to connect to bridge if enabling
             if enable and not self.bridge_connected and self.cube_loop:
                 asyncio.run_coroutine_threadsafe(
                     self.connect_to_controller_bridge(),
@@ -531,7 +514,7 @@ class CubeDashboardServer:
         
         self.socketio.emit('hardware', self.hardware_info)
     
-    def _handle_connected_event(self, _):
+    def _handle_connected_event(self, event_data):
         """Handle cube connected event."""
         self.is_connected = True
         self.connection_status = "connected"
@@ -557,7 +540,7 @@ class CubeDashboardServer:
                 self.cube_loop
             )
     
-    def _handle_disconnected_event(self, _):
+    def _handle_disconnected_event(self, event_data):
         """Handle cube disconnected event."""
         self.is_connected = False
         self.connection_status = "disconnected"
@@ -810,12 +793,10 @@ class CubeDashboardServer:
         self.calibration_reference = self._last_raw_quaternion.copy()
         
         print(f"CALIBRATION: Storing reference quaternion = ({self.calibration_reference['x']:.3f}, {self.calibration_reference['y']:.3f}, {self.calibration_reference['z']:.3f}, {self.calibration_reference['w']:.3f})")
-        print("✅ Cube calibrated! This position is now identity (0,0,0,1)")
-        print("📍 Controls: Tilt forward/back to move, tilt left/right to strafe, rotate to look around")
         
         self.socketio.emit('message', {
             'type': 'success',
-            'text': '✅ Cube calibrated! Position reset to identity (0,0,0,1)'
+            'text': 'Cube calibrated! Position reset to identity (0,0,0,1)'
         })
     
     def reset_controller_orientation(self, use_green_face=True):
@@ -832,10 +813,10 @@ class CubeDashboardServer:
                 'z': 0.765,  # ACTUAL value when green is forward
                 'w': 0.644   # ACTUAL value when green is forward
             }
-            print("Controller orientation LOCKED to ACTUAL GREEN FACE FORWARD (0, 0, 0.765, 0.644)")
+            print("Controller orientation locked to actual green face forward (0, 0, 0.765, 0.644)")
             self.socketio.emit('message', {
                 'type': 'success',
-                'text': 'Controller locked to GREEN FACE FORWARD - hold cube with green facing you'
+                'text': 'Controller locked to green face forward'
             })
         elif self.orientation_state['current_quaternion']:
             # Optional: Reset reference to current position (not recommended)
@@ -870,7 +851,7 @@ class CubeDashboardServer:
     
     def run(self, host='localhost', port=5000, debug=False):
         """Run the dashboard server."""
-        print(f"Starting GAN Cube Dashboard at http://{host}:{port}")
+        print(f"Starting dashboard http://{host}:{port}")
         self.socketio.run(self.app, host=host, port=port, debug=debug)
 
 
