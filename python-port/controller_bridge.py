@@ -30,7 +30,7 @@ class ControllerConfig:
     mouse_sensitivity: float = 2.0
     movement_sensitivity: float = 2.0
     deadzone: float = 0.1
-    rate_limit_ms: int = 16  # 60 FPS
+    rate_limit_ms: int = 1
     forward_tilt_threshold: float = 0.7
     
     # Dashboard sensitivity settings

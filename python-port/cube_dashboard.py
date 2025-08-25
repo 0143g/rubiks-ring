@@ -837,17 +837,28 @@ class CubeDashboardServer:
     async def _send_to_bridge(self, message: Dict[str, Any]):
         """Send message to controller bridge WebSocket."""
         try:
-            if self.controller_bridge_ws and not self.controller_bridge_ws.closed:
+            if self.controller_bridge_ws:
                 await self.controller_bridge_ws.send(json.dumps(message))
+        except (websockets.exceptions.ConnectionClosed, websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK) as e:
+            # Handle connection closed exceptions
+            self.bridge_connected = False
+            self.controller_bridge_ws = None
+            print(f"Controller bridge connection closed: {e}")
         except Exception as e:
-            if hasattr(self, 'last_bridge_error_time'):
-                current_time = time.time() * 1000
-                if current_time - self.last_bridge_error_time > 5000:  # Rate limit error messages
-                    print(f"Error sending to controller bridge: {e}")
-                    self.last_bridge_error_time = current_time
+            # For any other exceptions, check if it's a connection issue
+            if "closed" in str(e).lower() or "connection" in str(e).lower():
+                self.bridge_connected = False
+                self.controller_bridge_ws = None
+                print(f"Controller bridge connection issue: {e}")
             else:
-                print(f"Error sending to controller bridge: {e}")
-                self.last_bridge_error_time = time.time() * 1000
+                if hasattr(self, 'last_bridge_error_time'):
+                    current_time = time.time() * 1000
+                    if current_time - self.last_bridge_error_time > 5000:  # Rate limit error messages
+                        print(f"Error sending to controller bridge: {e}")
+                        self.last_bridge_error_time = current_time
+                else:
+                    print(f"Error sending to controller bridge: {e}")
+                    self.last_bridge_error_time = time.time() * 1000
     
     def run(self, host='localhost', port=5000, debug=False):
         """Run the dashboard server."""
