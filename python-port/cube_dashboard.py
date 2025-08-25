@@ -18,6 +18,7 @@ from pathlib import Path
 from gan_web_bluetooth import GanSmartCube
 from gan_web_bluetooth.protocols.base import (GanCubeMoveEvent, GanCubeFaceletsEvent, GanCubeOrientationEvent, GanCubeBatteryEvent, GanCubeHardwareEvent)
 from gan_web_bluetooth.utils import now
+from diagnostic_logger import DiagnosticLogger, AsyncDiagnosticHelper
 
 class CubeDashboardServer:
     
@@ -26,11 +27,18 @@ class CubeDashboardServer:
         self.app.config['SECRET_KEY'] = 'gan-cube-dashboard-secret'
         self.socketio = SocketIO(self.app, cors_allowed_origins="*", async_mode='threading')
         
+        # Initialize diagnostic logger
+        self.diagnostics = DiagnosticLogger()
+        self.async_helper = None  # Will be initialized in async context
+        
         self.cube: Optional[GanSmartCube] = None
         self.cube_thread: Optional[threading.Thread] = None
         self.cube_loop: Optional[asyncio.AbstractEventLoop] = None
         self.is_connected = False
         self.connection_status = "disconnected"
+        
+        # Event queue for async processing
+        self.event_queue = None  # Will be initialized as asyncio.Queue
         
         # Dashboard state
         self.move_history = []
@@ -254,34 +262,133 @@ class CubeDashboardServer:
     async def _connect_and_monitor_cube(self, device_address: Optional[str]):
         """Connect to cube and monitor events."""
         try:
+            # Initialize async helper and event queue
+            self.async_helper = AsyncDiagnosticHelper(self.diagnostics)
+            self.event_queue = asyncio.Queue(maxsize=1000)
+            
+            self.diagnostics.log_event("connection", "Starting cube connection", {
+                'device_address': device_address
+            })
+            
+            # Start event processor task
+            event_processor_task = asyncio.create_task(self._process_event_queue())
+            
+            # Give the processor a moment to start
+            await asyncio.sleep(0.1)
+            
             # Create cube instance
             self.cube = GanSmartCube()
             
-            # Setup event handlers
-            self.cube.on('move', self._handle_move_event)
-            self.cube.on('facelets', self._handle_facelets_event)
-            self.cube.on('orientation', self._handle_orientation_event)
-            self.cube.on('battery', self._handle_battery_event)
-            self.cube.on('hardware', self._handle_hardware_event)
-            self.cube.on('connected', self._handle_connected_event)
-            self.cube.on('disconnected', self._handle_disconnected_event)
+            # Setup event handlers - these will just queue events
+            self.cube.on('move', lambda event: self._queue_event('move', event))
+            self.cube.on('facelets', lambda event: self._queue_event('facelets', event))
+            self.cube.on('orientation', lambda event: self._queue_event('orientation', event))
+            self.cube.on('battery', lambda event: self._queue_event('battery', event))
+            self.cube.on('hardware', lambda event: self._queue_event('hardware', event))
+            self.cube.on('connected', lambda event: self._queue_event('connected', event))
+            self.cube.on('disconnected', lambda event: self._queue_event('disconnected', event))
             
             # Connect to cube
             self.socketio.emit('message', {'type': 'info', 'text': 'Scanning for cube...'})
             await self.cube.connect(device_address)
             
-            # Wait for disconnection
+            # Wait for disconnection - check event loop responsiveness
+            loop_check_counter = 0
             while self.is_connected:
                 await asyncio.sleep(0.1)
+                loop_check_counter += 1
+                
+                # Check event loop responsiveness every second
+                if loop_check_counter >= 10:
+                    self.diagnostics.check_event_loop_responsiveness()
+                    loop_check_counter = 0
+                    
+                    # Check queue size
+                    queue_size = self.event_queue.qsize()
+                    self.diagnostics.update_queue_size('pending_messages', queue_size)
+                    if queue_size > 100:
+                        self.diagnostics.log_event("performance", "Event queue backup", {
+                            'queue_size': queue_size
+                        })
                 
         except Exception as e:
             print(f"Cube monitoring error: {e}")
+            self.diagnostics.log_event("connection", "Cube monitoring error", error=e)
             self.connection_status = "error"
             self.socketio.emit('message', {
                 'type': 'error',
                 'text': f'Connection error: {str(e)}'
             })
             self.emit_status_update()
+        finally:
+            # Cancel event processor task if it exists
+            if 'event_processor_task' in locals():
+                event_processor_task.cancel()
+                try:
+                    await event_processor_task
+                except asyncio.CancelledError:
+                    pass
+    
+    def _queue_event(self, event_type: str, event):
+        """Queue an event for async processing - runs in sync context."""
+        if self.event_queue and self.cube_loop:
+            try:
+                # Use asyncio.run_coroutine_threadsafe to add to queue from sync context
+                asyncio.run_coroutine_threadsafe(
+                    self.event_queue.put((event_type, event)),
+                    self.cube_loop
+                )
+            except Exception as e:
+                print(f"Failed to queue event: {e}")
+    
+    async def _process_event_queue(self):
+        """Process events from the queue asynchronously."""
+        startup_time = time.time()
+        
+        # Keep processing until we explicitly stop
+        while True:
+            try:
+                # Don't stop during the first 10 seconds (startup period)
+                if time.time() - startup_time < 10:
+                    pass  # Keep running during startup
+                # After startup, check if we should stop
+                elif not self.is_connected and self.event_queue.empty():
+                    # If disconnected and queue is empty after startup, we can exit
+                    await asyncio.sleep(0.5)
+                    if not self.is_connected and self.event_queue.empty():
+                        break
+                
+                # Get event with timeout to allow checking connection status
+                try:
+                    event_type, event = await asyncio.wait_for(
+                        self.event_queue.get(), 
+                        timeout=0.1
+                    )
+                except asyncio.TimeoutError:
+                    continue
+                
+                # Process event based on type
+                if event_type == 'move':
+                    await self._handle_move_event_async(event)
+                elif event_type == 'facelets':
+                    await self._handle_facelets_event_async(event)
+                elif event_type == 'orientation':
+                    await self._handle_orientation_event_async(event)
+                elif event_type == 'battery':
+                    await self._handle_battery_event_async(event)
+                elif event_type == 'hardware':
+                    await self._handle_hardware_event_async(event)
+                elif event_type == 'connected':
+                    await self._handle_connected_event_async(event)
+                elif event_type == 'disconnected':
+                    await self._handle_disconnected_event_async(event)
+                
+                # Yield control periodically to prevent blocking
+                await asyncio.sleep(0)
+                
+            except Exception as e:
+                print(f"Error processing event: {e}")
+                self.diagnostics.log_event("event_processing", "Error processing event", error=e)
     
     async def _disconnect_cube(self):
         """Disconnect from cube."""
@@ -291,9 +398,13 @@ class CubeDashboardServer:
             except Exception as e:
                 print(f"Disconnection error: {e}")
     
-    def _handle_move_event(self, event: GanCubeMoveEvent):
+    async def _handle_move_event_async(self, event: GanCubeMoveEvent):
         """Handle move event from cube."""
+        start_time = time.time()
         print(f"Move: {event.move} (Serial: {event.serial})")
+        
+        self.diagnostics.track_message('moves')
+        self.diagnostics.track_message('bluetooth_receive')
         
         move_data = {
             'move': event.move,
@@ -313,8 +424,11 @@ class CubeDashboardServer:
         
         # Emit to dashboard immediately for maximum responsiveness
         try:
+            emit_start = time.time()
             self.socketio.emit('move', move_data)
             self.emit_move_history()
+            self.diagnostics.track_timing('socketio_emit', (time.time() - emit_start) * 1000)
+            self.diagnostics.track_message('socketio_emit')
             
             # Forward to controller bridge if enabled and connected
             if self.enable_controller and self.bridge_connected:
@@ -322,8 +436,12 @@ class CubeDashboardServer:
                 
         except Exception as e:
             print(f"Error emitting move event: {e}")
+            self.diagnostics.log_event("move", "Error emitting move event", error=e)
+        
+        # Track total processing time
+        self.diagnostics.track_timing('move_processing', (time.time() - start_time) * 1000)
     
-    def _handle_facelets_event(self, event: GanCubeFaceletsEvent):
+    async def _handle_facelets_event_async(self, event: GanCubeFaceletsEvent):
         """Handle facelets event from cube."""
         print(f"State update: Serial {event.serial}")
         
@@ -343,9 +461,13 @@ class CubeDashboardServer:
         except Exception as e:
             print(f"Error emitting facelets: {e}")
     
-    def _handle_orientation_event(self, event: GanCubeOrientationEvent):
+    async def _handle_orientation_event_async(self, event: GanCubeOrientationEvent):
         """Handle orientation event from cube - fast dashboard updates with limited debug output."""
+        start_time = time.time()
         current_time = now()
+        
+        self.diagnostics.track_message('orientation')
+        self.diagnostics.track_message('bluetooth_receive')
         
         # Light rate limiting for dashboard (60 FPS)
         if current_time - self.last_orientation_emit < self.orientation_rate_limit:
@@ -376,6 +498,9 @@ class CubeDashboardServer:
         
         # Always store the last raw quaternion for calibration
         self._last_raw_quaternion = raw_quat.copy()
+        
+        # Yield control to prevent blocking on high-frequency events
+        await asyncio.sleep(0)
         
         # Calculate calibrated quaternion
         if hasattr(self, 'calibration_reference'):
@@ -440,7 +565,10 @@ class CubeDashboardServer:
             else:
                 orientation_with_calibrated['is_calibrated'] = False
             
+            emit_start = time.time()
             self.socketio.emit('orientation', orientation_with_calibrated)
+            self.diagnostics.track_timing('socketio_emit', (time.time() - emit_start) * 1000)
+            self.diagnostics.track_message('socketio_emit')
             self.last_orientation_emit = current_time
             
             # Forward to controller bridge if enabled and connected
@@ -492,9 +620,13 @@ class CubeDashboardServer:
             # Only print errors occasionally to avoid spam
             if current_time - getattr(self, 'last_emit_error', 0) > 5000:
                 print(f"Error emitting orientation: {e}")
+                self.diagnostics.log_event("orientation", "Error emitting orientation", error=e)
                 self.last_emit_error = current_time
+        
+        # Track total processing time
+        self.diagnostics.track_timing('orientation_processing', (time.time() - start_time) * 1000)
     
-    def _handle_battery_event(self, event: GanCubeBatteryEvent):
+    async def _handle_battery_event_async(self, event: GanCubeBatteryEvent):
         """Handle battery event from cube."""
         self.battery_level = {
             'percent': event.percent,
@@ -503,7 +635,7 @@ class CubeDashboardServer:
         
         self.socketio.emit('battery', self.battery_level)
     
-    def _handle_hardware_event(self, event: GanCubeHardwareEvent):
+    async def _handle_hardware_event_async(self, event: GanCubeHardwareEvent):
         """Handle hardware event from cube."""
         self.hardware_info = {
             'model': event.model,
@@ -514,7 +646,7 @@ class CubeDashboardServer:
         
         self.socketio.emit('hardware', self.hardware_info)
     
-    def _handle_connected_event(self, event_data):
+    async def _handle_connected_event_async(self, event_data):
         """Handle cube connected event."""
         self.is_connected = True
         self.connection_status = "connected"
@@ -526,21 +658,14 @@ class CubeDashboardServer:
         self.socketio.emit('message', {'type': 'success', 'text': 'Connected to cube!'})
         self.emit_status_update()
         
-        # Request initial information
-        if self.cube_loop and self.cube:
-            asyncio.run_coroutine_threadsafe(
-                self._request_initial_info(),
-                self.cube_loop
-            )
+        # Request initial information - we're already in async context
+        if self.cube:
+            await self._request_initial_info()
         
         # Auto-calibrate after a short delay to get initial orientation data
-        if self.cube_loop:
-            asyncio.run_coroutine_threadsafe(
-                self._auto_calibrate_on_connect(),
-                self.cube_loop
-            )
+        await self._auto_calibrate_on_connect()
     
-    def _handle_disconnected_event(self, event_data):
+    async def _handle_disconnected_event_async(self, event_data):
         """Handle cube disconnected event."""
         self.is_connected = False
         self.connection_status = "disconnected"
@@ -637,6 +762,8 @@ class CubeDashboardServer:
         """Forward message to controller bridge (non-blocking)."""
         if not self.bridge_connected or not self.controller_bridge_ws:
             return
+        
+        self.diagnostics.track_message('controller_bridge')
         
         message = {
             'type': msg_type,
@@ -836,34 +963,47 @@ class CubeDashboardServer:
 
     async def _send_to_bridge(self, message: Dict[str, Any]):
         """Send message to controller bridge WebSocket."""
+        start_time = time.time()
         try:
             if self.controller_bridge_ws:
                 await self.controller_bridge_ws.send(json.dumps(message))
+                self.diagnostics.track_message('websocket_send')
+                self.diagnostics.track_timing('bridge_send', (time.time() - start_time) * 1000)
         except (websockets.exceptions.ConnectionClosed, websockets.exceptions.ConnectionClosedError, websockets.exceptions.ConnectionClosedOK) as e:
             # Handle connection closed exceptions
             self.bridge_connected = False
             self.controller_bridge_ws = None
             print(f"Controller bridge connection closed: {e}")
+            self.diagnostics.log_event("bridge", "Connection closed", error=e)
         except Exception as e:
             # For any other exceptions, check if it's a connection issue
             if "closed" in str(e).lower() or "connection" in str(e).lower():
                 self.bridge_connected = False
                 self.controller_bridge_ws = None
                 print(f"Controller bridge connection issue: {e}")
+                self.diagnostics.log_event("bridge", "Connection issue", error=e)
             else:
                 if hasattr(self, 'last_bridge_error_time'):
                     current_time = time.time() * 1000
                     if current_time - self.last_bridge_error_time > 5000:  # Rate limit error messages
                         print(f"Error sending to controller bridge: {e}")
+                        self.diagnostics.log_event("bridge", "Send error", error=e)
                         self.last_bridge_error_time = current_time
                 else:
                     print(f"Error sending to controller bridge: {e}")
+                    self.diagnostics.log_event("bridge", "Send error", error=e)
                     self.last_bridge_error_time = time.time() * 1000
     
     def run(self, host='localhost', port=5000, debug=False):
         """Run the dashboard server."""
         print(f"Starting dashboard http://{host}:{port}")
-        self.socketio.run(self.app, host=host, port=port, debug=debug)
+        try:
+            self.socketio.run(self.app, host=host, port=port, debug=debug)
+        except KeyboardInterrupt:
+            print("\nShutting down dashboard...")
+        finally:
+            # Shutdown diagnostic logger
+            self.diagnostics.shutdown()
 
 
 if __name__ == "__main__":

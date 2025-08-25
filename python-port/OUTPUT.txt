@@ -1,95 +1,61 @@
-(venv) PS M:\mikerson\rubiks\python-port> python .\run_dashboard.py
-========================================
-Dashboard at: http://localhost:5000
-Loaded config from controller_config.json
-Starting dashboard http://0.0.0.0:5000
- * Serving Flask app 'cube_dashboard'
- * Debug mode: off
-WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:5000
- * Running on http://192.168.1.14:5000
-Press CTRL+C to quit
-127.0.0.1 - - [24/Aug/2025 21:26:25] "GET /socket.io/?EIO=4&transport=polling&t=PZVUZ1S HTTP/1.1" 200 -
-Client connected: ZvrbvbCV57PGNbFxAAAB
-127.0.0.1 - - [24/Aug/2025 21:26:25] "POST /socket.io/?EIO=4&transport=polling&t=PZVUZTj&sid=7gpXt5Rg1Dz9gjiFAAAA HTTP/1.1" 200 -
-127.0.0.1 - - [24/Aug/2025 21:26:25] "GET /socket.io/?EIO=4&transport=polling&t=PZVUZTj.0&sid=7gpXt5Rg1Dz9gjiFAAAA HTTP/1.1" 200 -
-127.0.0.1 - - [24/Aug/2025 21:26:25] "GET /socket.io/?EIO=4&transport=polling&t=PZVUZYT&sid=7gpXt5Rg1Dz9gjiFAAAA HTTP/1.1" 200 -
-127.0.0.1 - - [24/Aug/2025 21:26:27] "GET / HTTP/1.1" 200 -
-Client disconnected: ZvrbvbCV57PGNbFxAAAB
-127.0.0.1 - - [24/Aug/2025 21:26:27] "GET /socket.io/?EIO=4&transport=websocket&sid=7gpXt5Rg1Dz9gjiFAAAA HTTP/1.1" 200 -
-127.0.0.1 - - [24/Aug/2025 21:26:27] "GET /socket.io/?EIO=4&transport=polling&t=PZVUZu0 HTTP/1.1" 200 -
-Client connected: Aqgn1i8UBwWhYVgaAAAD
-127.0.0.1 - - [24/Aug/2025 21:26:27] "POST /socket.io/?EIO=4&transport=polling&t=PZVUZuI&sid=xLAGSIpToAhEYPoSAAAC HTTP/1.1" 200 -
-127.0.0.1 - - [24/Aug/2025 21:26:27] "GET /socket.io/?EIO=4&transport=polling&t=PZVUZuJ&sid=xLAGSIpToAhEYPoSAAAC HTTP/1.1" 200 -
-Scanning for devices...
-Found 25 devices:
-  66:2B:69:77:5F:D6: Unknown
-  F3:05:BA:38:46:08: Unknown
-  10:E2:98:6E:6B:48: Unknown
-  5F:61:30:03:CC:B2: Unknown
-  5E:C1:60:3E:DC:A4: Unknown
-  6D:1E:28:8F:95:51: Unknown
-  D4:9D:C0:84:04:D1: Unknown
-  7A:56:57:2F:6C:E7: Unknown
-  56:F9:DF:E4:15:88: Unknown
-  2C:99:75:BD:F3:9D: Unknown
-  A4:C1:38:A8:19:72: Petkit_W4X
-  68:B6:D0:D6:F3:04: Unknown
-  5E:07:41:76:F1:19: Unknown
-  C8:0E:EA:12:58:4F: Unknown
-  49:01:93:E3:8E:42: Unknown
-  AB:12:34:62:BC:15: GANi39Jl
-  C4:32:37:38:64:83: Govee_H6199_6483
-  52:D9:7C:B5:08:AF: Unknown
-  48:95:D0:62:49:4A: Unknown
-  43:F8:FC:C5:AF:52: Unknown
-  46:FC:5D:F0:15:DC: Unknown
-  9C:04:A0:9F:6C:64: ihoment_H6075_6C64
-  D0:F8:9A:81:FD:87: Unknown
-  76:D9:B0:5F:3A:F7: Unknown
-  D7:8B:13:95:7F:50: Unknown
-Found potential GAN cube: GANi39Jl at AB:12:34:62:BC:15
-Connecting to device at AB:12:34:62:BC:15...
-Connected! Device is connected: True
-Discovering services...
-Found 4 services:
-  Service: 00001800-0000-1000-8000-00805f9b34fb
-  Service: 00001801-0000-1000-8000-00805f9b34fb
-  Service: f95a48e6-a721-11e9-a2a3-022ae2dbcce4
-  Service: 6e400001-b5a3-f393-e0a9-e50e24dc4179
-Looking for Gen2 service: 6e400001-b5a3-f393-e0a9-e50e24dc4179
-✓ Found Gen2 service
-✓ Gen2 protocol configured
-Orientation (RAW - not calibrated): x=0.029, y=0.021, z=0.843, w=-0.536
-State update: Serial 125
-Orientation (RAW - not calibrated): x=0.022, y=0.005, z=0.843, w=-0.537
+(venv) PS M:\mikerson\rubiks\python-port> python .\analyze_diagnostics.py
 
-🔄 Auto-calibrating cube...
-CALIBRATION: Storing reference quaternion = (0.019, 0.001, 0.843, -0.537)
-📍 Place cube with GREEN face forward for optimal control
-Orientation (calibrated): x=-0.001, y=0.001, z=0.000, w=1.000
-Orientation (calibrated): x=-0.003, y=0.004, z=0.000, w=1.000
-CALIBRATION: Storing reference quaternion = (0.017, -0.005, 0.843, -0.537)
-Orientation (calibrated): x=0.000, y=0.000, z=0.000, w=1.000
-Controller orientation locked to actual green face forward (0, 0, 0.765, 0.644)
-Orientation (calibrated): x=-0.000, y=0.001, z=-0.000, w=1.000
-Orientation (calibrated): x=-0.001, y=0.001, z=-0.000, w=1.000
-Orientation (calibrated): x=-0.001, y=0.001, z=-0.000, w=1.000
-Orientation (calibrated): x=-0.001, y=0.001, z=-0.002, w=1.000
-Orientation (calibrated): x=-0.001, y=0.002, z=-0.002, w=1.000
-Controller enabled
-Connecting to controller bridge at ws://localhost:8083
-Connected to controller bridge
-Error sending to controller bridge: 'ClientConnection' object has no attribute 'open'
-Orientation (calibrated): x=-0.001, y=0.002, z=-0.003, w=1.000
-Left Stick: X=0.00, Y=0.47 | Right Stick: X=0.00
-Orientation (calibrated): x=-0.412, y=-0.003, z=0.014, w=0.911
-Left Stick: X=0.00, Y=0.64 | Right Stick: X=0.00
-Orientation (calibrated): x=0.308, y=0.019, z=-0.049, w=0.950
-Left Stick: X=0.00, Y=-1.00 | Right Stick: X=0.00 + B BUTTON
-Orientation (calibrated): x=0.208, y=0.024, z=-0.042, w=0.977
-Orientation (calibrated): x=-0.002, y=0.004, z=0.000, w=1.000
-Error sending to controller bridge: 'ClientConnection' object has no attribute 'open'
-Orientation (calibrated): x=-0.001, y=0.003, z=-0.000, w=1.000
-Orientation (calibrated): x=-0.001, y=0.003, z=-0.001, w=1.000
+=== Analyzing diagnostic_logs\dashboard_diagnostics_20250824_234451.jsonl ===
+
+Total events logged: 466
+Total errors: 0
+Slow operations detected: 0
+Memory warnings: 0
+
+--- Event Loop Blocking ---
+  Total blocks detected: 448
+  Max block time: 9734.9ms
+  Average block time: 1028.2ms
+
+=== Analyzing diagnostic_logs\dashboard_metrics_20250824_234451.csv ===
+
+--- Memory Usage ---
+  Initial: 60.5 MB
+  Final: 73.3 MB
+  Peak: 73.7 MB
+  Total increase: 12.8 MB
+
+--- Message Throughput ---
+  orientation: 4507 total, 9.8/sec
+  moves: 129 total, 0.3/sec
+  controller: 4137 total, 9.0/sec
+  socketio: 4257 total, 9.2/sec
+
+--- Average Processing Times ---
+  orientation: avg=0.2ms, max=0.2ms
+  move: avg=0.3ms, max=0.4ms
+  bridge: avg=0.1ms, max=0.1ms
+  socketio: avg=0.1ms, max=0.1ms
+
+--- Queue Sizes ---
+  pending: avg=0.2, max=35
+
+--- Performance Degradation Check ---
+
+  orientation by quarter:
+    Q1: 0.2ms
+    Q2: 0.2ms
+    Q3: 0.2ms
+    Q4: 0.2ms
+
+  move by quarter:
+    Q1: 0.2ms
+    Q2: 0.2ms
+    Q3: 0.3ms
+    Q4: 0.3ms
+
+==================================================
+ANALYSIS COMPLETE
+==================================================
+
+📊 Next steps:
+1. If you see memory leaks, check for unclosed resources
+2. If you see queue buildup, the event loop may be blocked
+3. If you see performance degradation, check for accumulating data structures
+4. High latency in socketio_emit could indicate browser/network issues
+5. High latency in bridge_send could indicate controller bridge issues
