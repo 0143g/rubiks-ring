@@ -13,6 +13,7 @@ import sys
 import os
 from typing import Dict, Set, Any, Optional
 from dataclasses import dataclass
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 # Gamepad imports
@@ -123,13 +124,16 @@ class CrossPlatformController:
         self.b_button_held_by_sprint = False
         self.rolling_in_progress = False  # Track if we're currently performing a roll
         
-            # Initialize gamepad
+        # Initialize gamepad
         try:
             self.gamepad = vg.VX360Gamepad()
             print("Virtual Xbox controller created")
         except Exception as e:
             print(f"ERROR: Could not create virtual gamepad: {e}")
             sys.exit(1)
+        
+        # Thread pool for non-blocking gamepad updates
+        self.executor = ThreadPoolExecutor(max_workers=1)
                 
         print("Gamepad controller bridge initialized")
         print(f"Loaded {len(self.config.move_mappings)} move mappings")
