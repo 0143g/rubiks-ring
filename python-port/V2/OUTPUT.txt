@@ -1,0 +1,64 @@
+(venv) PS M:\mikerson\rubiks\python-port\V2> python .\cube_controller_v2_fixed.py
+Loaded config from: M:\mikerson\rubiks\python-port\controller_config.json
+V2 Cube Controller (Fixed) initialized
+Loaded 14 move mappings
+Connecting to GAN cube...
+Scanning for devices...
+Found 15 devices:
+  42:48:5B:13:B1:56: Unknown
+  6C:4A:85:1D:B1:4E: Unknown
+  71:A8:32:77:6D:DF: Unknown
+  47:89:9B:84:1C:5A: Unknown
+  AB:12:34:62:BC:15: GANi39Jl
+  A4:C1:38:A8:19:72: Petkit_W4X
+  2C:99:75:BD:F3:9D: Unknown
+  4C:88:52:C5:31:2D: Unknown
+  52:CB:B3:67:95:E7: Unknown
+  9C:04:A0:9F:6C:64: ihoment_H6075_6C64
+  D4:9D:C0:84:04:D1: Unknown
+  C2:1D:33:49:94:48: Unknown
+  5D:5A:05:42:E4:6A: Unknown
+  FD:BE:C6:14:BD:8A: Unknown
+  7A:45:CC:5F:E9:50: Unknown
+Found potential GAN cube: GANi39Jl at AB:12:34:62:BC:15
+Connecting to device at AB:12:34:62:BC:15...
+Connected! Device is connected: True
+Discovering services...
+Found 4 services:
+  Service: 00001800-0000-1000-8000-00805f9b34fb
+  Service: 00001801-0000-1000-8000-00805f9b34fb
+  Service: f95a48e6-a721-11e9-a2a3-022ae2dbcce4
+  Service: 6e400001-b5a3-f393-e0a9-e50e24dc4179
+Looking for Gen2 service: 6e400001-b5a3-f393-e0a9-e50e24dc4179
+✓ Found Gen2 service
+✓ Gen2 protocol configured
+✅ Cube connected successfully!
+
+✅ V2 Controller ready!
+Move the cube to control gamepad.
+Press Ctrl+C to exit.
+
+
+📊 Stats: 5s | Orientation: 5.3Hz | Moves: 0.00Hz
+Move: U'
+Move: U'
+Move: U'
+
+📊 Stats: 10s | Orientation: 5.8Hz | Moves: 0.30Hz
+Move: U'
+Move: U'
+
+📊 Stats: 15s | Orientation: 6.2Hz | Moves: 0.33Hz
+Move: D'
+Move: R
+Move: L'
+
+📊 Stats: 20s | Orientation: 5.7Hz | Moves: 0.40Hz
+Move: L'
+Move: U'
+Move: R'
+
+📊 Stats: 25s | Orientation: 6.0Hz | Moves: 0.44Hz
+❌ Cube disconnected
+
+Shutdown complete

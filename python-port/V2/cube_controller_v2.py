@@ -61,7 +61,23 @@ class GanCubeEncrypter:
         self.iv = iv
         
         # Create salt from MAC address (reversed)
-        mac_bytes = [int(x, 16) for x in mac_address.split(':')]
+        # Handle different MAC formats
+        if ':' in mac_address:
+            mac_parts = mac_address.split(':')
+        elif '-' in mac_address:
+            mac_parts = mac_address.split('-')
+        else:
+            # Try to parse as continuous hex string
+            mac_parts = [mac_address[i:i+2] for i in range(0, min(12, len(mac_address)), 2)]
+        
+        # Convert to bytes, handling potential errors
+        try:
+            mac_bytes = [int(x, 16) for x in mac_parts[:6]]  # Only take first 6 parts
+        except (ValueError, IndexError):
+            # Fallback to default salt if MAC parsing fails
+            print(f"Warning: Could not parse MAC address '{mac_address}', using default salt")
+            mac_bytes = [0xAB, 0x12, 0x34, 0x62, 0xBC, 0x15]
+            
         self.salt = bytes(reversed(mac_bytes))
         
         # XOR key and IV with salt
@@ -184,6 +200,7 @@ class CubeControllerV2:
         
         # Filters and processors
         self.duplicate_filter = DuplicateFilter()
+        self.last_move_serial = -1  # Track move serial to detect new moves
         
         # Performance monitoring
         self.last_orientation_time = 0
@@ -287,13 +304,47 @@ class CubeControllerV2:
         
         # Find and subscribe to notifications
         services = self.client.services
-        service = services.get_service(GAN_GEN2_SERVICE)
         
-        if not service:
+        # Find the GAN service (might have different UUID format)
+        gan_service = None
+        for service in services:
+            if GAN_GEN2_SERVICE.lower() in str(service.uuid).lower():
+                gan_service = service
+                break
+                
+        if not gan_service:
+            # List all services for debugging
+            print("Available services:")
+            for service in services:
+                print(f"  - {service.uuid}")
             raise RuntimeError("GAN Gen2 service not found on cube")
             
+        # Debug: list all characteristics
+        print(f"Found GAN service with {len(gan_service.characteristics)} characteristics:")
+        for char in gan_service.characteristics:
+            print(f"  - {char.uuid} (properties: {char.properties})")
+        
+        # Find state characteristic - it should have notify property
+        state_char = None
+        command_char = None
+        
+        for char in gan_service.characteristics:
+            # State char is for notifications (has notify property)
+            if 'notify' in char.properties:
+                state_char = char
+                print(f"Using {char.uuid} as state characteristic (has notify)")
+            # Command char is for writing
+            elif 'write' in char.properties or 'write-without-response' in char.properties:
+                command_char = char
+                print(f"Using {char.uuid} as command characteristic (has write)")
+                
+        if not state_char:
+            raise RuntimeError("State characteristic not found (no characteristic with notify property)")
+            
+        # Store command char for later use
+        self.command_char = command_char
+            
         # Subscribe to state notifications
-        state_char = service.get_characteristic(GAN_GEN2_STATE_CHAR)
         await self.client.start_notify(state_char, self._handle_notification)
         
         print("Subscribed to cube notifications")
@@ -307,9 +358,12 @@ class CubeControllerV2:
         
     async def _send_command(self, command: bytes):
         """Send encrypted command to cube"""
+        if not hasattr(self, 'command_char') or not self.command_char:
+            print("Warning: Command characteristic not available")
+            return
+            
         encrypted = self.encrypter.encrypt(command)
-        command_char = self.client.services.get_service(GAN_GEN2_SERVICE).get_characteristic(GAN_GEN2_COMMAND_CHAR)
-        await self.client.write_gatt_char(command_char, encrypted)
+        await self.client.write_gatt_char(self.command_char, encrypted)
         
     async def _handle_notification(self, sender, data: bytes):
         """Handle incoming data from cube - CRITICAL PATH"""
@@ -318,8 +372,11 @@ class CubeControllerV2:
         # Decrypt inline
         decrypted = self.encrypter.decrypt(data)
         
-        # Parse message type (first 4 bits)
-        msg_type = (decrypted[0] >> 4) & 0x0F
+        # Convert to bit string for proper parsing
+        bits = ''.join(f'{byte:08b}' for byte in decrypted)
+        
+        # Parse message type (first 4 BITS, not first byte!)
+        msg_type = int(bits[0:4], 2) if len(bits) >= 4 else 0
         
         if msg_type == 0x02:  # MOVE
             if not self.duplicate_filter.is_duplicate_move(decrypted):
@@ -330,6 +387,18 @@ class CubeControllerV2:
             self._process_orientation_immediate(decrypted)
             self.orientation_count += 1
             
+        elif msg_type == 0x04:  # FACELETS
+            print(f"Received facelets update")
+            
+        elif msg_type == 0x05:  # HARDWARE
+            print(f"Received hardware info")
+            
+        elif msg_type == 0x09:  # BATTERY
+            # Battery level is in bits 4-11 (second byte)
+            battery_bits = bits[4:12] if len(bits) >= 12 else '0'
+            battery_level = int(battery_bits, 2) if battery_bits else 0
+            print(f"Battery: {battery_level}%")
+            
         # Track processing time (debug)
         latency_us = (time.perf_counter_ns() - start_ns) // 1000
         if latency_us > 5000:  # More than 5ms
@@ -337,14 +406,46 @@ class CubeControllerV2:
             
     def _process_move_immediate(self, data: bytes):
         """Process move event - NO ASYNC"""
-        # Extract move ID (bits 4-11)
-        move_id = ((data[0] & 0x0F) << 4) | ((data[1] >> 4) & 0x0F)
+        # Convert to bit string for proper parsing
+        bits = ''.join(f'{byte:08b}' for byte in data)
         
-        # Get move string
-        move = MOVE_MAP.get(move_id % 18)  # Modulo for safety
-        if not move:
+        def get_bits(start, length):
+            return int(bits[start:start + length], 2) if bits[start:start + length] else 0
+        
+        # Parse move data according to Gen2 protocol
+        # Bits 4-11: serial number (we use this to detect new moves)
+        serial = get_bits(4, 8)
+        
+        # Skip if this is an old move we've already processed
+        if self.last_move_serial == -1:
+            # First move, just record serial
+            self.last_move_serial = serial
             return
             
+        # Calculate how many new moves
+        diff = (serial - self.last_move_serial) & 0xFF
+        if diff == 0 or diff > 7:
+            return  # No new moves or invalid
+            
+        self.last_move_serial = serial
+        
+        # For simplicity, just parse the most recent move
+        # Bits 12-15: face, Bit 16: direction
+        face = get_bits(12, 4)
+        direction = get_bits(16, 1)
+        
+        # Convert face and direction to move string
+        face_map = {0: "U", 1: "R", 2: "F", 3: "D", 4: "L", 5: "B"}
+        face_str = face_map.get(face % 6, "?")
+        
+        if direction == 1:
+            move = f"{face_str}'"
+        else:
+            move = face_str
+            
+        # Check for double moves (would need more complex parsing)
+        # For now, just handle single moves
+        
         print(f"Move: {move}")
         
         # Get action from config
@@ -357,37 +458,75 @@ class CubeControllerV2:
         
     def _process_orientation_immediate(self, data: bytes):
         """Process orientation event - NO ASYNC"""
-        # Parse quaternion (16-bit values at specific bit positions)
-        # This is simplified - full implementation would properly parse bits
-        qw = int.from_bytes(data[0:2], 'big') & 0xFFFF
-        qx = int.from_bytes(data[2:4], 'big') & 0xFFFF
-        qy = int.from_bytes(data[4:6], 'big') & 0xFFFF
-        qz = int.from_bytes(data[6:8], 'big') & 0xFFFF
+        # Convert bytes to bit string for precise parsing
+        bits = ''.join(f'{byte:08b}' for byte in data)
         
-        # Convert to normalized floats
-        x = (1 - (qx >> 15) * 2) * (qx & 0x7FFF) / 0x7FFF
-        y = (1 - (qy >> 15) * 2) * (qy & 0x7FFF) / 0x7FFF
-        z = (1 - (qz >> 15) * 2) * (qz & 0x7FFF) / 0x7FFF
-        w = (1 - (qw >> 15) * 2) * (qw & 0x7FFF) / 0x7FFF
+        def get_bits(start, length):
+            """Extract bits from bit string"""
+            return int(bits[start:start + length], 2) if bits[start:start + length] else 0
         
-        # Simple quaternion to joystick conversion
-        # This is a simplified mapping - adjust as needed
+        # Parse quaternion from specific bit positions (Gen2 protocol)
+        # Bits 4-19: qw, 20-35: qx, 36-51: qy, 52-67: qz
+        qw_raw = get_bits(4, 16)
+        qx_raw = get_bits(20, 16)
+        qy_raw = get_bits(36, 16)
+        qz_raw = get_bits(52, 16)
+        
+        # Convert to normalized quaternion (-1 to 1 range)
+        # High bit is sign, lower 15 bits are magnitude
+        qx = (1 - (qx_raw >> 15) * 2) * (qx_raw & 0x7FFF) / 0x7FFF
+        qy = (1 - (qy_raw >> 15) * 2) * (qy_raw & 0x7FFF) / 0x7FFF
+        qz = (1 - (qz_raw >> 15) * 2) * (qz_raw & 0x7FFF) / 0x7FFF
+        qw = (1 - (qw_raw >> 15) * 2) * (qw_raw & 0x7FFF) / 0x7FFF
+        
+        # Quaternion to Euler angles for better joystick mapping
+        import math
+        
+        # Calculate Euler angles from quaternion
+        # Roll (x-axis rotation)
+        sinr_cosp = 2 * (qw * qx + qy * qz)
+        cosr_cosp = 1 - 2 * (qx * qx + qy * qy)
+        roll = math.atan2(sinr_cosp, cosr_cosp)
+        
+        # Pitch (y-axis rotation) 
+        sinp = 2 * (qw * qy - qz * qx)
+        if abs(sinp) >= 1:
+            pitch = math.copysign(math.pi / 2, sinp)  # Use 90 degrees if out of range
+        else:
+            pitch = math.asin(sinp)
+        
+        # Yaw (z-axis rotation)
+        siny_cosp = 2 * (qw * qz + qx * qy)
+        cosy_cosp = 1 - 2 * (qy * qy + qz * qz)
+        yaw = math.atan2(siny_cosp, cosy_cosp)
+        
+        # Convert radians to normalized range (-1 to 1)
+        roll_norm = roll / math.pi  # -1 to 1
+        pitch_norm = pitch / (math.pi / 2)  # -1 to 1
+        yaw_norm = yaw / math.pi  # -1 to 1
+        
+        # Apply sensitivity settings
         sensitivity = self.config.get('sensitivity', {})
         movement_sens = sensitivity.get('movement_sensitivity', 2.0)
         spin_sens = sensitivity.get('spin_z_sensitivity', 1.5)
         
-        # Map to joystick axes (simplified)
-        joy_x = x * movement_sens
-        joy_y = y * movement_sens
-        joy_z = z * spin_sens
+        # Map to joystick axes
+        # Left stick: tilt for movement
+        joy_x = pitch_norm * movement_sens  # Forward/back tilt
+        joy_y = roll_norm * movement_sens   # Left/right tilt
+        
+        # Right stick: rotation/spin
+        joy_z = yaw_norm * spin_sens
         
         # Apply deadzone
         deadzone = self.config.get('deadzone', {}).get('general_deadzone', 0.1)
+        spin_deadzone = self.config.get('deadzone', {}).get('spin_deadzone', 0.085)
+        
         if abs(joy_x) < deadzone:
             joy_x = 0
         if abs(joy_y) < deadzone:
             joy_y = 0
-        if abs(joy_z) < deadzone:
+        if abs(joy_z) < spin_deadzone:
             joy_z = 0
             
         # Update gamepad through batcher
