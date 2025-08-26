@@ -202,6 +202,8 @@ class CubeControllerV2:
         # State tracking
         self.enable_sprint = False  # Can be toggled
         self.last_orientation_time = 0
+        self.last_orientation_debug = 0  # For debug output
+        self.show_orientation_debug = True  # Toggle for orientation output
         
         # Performance monitoring
         self.orientation_count = 0
@@ -284,10 +286,9 @@ class CubeControllerV2:
         
     def _handle_orientation(self, event: GanCubeOrientationEvent):
         """Handle orientation event - CRITICAL PATH"""
-        # Rate limiting check
+        # No rate limiting here - process every event
+        # The gamepad batcher already handles rate limiting at 125Hz
         now = time.perf_counter_ns() // 1_000_000
-        if now - self.last_orientation_time < 8:  # 125Hz max
-            return
         self.last_orientation_time = now
         
         self.orientation_count += 1
@@ -344,6 +345,12 @@ class CubeControllerV2:
             
         # Update gamepad through batcher
         self.batcher.update_orientation(joy_x, joy_y, joy_z)
+        
+        # Debug output (rate limited to avoid spam)
+        if self.show_orientation_debug and now - self.last_orientation_debug > 1000:  # Once per second
+            if abs(joy_x) > 0.1 or abs(joy_y) > 0.1 or abs(joy_z) > 0.1:
+                print(f"Orientation: X={joy_x:.2f} Y={joy_y:.2f} Z={joy_z:.2f} | Raw: ({qx:.3f}, {qy:.3f}, {qz:.3f}, {qw:.3f})")
+            self.last_orientation_debug = now
         
         # Update sprint state if enabled
         if self.enable_sprint:
