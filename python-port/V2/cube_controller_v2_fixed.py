@@ -384,11 +384,18 @@ class CubeControllerV2:
         
         # Debug output (rate limited to avoid spam)
         if self.show_orientation_debug and now - self.last_orientation_debug > 100: # 100ms updates for now
-            if abs(joy_x) > 0.1 or abs(joy_y) > 0.1 or abs(joy_z) > 0.1:
+            # Always show output if values are significant OR if we haven't printed in a while
+            time_since_last = now - self.last_orientation_debug
+            if abs(joy_x) > 0.1 or abs(joy_y) > 0.1 or abs(joy_z) > 0.1 or time_since_last > 2000:
                 if self.calibration_reference:
                     print(f"Joystick: X={joy_x:.2f} Y={joy_y:.2f} Z={joy_z:.2f} | Calibrated: ({qx:.3f}, {qy:.3f}, {qz:.3f}, {qw:.3f})")
                 else:
                     print(f"Joystick: X={joy_x:.2f} Y={joy_y:.2f} Z={joy_z:.2f} | RAW (not calibrated): ({qx:.3f}, {qy:.3f}, {qz:.3f}, {qw:.3f})")
+                
+                # If values are near zero but we're still getting updates, note that
+                if abs(joy_x) <= 0.1 and abs(joy_y) <= 0.1 and abs(joy_z) <= 0.1 and time_since_last > 2000:
+                    print(f"  (Near-zero values for {time_since_last/1000:.1f}s)")
+            
             self.last_orientation_debug = now
         
         # Update sprint state if enabled
