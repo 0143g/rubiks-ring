@@ -10,6 +10,7 @@ import json
 import sys
 from pathlib import Path
 import vgamepad as vg
+import keyboard
 
 # Add parent directory for gan_web_bluetooth
 sys.path.append(str(Path(__file__).parent.parent))
@@ -40,10 +41,17 @@ class CubeControllerClean:
         self.last_move = None
         self.last_move_time = 0
         self.sprinting = False
+        self.pending_sprint_state = None  # For sprint task
+        self.current_joy_y = 0  # Track for sprint detection
         
         # Performance - rate limit orientation
         self.last_update = 0
         self.update_interval = 8  # 125Hz max
+        
+        # Stats
+        self.orientation_count = 0
+        self.move_count = 0
+        self.start_time = 0
         
         print("V2 Clean Controller initialized")
         print(f"Loaded {len(self.config.get('move_mappings', {}))} mappings")
@@ -111,22 +119,14 @@ class CubeControllerClean:
         joy_y = max(-1.0, min(1.0, joy_y))
         joy_z = max(-1.0, min(1.0, joy_z))
         
-        # Update gamepad IMMEDIATELY
+        # Update gamepad - single update() call
         self.gamepad.left_joystick_float(x_value_float=joy_x, y_value_float=joy_y)
         self.gamepad.right_joystick_float(x_value_float=joy_z, y_value_float=0)
         self.gamepad.update()
         
-        # Sprint check (simple)
-        if joy_y > 0.7 and not self.sprinting:
-            self.gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
-            self.gamepad.update()
-            self.sprinting = True
-            print("Sprint: ON")
-        elif joy_y < 0.6 and self.sprinting:
-            self.gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
-            self.gamepad.update()
-            self.sprinting = False
-            print("Sprint: OFF")
+        # Track for sprint detection (handled by separate task)
+        self.current_joy_y = joy_y
+        self.orientation_count += 1
     
     def handle_move(self, event: GanCubeMoveEvent):
         """Direct handler - NO threads for button releases"""
@@ -140,6 +140,7 @@ class CubeControllerClean:
         self.last_move_time = now_ms
         
         print(f"Move: {move}")
+        self.move_count += 1
         
         # Special roll handling
         if move == "U'" and self.sprinting:
@@ -156,25 +157,24 @@ class CubeControllerClean:
             asyncio.create_task(self.execute_combo(action))
         elif action == 'gamepad_r2':
             self.gamepad.right_trigger(255)
-            self.gamepad.update()
+            # No update() here - let periodic task handle it
             asyncio.create_task(self.release_trigger_later('right', 0.1))
         elif action == 'gamepad_l2':
             self.gamepad.left_trigger(255)
-            self.gamepad.update()
+            # No update() here - let periodic task handle it
             asyncio.create_task(self.release_trigger_later('left', 0.1))
         else:
             button = self.get_button(action)
             if button:
                 self.gamepad.press_button(button)
-                self.gamepad.update()
-                # Schedule release with asyncio, NOT threading
+                # No update() here - let periodic task handle it
                 asyncio.create_task(self.release_button_later(button, 0.1))
     
     async def release_button_later(self, button, delay):
         """Async release - NO THREADS"""
         await asyncio.sleep(delay)
         self.gamepad.release_button(button)
-        self.gamepad.update()
+        # No update() - let periodic task handle it
     
     async def release_trigger_later(self, side, delay):
         """Async trigger release - NO THREADS"""
@@ -183,29 +183,25 @@ class CubeControllerClean:
             self.gamepad.right_trigger(0)
         else:
             self.gamepad.left_trigger(0)
-        self.gamepad.update()
+        # No update() - let periodic task handle it
     
     async def execute_roll(self):
         """Handle roll during sprint"""
         print("Rolling...")
         # Release B
         self.gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
-        self.gamepad.update()
         await asyncio.sleep(0.05)
         
         # Tap B
         self.gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
-        self.gamepad.update()
         await asyncio.sleep(0.1)
         
         self.gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
-        self.gamepad.update()
         await asyncio.sleep(0.05)
         
         # Re-hold if still sprinting
         if self.sprinting:
             self.gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
-            self.gamepad.update()
     
     async def execute_combo(self, action):
         """Execute button combo"""
@@ -227,16 +223,15 @@ class CubeControllerClean:
         
         if b1 and b2:
             self.gamepad.press_button(b1)
-            self.gamepad.update()
             await asyncio.sleep(0.05)
             
             self.gamepad.press_button(b2)
-            self.gamepad.update()
+            self.gamepad.update()  # Single update after both pressed
             await asyncio.sleep(0.1)
             
             self.gamepad.release_button(b2)
             self.gamepad.release_button(b1)
-            self.gamepad.update()
+            self.gamepad.update()  # Single update after both released
     
     def get_button(self, action):
         """Map action to button"""
@@ -294,9 +289,57 @@ class CubeControllerClean:
         if self.sprinting:
             self.sprinting = False
             self.gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
-            self.gamepad.update()
         
         print(f"✅ Calibrated at {self.calibration_ref}")
+    
+    def reset_camera_joystick(self):
+        """Reset the right joystick (camera) to center"""
+        self.gamepad.right_joystick_float(x_value_float=0.0, y_value_float=0.0)
+        self.gamepad.update()
+        print("🎯 Camera joystick reset to center")
+    
+    async def sprint_task(self):
+        """Handle sprint state at 10Hz to avoid rapid on/off"""
+        while True:
+            await asyncio.sleep(0.1)  # 10Hz
+            
+            # Check if sprint state should change
+            if self.current_joy_y > 0.7 and not self.sprinting:
+                self.sprinting = True
+                self.gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+                print("Sprint: ON")
+            elif self.current_joy_y < 0.6 and self.sprinting:
+                self.sprinting = False
+                self.gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+                print("Sprint: OFF")
+    
+    async def update_loop(self):
+        """Periodic gamepad update for safety - 60Hz"""
+        while True:
+            await asyncio.sleep(0.016)  # 60Hz
+            self.gamepad.update()
+    
+    async def stats_loop(self):
+        """Print performance stats"""
+        while True:
+            await asyncio.sleep(5)
+            if self.start_time > 0:
+                runtime = time.perf_counter() - self.start_time
+                ori_rate = self.orientation_count / runtime if runtime > 0 else 0
+                move_rate = self.move_count / runtime if runtime > 0 else 0
+                print(f"📊 Stats: {runtime:.0f}s | Orientation: {ori_rate:.1f}Hz | Moves: {move_rate:.2f}Hz")
+    
+    async def keyboard_task(self):
+        """Handle keyboard shortcuts"""
+        # Set up keyboard hooks
+        keyboard.add_hotkey('f5', self.calibrate)
+        keyboard.add_hotkey('f6', self.reset_camera_joystick)
+        
+        print("⌨️  F5: Reset calibration | F6: Reset camera joystick")
+        
+        # Keep running to handle keyboard events
+        while True:
+            await asyncio.sleep(0.1)
     
     async def connect(self):
         """Simple connection"""
@@ -309,6 +352,7 @@ class CubeControllerClean:
         
         await self.cube.connect()
         print("✅ Connected")
+        self.start_time = time.perf_counter()
         
         # Auto-calibrate after 2 seconds
         await asyncio.sleep(2)
@@ -322,6 +366,13 @@ async def main():
     
     try:
         await controller.connect()
+        
+        # Start background tasks
+        update_task = asyncio.create_task(controller.update_loop())
+        sprint_task = asyncio.create_task(controller.sprint_task())
+        stats_task = asyncio.create_task(controller.stats_loop())
+        keyboard_task = asyncio.create_task(controller.keyboard_task())
+        
         print("\n✅ Ready! Move cube to control.")
         print("Press Ctrl+C to exit\n")
         
