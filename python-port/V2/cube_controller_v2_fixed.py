@@ -12,9 +12,15 @@ import sys
 from pathlib import Path
 from typing import Optional, Dict, Any
 from collections import deque
+import threading
+import keyboard
+import vgamepad as vg
+import os
 
 # Add parent directory to import gan_web_bluetooth
 sys.path.append(str(Path(__file__).parent.parent))
+KEYBOARD_AVAILABLE = True
+GAMEPAD_AVAILABLE = True
 
 # Use the existing, working GAN library
 from gan_web_bluetooth import GanSmartCube
@@ -26,18 +32,7 @@ from gan_web_bluetooth.protocols.base import (
     GanCubeFaceletsEvent
 )
 from gan_web_bluetooth.utils import now
-
-# Gamepad import
-try:
-    import vgamepad as vg
-    GAMEPAD_AVAILABLE = True
-except ImportError:
-    print("ERROR: vgamepad not available - install: pip install vgamepad")
-    print("This controller requires Windows and vgamepad")
-    sys.exit(1)
-
 import math
-
 
 # ============================================================================
 # GAMEPAD BATCHER - Critical optimization from plan
@@ -112,9 +107,7 @@ class DuplicateFilter:
         now_ms = time.perf_counter_ns() // 1_000_000
         
         # Same move within 50ms = duplicate
-        if move == self.last_move and (now_ms - self.last_move_time) < 50:
-            return True
-            
+        if move == self.last_move and (now_ms - self.last_move_time) < 50: return True
         self.last_move = move
         self.last_move_time = now_ms
         return False
@@ -192,6 +185,10 @@ class CubeControllerV2:
     """Direct cube to gamepad controller using gan_web_bluetooth"""
     
     def __init__(self, config_path: str = "controller_config.json"):
+        # Store config path for hot-reloading
+        self.config_path = None
+        self.config_last_modified = 0
+        
         # Load configuration
         self.config = self.load_config(config_path)
         
@@ -221,9 +218,18 @@ class CubeControllerV2:
         self.move_count = 0
         self.start_time = 0
         
+        # Hotkey support
+        self.hotkeys_registered = False
+        
         print("V2 Cube Controller (Fixed) initialized")
         print(f"Loaded {len(self.config.get('move_mappings', {}))} move mappings")
         print(f"Sprint mode: {'ENABLED' if self.enable_sprint else 'DISABLED'} (threshold: {self.sprint_machine.forward_tilt_threshold})")
+        
+        # Setup hotkeys if available
+        if KEYBOARD_AVAILABLE:
+            self._setup_hotkeys()
+        else:
+            print("Hotkeys disabled (keyboard module not available)")
         
     def load_config(self, config_path: str) -> Dict[str, Any]:
         """Load configuration from JSON file"""
@@ -238,6 +244,9 @@ class CubeControllerV2:
             if path.exists():
                 with open(path, 'r') as f:
                     config = json.load(f)
+                    # Store the path and modification time for hot-reloading
+                    self.config_path = path
+                    self.config_last_modified = os.path.getmtime(path)
                     print(f"Loaded config from: {path}")
                     return config
                     
@@ -246,7 +255,7 @@ class CubeControllerV2:
         
     async def connect_cube(self):
         """Connect to cube using gan_web_bluetooth"""
-        print("Connecting to GAN cube...")
+        print("Connecting to cube...")
         
         # Create cube instance
         self.cube = GanSmartCube()
@@ -504,6 +513,88 @@ class CubeControllerV2:
         else:
             print("⚠️ No orientation data yet, skipping auto-calibration")
     
+    def _setup_hotkeys(self):
+        """Setup keyboard hotkeys for various functions"""
+        try:
+            # F5 for recalibration
+            keyboard.add_hotkey('f5', self._hotkey_recalibrate, suppress=False)
+            
+            # F6 to toggle sprint mode
+            keyboard.add_hotkey('f6', self._hotkey_toggle_sprint, suppress=False)
+            
+            # F7 to toggle debug output
+            keyboard.add_hotkey('f7', self._hotkey_toggle_debug, suppress=False)
+            
+            # F8 to reload config
+            keyboard.add_hotkey('f8', self._hotkey_reload_config, suppress=False)
+            
+            self.hotkeys_registered = True
+            print("\n📌 Hotkeys enabled:")
+            print("  F5 - Recalibrate cube")
+            print("  F6 - Toggle sprint mode")
+            print("  F7 - Toggle debug output")
+            print("  F8 - Reload config\n")
+            
+        except Exception as e:
+            print(f"Failed to register hotkeys: {e}")
+            self.hotkeys_registered = False
+    
+    def _hotkey_recalibrate(self):
+        """Hotkey handler for recalibration (thread-safe)"""
+        # Schedule the calibration in the async event loop
+        if self.last_raw_quaternion:
+            print("\n🔄 [F5] Recalibrating cube...")
+            self.calibrate()
+        else:
+            print("\n⚠️ [F5] Cannot calibrate - no orientation data yet")
+    
+    def _hotkey_toggle_sprint(self):
+        """Hotkey handler to toggle sprint mode"""
+        self.enable_sprint = not self.enable_sprint
+        status = "ENABLED" if self.enable_sprint else "DISABLED"
+        print(f"\n🏃 [F6] Sprint mode: {status}")
+        
+        # If disabling sprint while sprinting, stop it
+        if not self.enable_sprint and self.sprint_machine.sprinting:
+            self.sprint_machine.stop_sprint()
+    
+    def _hotkey_toggle_debug(self):
+        """Hotkey handler to toggle debug output"""
+        self.show_orientation_debug = not self.show_orientation_debug
+        status = "ON" if self.show_orientation_debug else "OFF"
+        print(f"\n🐛 [F7] Debug output: {status}")
+    
+    def _hotkey_reload_config(self):
+        """Hotkey handler to reload config"""
+        self.reload_config()
+    
+    def reload_config(self):
+        """Reload configuration from file"""
+        if not self.config_path:
+            print("\n⚠️ No config file to reload")
+            return
+            
+        try:
+            with open(self.config_path, 'r') as f:
+                new_config = json.load(f)
+            
+            # Update config
+            self.config = new_config
+            self.config_last_modified = os.path.getmtime(self.config_path)
+            
+            # Update sprint threshold if changed
+            if 'timing' in new_config:
+                new_threshold = new_config['timing'].get('forward_tilt_threshold', 0.7)
+                if new_threshold != self.sprint_machine.forward_tilt_threshold:
+                    self.sprint_machine.forward_tilt_threshold = new_threshold
+                    print(f"  Sprint threshold updated: {new_threshold}")
+            
+            print(f"\n♻️ [F8] Config reloaded from {self.config_path.name}")
+            print(f"  {len(self.config.get('move_mappings', {}))} move mappings loaded")
+            
+        except Exception as e:
+            print(f"\n❌ Failed to reload config: {e}")
+    
     def calibrate(self):
         """Calibrate the cube to current position (same as V1)"""
         if not self.last_raw_quaternion:
@@ -513,13 +604,19 @@ class CubeControllerV2:
         # Store current RAW quaternion as calibration reference
         self.calibration_reference = self.last_raw_quaternion.copy()
         
+        # Reset sprint state on calibration
+        if self.sprint_machine.sprinting:
+            self.sprint_machine.stop_sprint()
+        
         print(f"CALIBRATION: Reference = ({self.calibration_reference['x']:.3f}, "
               f"{self.calibration_reference['y']:.3f}, {self.calibration_reference['z']:.3f}, "
               f"{self.calibration_reference['w']:.3f})")
         print("Cube calibrated! Current position is now identity (0,0,0,1)")
     
     async def print_stats_loop(self):
-        """Print performance statistics"""
+        """Print performance statistics and check for config changes"""
+        last_check_time = time.time()
+        
         while True:
             await asyncio.sleep(5)
             
@@ -529,6 +626,18 @@ class CubeControllerV2:
                 move_rate = self.move_count / runtime if runtime > 0 else 0
                 
                 print(f"\n📊 Stats: {runtime:.0f}s | Orientation: {orientation_rate:.1f}Hz | Moves: {move_rate:.2f}Hz")
+            
+            # Check for config file changes (every 5 seconds)
+            now = time.time()
+            if self.config_path and now - last_check_time > 5:
+                try:
+                    current_mtime = os.path.getmtime(self.config_path)
+                    if current_mtime > self.config_last_modified:
+                        print("\n🔄 Config file changed, auto-reloading...")
+                        self.reload_config()
+                except:
+                    pass  # File might be temporarily unavailable during save
+                last_check_time = now
                 
     async def run(self):
         """Main run loop"""
@@ -559,6 +668,14 @@ class CubeControllerV2:
                 await self.cube.disconnect()
             self.gamepad.reset()
             self.gamepad.update()
+            
+            # Cleanup hotkeys
+            if KEYBOARD_AVAILABLE and self.hotkeys_registered:
+                try:
+                    keyboard.unhook_all()
+                    print("Hotkeys unregistered")
+                except:
+                    pass
 
 
 # ============================================================================
