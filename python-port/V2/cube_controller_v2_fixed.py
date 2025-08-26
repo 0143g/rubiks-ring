@@ -205,6 +205,10 @@ class CubeControllerV2:
         self.last_orientation_debug = 0  # For debug output
         self.show_orientation_debug = True  # Toggle for orientation output
         
+        # Calibration system from V1
+        self.calibration_reference = None  # Will store raw quaternion when calibrated
+        self.last_raw_quaternion = None  # Store last raw quaternion for calibration
+        
         # Performance monitoring
         self.orientation_count = 0
         self.move_count = 0
@@ -256,6 +260,9 @@ class CubeControllerV2:
         print("✅ Cube connected successfully!")
         self.start_time = time.perf_counter()
         
+        # Auto-calibrate after connection (like V1)
+        asyncio.create_task(self._auto_calibrate())
+        
     def _handle_disconnected(self, event):
         """Handle cube disconnected event"""
         print("❌ Cube disconnected")
@@ -293,44 +300,65 @@ class CubeControllerV2:
         
         self.orientation_count += 1
         
-        # Extract quaternion
-        qx = event.quaternion.x
-        qy = event.quaternion.y
-        qz = event.quaternion.z
-        qw = event.quaternion.w
+        # Extract RAW quaternion
+        qx_raw = event.quaternion.x
+        qy_raw = event.quaternion.y
+        qz_raw = event.quaternion.z
+        qw_raw = event.quaternion.w
         
-        # Convert quaternion to Euler angles
-        # Roll (x-axis rotation)
-        sinr_cosp = 2 * (qw * qx + qy * qz)
-        cosr_cosp = 1 - 2 * (qx * qx + qy * qy)
-        roll = math.atan2(sinr_cosp, cosr_cosp)
+        # Store raw quaternion for calibration
+        self.last_raw_quaternion = {'x': qx_raw, 'y': qy_raw, 'z': qz_raw, 'w': qw_raw}
         
-        # Pitch (y-axis rotation)
-        sinp = 2 * (qw * qy - qz * qx)
-        if abs(sinp) >= 1:
-            pitch = math.copysign(math.pi / 2, sinp)
-        else:
-            pitch = math.asin(sinp)
+        # Apply calibration if available (same as V1)
+        if self.calibration_reference:
+            # Calculate relative rotation from calibration reference
+            ref = self.calibration_reference
             
-        # Yaw (z-axis rotation)
-        siny_cosp = 2 * (qw * qz + qx * qy)
-        cosy_cosp = 1 - 2 * (qy * qy + qz * qz)
-        yaw = math.atan2(siny_cosp, cosy_cosp)
+            # Normalize reference quaternion
+            ref_norm = (ref['x']**2 + ref['y']**2 + ref['z']**2 + ref['w']**2) ** 0.5
+            if ref_norm > 0:
+                ref_x = ref['x'] / ref_norm
+                ref_y = ref['y'] / ref_norm
+                ref_z = ref['z'] / ref_norm
+                ref_w = ref['w'] / ref_norm
+            else:
+                ref_x, ref_y, ref_z, ref_w = 0, 0, 0, 1
+            
+            # Calculate inverse (conjugate) of reference quaternion
+            ref_inv_x = -ref_x
+            ref_inv_y = -ref_y
+            ref_inv_z = -ref_z
+            ref_inv_w = ref_w
+            
+            # Calculate relative rotation: relative = inverse(reference) * current
+            qx = ref_inv_w*qx_raw + ref_inv_x*qw_raw + ref_inv_y*qz_raw - ref_inv_z*qy_raw
+            qy = ref_inv_w*qy_raw - ref_inv_x*qz_raw + ref_inv_y*qw_raw + ref_inv_z*qx_raw
+            qz = ref_inv_w*qz_raw + ref_inv_x*qy_raw - ref_inv_y*qx_raw + ref_inv_z*qw_raw
+            qw = ref_inv_w*qw_raw - ref_inv_x*qx_raw - ref_inv_y*qy_raw - ref_inv_z*qz_raw
+        else:
+            # No calibration - use raw
+            qx, qy, qz, qw = qx_raw, qy_raw, qz_raw, qw_raw
         
-        # Convert to normalized range
-        roll_norm = roll / math.pi
-        pitch_norm = pitch / (math.pi / 2)
-        yaw_norm = yaw / math.pi
+        # Use V1's direct quaternion component mapping (more intuitive)
+        # When calibrated, identity quaternion (0,0,0,1) = cube at rest
+        # The calibrated quaternion components directly map to tilt
         
-        # Apply sensitivity
+        # Get sensitivity settings (use V1 names)
         sensitivity = self.config.get('sensitivity', {})
-        movement_sens = sensitivity.get('movement_sensitivity', 2.0)
-        spin_sens = sensitivity.get('spin_z_sensitivity', 1.5)
+        tilt_x_sens = sensitivity.get('tilt_x_sensitivity', 2.5)
+        tilt_y_sens = sensitivity.get('tilt_y_sensitivity', 2.5) 
+        spin_z_sens = sensitivity.get('spin_z_sensitivity', 2.0)
         
-        # Map to joystick
-        joy_x = pitch_norm * movement_sens
-        joy_y = roll_norm * movement_sens
-        joy_z = yaw_norm * spin_sens
+        # V1 mapping: quaternion components directly control joysticks
+        # INVERTED for intuitive control (like V1)
+        joy_y = -qx * tilt_y_sens * 2   # Forward/back tilt (INVERTED)
+        joy_x = qy * tilt_x_sens * 2    # Left/right tilt
+        joy_z = -qz * spin_z_sens       # Rotation around vertical
+        
+        # Clamp to valid range
+        joy_x = max(-1.0, min(1.0, joy_x))
+        joy_y = max(-1.0, min(1.0, joy_y))
+        joy_z = max(-1.0, min(1.0, joy_z))
         
         # Apply deadzone
         deadzone = self.config.get('deadzone', {}).get('general_deadzone', 0.1)
@@ -347,14 +375,18 @@ class CubeControllerV2:
         self.batcher.update_orientation(joy_x, joy_y, joy_z)
         
         # Debug output (rate limited to avoid spam)
-        if self.show_orientation_debug and now - self.last_orientation_debug > 1000:  # Once per second
+        if self.show_orientation_debug and now - self.last_orientation_debug > 100:  # Once per second
             if abs(joy_x) > 0.1 or abs(joy_y) > 0.1 or abs(joy_z) > 0.1:
-                print(f"Orientation: X={joy_x:.2f} Y={joy_y:.2f} Z={joy_z:.2f} | Raw: ({qx:.3f}, {qy:.3f}, {qz:.3f}, {qw:.3f})")
+                if self.calibration_reference:
+                    print(f"Joystick: X={joy_x:.2f} Y={joy_y:.2f} Z={joy_z:.2f} | Calibrated: ({qx:.3f}, {qy:.3f}, {qz:.3f}, {qw:.3f})")
+                else:
+                    print(f"Joystick: X={joy_x:.2f} Y={joy_y:.2f} Z={joy_z:.2f} | RAW (not calibrated): ({qx:.3f}, {qy:.3f}, {qz:.3f}, {qw:.3f})")
             self.last_orientation_debug = now
         
         # Update sprint state if enabled
         if self.enable_sprint:
-            self.sprint_machine.update_orientation(pitch_norm)
+            # Use forward tilt (joy_y) for sprint detection
+            self.sprint_machine.update_orientation(joy_y)
         
     def _handle_battery(self, event: GanCubeBatteryEvent):
         """Handle battery event"""
@@ -445,6 +477,32 @@ class CubeControllerV2:
             await asyncio.sleep(0.05)
             self.batcher.release_button(button1)
             
+    async def _auto_calibrate(self):
+        """Auto-calibrate after connection (same as V1)"""
+        # Wait for orientation data to start flowing
+        await asyncio.sleep(2.0)
+        
+        if self.last_raw_quaternion:
+            print("\n🔄 Auto-calibrating cube...")
+            self.calibrate()
+            print("📍 Place cube with GREEN face forward for optimal control\n")
+        else:
+            print("⚠️ No orientation data yet, skipping auto-calibration")
+    
+    def calibrate(self):
+        """Calibrate the cube to current position (same as V1)"""
+        if not self.last_raw_quaternion:
+            print("ERROR: No cube data yet. Move the cube first.")
+            return
+            
+        # Store current RAW quaternion as calibration reference
+        self.calibration_reference = self.last_raw_quaternion.copy()
+        
+        print(f"CALIBRATION: Reference = ({self.calibration_reference['x']:.3f}, "
+              f"{self.calibration_reference['y']:.3f}, {self.calibration_reference['z']:.3f}, "
+              f"{self.calibration_reference['w']:.3f})")
+        print("Cube calibrated! Current position is now identity (0,0,0,1)")
+    
     async def print_stats_loop(self):
         """Print performance statistics"""
         while True:
