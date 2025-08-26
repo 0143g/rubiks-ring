@@ -375,7 +375,7 @@ class CubeControllerV2:
         self.batcher.update_orientation(joy_x, joy_y, joy_z)
         
         # Debug output (rate limited to avoid spam)
-        if self.show_orientation_debug and now - self.last_orientation_debug > 100:  # Once per second
+        if self.show_orientation_debug and now - self.last_orientation_debug > 100: # 100ms updates for now
             if abs(joy_x) > 0.1 or abs(joy_y) > 0.1 or abs(joy_z) > 0.1:
                 if self.calibration_reference:
                     print(f"Joystick: X={joy_x:.2f} Y={joy_y:.2f} Z={joy_z:.2f} | Calibrated: ({qx:.3f}, {qy:.3f}, {qz:.3f}, {qw:.3f})")
