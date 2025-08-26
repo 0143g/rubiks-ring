@@ -132,10 +132,17 @@ class SprintStateMachine:
         self.sprinting = False
         self.rolling = False
         self.forward_tilt_threshold = 0.7
+        self.forward_tilt_hysteresis = 0.1  # Prevent jittering
         
     def update_orientation(self, pitch: float):
-        """Update sprint state based on forward tilt"""
-        should_sprint = pitch > self.forward_tilt_threshold
+        """Update sprint state based on forward tilt with hysteresis"""
+        # Use hysteresis to prevent jittering at threshold boundary
+        if not self.sprinting:
+            # Start sprint when above threshold
+            should_sprint = pitch > self.forward_tilt_threshold
+        else:
+            # Stop sprint only when below threshold minus hysteresis
+            should_sprint = pitch > (self.forward_tilt_threshold - self.forward_tilt_hysteresis)
         
         if should_sprint and not self.sprinting and not self.rolling:
             self.start_sprint()
@@ -200,7 +207,7 @@ class CubeControllerV2:
         self.sprint_machine = SprintStateMachine(self.batcher)
         
         # State tracking
-        self.enable_sprint = False  # Can be toggled
+        self.enable_sprint = True  # Sprint mode ENABLED
         self.last_orientation_time = 0
         self.last_orientation_debug = 0  # For debug output
         self.show_orientation_debug = True  # Toggle for orientation output
@@ -216,6 +223,7 @@ class CubeControllerV2:
         
         print("V2 Cube Controller (Fixed) initialized")
         print(f"Loaded {len(self.config.get('move_mappings', {}))} move mappings")
+        print(f"Sprint mode: {'ENABLED' if self.enable_sprint else 'DISABLED'} (threshold: {self.sprint_machine.forward_tilt_threshold})")
         
     def load_config(self, config_path: str) -> Dict[str, Any]:
         """Load configuration from JSON file"""
