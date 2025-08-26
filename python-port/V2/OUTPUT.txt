@@ -1,188 +1,79 @@
-📊 Stats: 865s | Orientation: 10.8Hz | Moves: 0.26Hz
-Joystick: X=-0.63 Y=0.21 Z=0.09 | Calibrated: (-0.042, -0.125, -0.063, 0.989)
-Move: U
-Joystick: X=0.97 Y=0.14 Z=0.12 | Calibrated: (-0.027, 0.194, -0.080, 0.977)
-Joystick: X=1.00 Y=0.14 Z=0.12 | Calibrated: (-0.028, 0.199, -0.082, 0.976)
-Joystick: X=1.00 Y=0.13 Z=0.13 | Calibrated: (-0.027, 0.221, -0.086, 0.971)
-Joystick: X=0.14 Y=0.13 Z=0.00 | Calibrated: (-0.025, 0.028, -0.007, 0.999)
-Joystick: X=0.00 Y=0.17 Z=0.00 | Calibrated: (-0.033, 0.014, -0.008, 0.999)
-Joystick: X=0.00 Y=0.12 Z=0.00 | Calibrated: (-0.025, 0.002, -0.003, 1.000)
-Move: U'
-
-📊 Stats: 870s | Orientation: 10.8Hz | Moves: 0.26Hz
-
-🔄 [F5] Recalibrating cube...
-CALIBRATION: Reference = (-0.014, -0.006, -0.045, 0.999)
-Cube calibrated! Current position is now identity (0,0,0,1)
-
-🎮 [F9] Resetting joystick to center...
-  Joystick centered. Try moving the cube to resume control.
-
-📊 Stats: 875s | Orientation: 10.8Hz | Moves: 0.26Hz
-Joystick: X=-0.22 Y=0.24 Z=0.00 | Calibrated: (-0.048, -0.044, -0.014, 0.998)
-Joystick: X=-0.26 Y=0.24 Z=0.00 | Calibrated: (-0.048, -0.051, -0.015, 0.997)
-Joystick: X=-0.40 Y=-0.46 Z=0.00 | Calibrated: (0.092, -0.080, 0.003, 0.993)
-Joystick: X=-0.21 Y=-0.63 Z=0.00 | Calibrated: (0.126, -0.041, 0.014, 0.991)
-Joystick: X=0.00 Y=-0.73 Z=0.00 | Calibrated: (0.145, 0.007, 0.025, 0.989)
-Joystick: X=0.24 Y=-0.75 Z=0.00 | Calibrated: (0.150, 0.048, 0.034, 0.987)
-Joystick: X=0.00 Y=0.74 Z=0.00 | Calibrated: (-0.149, -0.010, 0.013, 0.989)
-Sprint: ON
-Joystick: X=-1.00 Y=-1.00 Z=0.00 | Calibrated: (0.225, -0.216, -0.034, 0.950)
+📊 305s | Orient: 11.2Hz | Moves: 0.32Hz | Threads: 2/8
+Joy: X= 0.28 Y= 0.81 Z= 0.00 | Calibrated
 Sprint: OFF
-Joystick: X=-0.83 Y=-1.00 Z=0.00 | Calibrated: (0.269, -0.166, -0.033, 0.948)
-Joystick: X=-0.39 Y=-1.00 Z=0.00 | Calibrated: (0.281, -0.077, -0.016, 0.956)
-Joystick: X=0.15 Y=-1.00 Z=0.00 | Calibrated: (0.263, 0.029, 0.004, 0.964)
-Joystick: X=-0.65 Y=0.50 Z=0.17 | Calibrated: (-0.101, -0.130, -0.113, 0.980)
-Joystick: X=0.00 Y=0.38 Z=0.00 | Calibrated: (-0.076, 0.014, 0.019, 0.997)
-Joystick: X=0.13 Y=0.54 Z=0.00 | Calibrated: (-0.109, 0.025, 0.001, 0.994)
-Joystick: X=-0.17 Y=1.00 Z=0.00 | Calibrated: (-0.266, -0.035, 0.043, 0.962)
-Sprint: ON
-Joystick: X=-0.79 Y=1.00 Z=-0.35 | Calibrated: (-0.210, -0.159, 0.236, 0.935)
-Joystick: X=-0.86 Y=1.00 Z=-0.37 | Calibrated: (-0.206, -0.171, 0.248, 0.931)
-Joystick: X=-0.89 Y=1.00 Z=-0.39 | Calibrated: (-0.207, -0.178, 0.257, 0.927)
-Joystick: X=-1.00 Y=1.00 Z=-0.44 | Calibrated: (-0.229, -0.202, 0.293, 0.906)
-
-📊 Stats: 880s | Orientation: 10.8Hz | Moves: 0.26Hz
-Joystick: X=-0.98 Y=1.00 Z=-0.43 | Calibrated: (-0.239, -0.196, 0.289, 0.906)
-Joystick: X=-0.90 Y=1.00 Z=-0.39 | Calibrated: (-0.274, -0.180, 0.259, 0.909)
-Joystick: X=-0.80 Y=1.00 Z=-0.34 | Calibrated: (-0.286, -0.161, 0.230, 0.916)
-Joystick: X=-0.80 Y=1.00 Z=-0.34 | Calibrated: (-0.286, -0.161, 0.228, 0.917)
-Joystick: X=-0.81 Y=1.00 Z=-0.34 | Calibrated: (-0.286, -0.161, 0.226, 0.917)
-Joystick: X=-0.75 Y=1.00 Z=-0.30 | Calibrated: (-0.299, -0.149, 0.200, 0.921)
-Joystick: X=-0.78 Y=1.00 Z=-0.29 | Calibrated: (-0.299, -0.155, 0.195, 0.921)
-Joystick: X=-0.78 Y=1.00 Z=-0.29 | Calibrated: (-0.299, -0.155, 0.195, 0.921)
-Joystick: X=-0.78 Y=1.00 Z=-0.29 | Calibrated: (-0.299, -0.155, 0.194, 0.921)
-Joystick: X=-0.78 Y=1.00 Z=-0.29 | Calibrated: (-0.300, -0.156, 0.190, 0.922)
-Joystick: X=-0.77 Y=1.00 Z=-0.28 | Calibrated: (-0.302, -0.154, 0.188, 0.922)
-Joystick: X=-0.75 Y=1.00 Z=-0.27 | Calibrated: (-0.304, -0.150, 0.183, 0.923)
-Joystick: X=-0.66 Y=1.00 Z=-0.21 | Calibrated: (-0.319, -0.131, 0.138, 0.928)
-Joystick: X=-0.66 Y=1.00 Z=-0.20 | Calibrated: (-0.319, -0.131, 0.136, 0.929)
-Joystick: X=-0.51 Y=1.00 Z=-0.14 | Calibrated: (-0.340, -0.101, 0.093, 0.930)
-Joystick: X=-0.50 Y=1.00 Z=-0.14 | Calibrated: (-0.341, -0.100, 0.091, 0.930)
-Joystick: X=-0.47 Y=1.00 Z=-0.13 | Calibrated: (-0.351, -0.094, 0.088, 0.927)
-Joystick: X=-0.58 Y=1.00 Z=-0.16 | Calibrated: (-0.343, -0.115, 0.103, 0.927)
-Joystick: X=-0.58 Y=1.00 Z=-0.16 | Calibrated: (-0.343, -0.117, 0.105, 0.926)
-Joystick: X=-0.65 Y=1.00 Z=-0.18 | Calibrated: (-0.343, -0.129, 0.121, 0.923)
-Joystick: X=-0.66 Y=1.00 Z=-0.19 | Calibrated: (-0.341, -0.133, 0.129, 0.922)
-Joystick: X=-0.61 Y=1.00 Z=-0.18 | Calibrated: (-0.340, -0.122, 0.123, 0.924)
-Joystick: X=0.00 Y=1.00 Z=-0.11 | Calibrated: (-0.383, -0.006, 0.076, 0.921)
-Joystick: X=0.00 Y=1.00 Z=-0.11 | Calibrated: (-0.389, 0.005, 0.073, 0.918)
-Joystick: X=0.00 Y=1.00 Z=-0.11 | Calibrated: (-0.390, 0.007, 0.072, 0.918)
-Joystick: X=0.13 Y=1.00 Z=-0.09 | Calibrated: (-0.396, 0.026, 0.060, 0.916)
-Joystick: X=0.16 Y=1.00 Z=-0.09 | Calibrated: (-0.396, 0.031, 0.057, 0.916)
-Joystick: X=0.16 Y=1.00 Z=0.00 | Calibrated: (-0.399, 0.032, 0.039, 0.916)
-
-📊 Stats: 885s | Orientation: 10.8Hz | Moves: 0.25Hz
-Joystick: X=0.14 Y=1.00 Z=0.00 | Calibrated: (-0.399, 0.027, 0.038, 0.916)
-Joystick: X=0.12 Y=1.00 Z=0.00 | Calibrated: (-0.400, 0.024, 0.038, 0.916)
-Joystick: X=0.00 Y=1.00 Z=0.00 | Calibrated: (-0.400, 0.017, 0.038, 0.915)
-Joystick: X=0.00 Y=1.00 Z=0.00 | Calibrated: (-0.450, 0.020, 0.002, 0.893)
-Joystick: X=0.00 Y=1.00 Z=0.00 | Calibrated: (-0.450, 0.020, 0.002, 0.893)
-Joystick: X=0.11 Y=1.00 Z=0.00 | Calibrated: (-0.439, 0.021, -0.043, 0.897)
-Joystick: X=0.00 Y=1.00 Z=0.00 | Calibrated: (-0.439, 0.020, -0.045, 0.897)
-Joystick: X=0.19 Y=1.00 Z=0.10 | Calibrated: (-0.442, 0.039, -0.064, 0.894)
-Joystick: X=0.19 Y=1.00 Z=0.10 | Calibrated: (-0.443, 0.039, -0.068, 0.893)
-Joystick: X=0.19 Y=1.00 Z=0.10 | Calibrated: (-0.444, 0.039, -0.069, 0.892)
-Joystick: X=0.27 Y=1.00 Z=0.12 | Calibrated: (-0.442, 0.053, -0.077, 0.892)
-Joystick: X=0.27 Y=1.00 Z=0.12 | Calibrated: (-0.440, 0.054, -0.080, 0.893)
-
-📊 Stats: 890s | Orientation: 10.8Hz | Moves: 0.25Hz
-Joystick: X=0.21 Y=1.00 Z=0.25 | Calibrated: (-0.411, 0.043, -0.168, 0.895)
-Joystick: X=-0.93 Y=1.00 Z=-0.51 | Calibrated: (-0.251, -0.187, 0.341, 0.886)
-Joystick: X=-0.93 Y=1.00 Z=-0.51 | Calibrated: (-0.249, -0.185, 0.337, 0.889)
-Joystick: X=0.78 Y=1.00 Z=0.00 | Calibrated: (-0.316, 0.156, -0.046, 0.935)
-Joystick: X=1.00 Y=1.00 Z=0.15 | Calibrated: (-0.291, 0.209, -0.101, 0.928)
-Joystick: X=1.00 Y=1.00 Z=0.26 | Calibrated: (-0.271, 0.252, -0.173, 0.913)
-Joystick: X=0.87 Y=0.85 Z=0.47 | Calibrated: (-0.170, 0.174, -0.311, 0.919)
-Joystick: X=0.82 Y=0.82 Z=0.45 | Calibrated: (-0.164, 0.165, -0.301, 0.925)
-Joystick: X=0.72 Y=0.79 Z=0.41 | Calibrated: (-0.159, 0.145, -0.276, 0.937)
-Joystick: X=-0.74 Y=1.00 Z=-0.41 | Calibrated: (-0.364, -0.148, 0.275, 0.877)
-Joystick: X=-0.74 Y=1.00 Z=-0.44 | Calibrated: (-0.363, -0.147, 0.292, 0.873)
-Joystick: X=-1.00 Y=1.00 Z=-0.57 | Calibrated: (-0.324, -0.231, 0.379, 0.835)
-Joystick: X=-1.00 Y=1.00 Z=-0.59 | Calibrated: (-0.274, -0.265, 0.393, 0.837)
-Joystick: X=-1.00 Y=1.00 Z=-0.59 | Calibrated: (-0.267, -0.202, 0.394, 0.856)
-Joystick: X=-0.21 Y=1.00 Z=-0.43 | Calibrated: (-0.238, -0.042, 0.287, 0.927)
-Joystick: X=0.00 Y=1.00 Z=0.00 | Calibrated: (-0.250, -0.005, 0.052, 0.967)
-Joystick: X=0.00 Y=1.00 Z=0.00 | Calibrated: (-0.228, 0.011, -0.041, 0.973)
-Joystick: X=0.00 Y=1.00 Z=0.14 | Calibrated: (-0.272, -0.011, -0.094, 0.957)
-Joystick: X=-0.19 Y=1.00 Z=0.11 | Calibrated: (-0.309, -0.037, -0.072, 0.948)
-Joystick: X=-0.20 Y=1.00 Z=0.10 | Calibrated: (-0.312, -0.039, -0.068, 0.947)
-
-📊 Stats: 895s | Orientation: 10.8Hz | Moves: 0.25Hz
-Joystick: X=-0.26 Y=1.00 Z=0.00 | Calibrated: (-0.318, -0.051, -0.056, 0.945)
-Joystick: X=-0.36 Y=1.00 Z=-0.25 | Calibrated: (-0.274, -0.073, 0.167, 0.944)
-Joystick: X=-0.35 Y=1.00 Z=-0.25 | Calibrated: (-0.278, -0.070, 0.166, 0.943)
-Joystick: X=-0.36 Y=1.00 Z=-0.25 | Calibrated: (-0.276, -0.072, 0.164, 0.945)
-Joystick: X=-0.36 Y=1.00 Z=-0.24 | Calibrated: (-0.275, -0.073, 0.163, 0.945)
-Joystick: X=-0.36 Y=1.00 Z=-0.24 | Calibrated: (-0.272, -0.072, 0.162, 0.946)
-Joystick: X=0.37 Y=1.00 Z=0.00 | Calibrated: (-0.414, 0.073, 0.043, 0.906)
-Joystick: X=0.35 Y=1.00 Z=0.00 | Calibrated: (-0.409, 0.071, 0.036, 0.909)
-Joystick: X=0.38 Y=1.00 Z=0.00 | Calibrated: (-0.412, 0.076, 0.015, 0.908)
-Joystick: X=0.13 Y=1.00 Z=0.00 | Calibrated: (-0.362, 0.026, 0.020, 0.932)
-Joystick: X=0.00 Y=1.00 Z=0.00 | Calibrated: (-0.352, 0.010, 0.006, 0.936)
-Move: B'
-Joystick: X=-0.32 Y=1.00 Z=0.00 | Calibrated: (-0.213, -0.064, 0.025, 0.975)
-Joystick: X=-0.30 Y=1.00 Z=0.00 | Calibrated: (-0.213, -0.060, 0.025, 0.975)
-
-📊 Stats: 900s | Orientation: 10.7Hz | Moves: 0.25Hz
-Joystick: X=0.00 Y=1.00 Z=0.00 | Calibrated: (-0.279, -0.000, -0.046, 0.959)
-Joystick: X=0.00 Y=1.00 Z=0.00 | Calibrated: (-0.280, 0.002, -0.044, 0.959)
-Joystick: X=0.00 Y=1.00 Z=0.00 | Calibrated: (-0.280, 0.001, -0.044, 0.959)
-Joystick: X=0.00 Y=1.00 Z=0.00 | Calibrated: (-0.280, 0.001, -0.044, 0.959)
-Joystick: X=0.15 Y=0.53 Z=0.12 | Calibrated: (-0.106, 0.030, -0.077, 0.991)
-Sprint: OFF
-Joystick: X=0.42 Y=-0.36 Z=0.00 | Calibrated: (0.073, 0.084, -0.050, 0.992)
-Joystick: X=0.46 Y=-0.27 Z=0.00 | Calibrated: (0.055, 0.093, -0.046, 0.993)
+Joy: X= 0.25 Y= 0.23 Z= 0.00 | Calibrated
+Joy: X= 0.40 Y=-0.55 Z= 0.00 | Calibrated
+Joy: X= 0.57 Y=-0.63 Z= 0.00 | Calibrated
+Joy: X= 0.34 Y=-0.38 Z= 0.00 | Calibrated
 Move: R
-Joystick: X=-1.00 Y=0.96 Z=0.18 | Calibrated: (-0.193, -0.289, -0.122, 0.930)
+Joy: X= 0.12 Y= 0.00 Z= 0.00 | Calibrated
+Joy: X= 0.00 Y= 0.21 Z= 0.00 | Calibrated
+Joy: X= 0.00 Y= 0.22 Z= 0.00 | Calibrated
+Joy: X= 0.00 Y= 0.52 Z= 0.00 | Calibrated
+Joy: X= 0.00 Y= 0.39 Z= 0.00 | Calibrated
+Joy: X= 0.00 Y= 0.48 Z= 0.00 | Calibrated
+Joy: X= 0.00 Y= 0.47 Z= 0.00 | Calibrated
+Joy: X= 0.00 Y= 0.59 Z= 0.00 | Calibrated
+Joy: X= 0.00 Y= 0.65 Z= 0.00 | Calibrated
 Sprint: ON
-Joystick: X=-1.00 Y=1.00 Z=0.22 | Calibrated: (-0.255, -0.272, -0.146, 0.916)
-Joystick: X=-1.00 Y=1.00 Z=0.20 | Calibrated: (-0.282, -0.259, -0.136, 0.914)
-Joystick: X=-1.00 Y=1.00 Z=0.19 | Calibrated: (-0.292, -0.265, -0.128, 0.910)
-Joystick: X=-1.00 Y=1.00 Z=0.19 | Calibrated: (-0.287, -0.266, -0.126, 0.912)
-Joystick: X=-1.00 Y=1.00 Z=0.19 | Calibrated: (-0.265, -0.301, -0.125, 0.907)
-Joystick: X=-1.00 Y=1.00 Z=0.19 | Calibrated: (-0.252, -0.307, -0.126, 0.909)
+Joy: X= 0.00 Y= 0.85 Z= 0.00 | Calibrated
+Joy: X= 0.00 Y= 0.93 Z= 0.00 | Calibrated
+Joy: X=-0.49 Y= 1.95 Z= 0.00 | Calibrated
+Joy: X=-0.51 Y= 1.93 Z= 0.00 | Calibrated
+Joy: X=-0.50 Y= 1.96 Z= 0.00 | Calibrated
+Joy: X=-0.48 Y= 1.96 Z= 0.00 | Calibrated
+Joy: X=-0.47 Y= 1.95 Z= 0.00 | Calibrated
+Move: U'
+Joy: X=-0.40 Y= 1.80 Z= 0.13 | Calibrated
+Joy: X=-0.41 Y= 1.73 Z= 0.13 | Calibrated
+Joy: X=-0.37 Y= 1.68 Z= 0.14 | Calibrated
+Joy: X=-0.20 Y= 1.36 Z= 0.12 | Calibrated
+Joy: X=-0.36 Y= 1.17 Z= 0.12 | Calibrated
+Sprint: OFF
+
+📊 310s | Orient: 11.2Hz | Moves: 0.33Hz | Threads: 2/8
+Joy: X= 0.44 Y= 0.40 Z= 0.00 | Calibrated
 Move: R
-
-📊 Stats: 905s | Orientation: 10.7Hz | Moves: 0.25Hz
-Joystick: X=-1.00 Y=1.00 Z=0.18 | Calibrated: (-0.239, -0.306, -0.122, 0.913)
-Joystick: X=0.24 Y=1.00 Z=0.14 | Calibrated: (-0.277, 0.047, -0.094, 0.955)
-Joystick: X=0.20 Y=1.00 Z=0.12 | Calibrated: (-0.222, 0.039, -0.080, 0.971)
-Joystick: X=0.00 Y=1.00 Z=0.00 | Calibrated: (-0.208, -0.012, -0.050, 0.977)
-Move: U'
-Joystick: X=0.00 Y=0.91 Z=0.09 | Calibrated: (-0.181, -0.002, -0.058, 0.982)
-Joystick: X=0.68 Y=0.70 Z=0.14 | Calibrated: (-0.140, 0.136, -0.093, 0.976)
-Joystick: X=0.85 Y=1.00 Z=0.29 | Calibrated: (-0.234, 0.170, -0.196, 0.937)
-Joystick: X=0.74 Y=1.00 Z=0.31 | Calibrated: (-0.223, 0.148, -0.205, 0.941)
-Joystick: X=0.30 Y=0.94 Z=0.29 | Calibrated: (-0.189, 0.059, -0.192, 0.961)
-Move: U
-Joystick: X=-0.50 Y=0.79 Z=0.18 | Calibrated: (-0.157, -0.100, -0.123, 0.975)
-Sprint: OFF
-Joystick: X=1.00 Y=-0.71 Z=0.00 | Calibrated: (0.142, 0.325, -0.056, 0.933)
-Joystick: X=1.00 Y=-0.24 Z=0.17 | Calibrated: (0.047, 0.375, -0.116, 0.918)
-Joystick: X=1.00 Y=-0.16 Z=0.18 | Calibrated: (0.032, 0.361, -0.117, 0.925)
-Joystick: X=1.00 Y=-0.19 Z=0.17 | Calibrated: (0.038, 0.333, -0.115, 0.935)
-Joystick: X=1.00 Y=0.34 Z=0.19 | Calibrated: (-0.067, 0.245, -0.130, 0.959)
-Joystick: X=1.00 Y=0.33 Z=0.24 | Calibrated: (-0.066, 0.312, -0.157, 0.935)
-Joystick: X=1.00 Y=0.33 Z=0.22 | Calibrated: (-0.066, 0.326, -0.148, 0.931)
-Joystick: X=1.00 Y=0.34 Z=0.22 | Calibrated: (-0.069, 0.284, -0.145, 0.945)
-
-📊 Stats: 910s | Orientation: 10.7Hz | Moves: 0.25Hz
-Joystick: X=1.00 Y=0.31 Z=0.22 | Calibrated: (-0.062, 0.291, -0.146, 0.944)
-Move: U'
-Joystick: X=1.00 Y=0.33 Z=0.22 | Calibrated: (-0.067, 0.301, -0.144, 0.940)
-Joystick: X=1.00 Y=0.34 Z=0.22 | Calibrated: (-0.067, 0.304, -0.144, 0.939)
+Joy: X= 0.32 Y= 0.56 Z= 0.10 | Calibrated
+Joy: X= 0.31 Y= 0.56 Z= 0.10 | Calibrated
 Sprint: ON
-Joystick: X=-0.56 Y=0.98 Z=0.18 | Calibrated: (-0.197, -0.113, -0.118, 0.967)
+Joy: X= 0.22 Y= 0.79 Z= 0.11 | Calibrated
+Joy: X= 0.22 Y= 0.79 Z= 0.11 | Calibrated
+Joy: X= 0.22 Y= 0.79 Z= 0.11 | Calibrated
+Joy: X= 0.23 Y= 0.78 Z= 0.10 | Calibrated
 Sprint: OFF
-Joystick: X=-0.22 Y=0.22 Z=0.11 | Calibrated: (-0.043, -0.044, -0.076, 0.995)
-Joystick: X=-0.24 Y=0.23 Z=0.11 | Calibrated: (-0.046, -0.047, -0.077, 0.995)
-Joystick: X=-0.25 Y=0.24 Z=0.11 | Calibrated: (-0.048, -0.050, -0.077, 0.995)
+Sprint: ON
+Joy: X= 0.00 Y= 0.88 Z= 0.16 | Calibrated
+Joy: X= 0.00 Y= 0.88 Z= 0.16 | Calibrated
+Move: U
+Joy: X= 0.00 Y= 0.93 Z= 0.17 | Calibrated
+Joy: X= 0.00 Y= 0.93 Z= 0.17 | Calibrated
+Joy: X= 0.00 Y= 0.91 Z= 0.16 | Calibrated
+Joy: X= 0.18 Y= 0.83 Z= 0.13 | Calibrated
+Joy: X= 0.19 Y= 0.81 Z= 0.12 | Calibrated
 Move: U'
-Joystick: X=-0.27 Y=0.27 Z=0.12 | Calibrated: (-0.053, -0.054, -0.079, 0.994)
-Joystick: X=-0.25 Y=0.22 Z=0.16 | Calibrated: (-0.044, -0.050, -0.107, 0.992)
-Joystick: X=-0.25 Y=0.23 Z=0.16 | Calibrated: (-0.046, -0.050, -0.107, 0.992)
+Joy: X= 0.19 Y= 0.79 Z= 0.12 | Calibrated
+Joy: X=-0.97 Y= 0.87 Z= 0.18 | Calibrated
+Joy: X=-0.97 Y= 0.86 Z= 0.18 | Calibrated
 
-📊 Stats: 915s | Orientation: 10.6Hz | Moves: 0.25Hz
+📊 315s | Orient: 11.1Hz | Moves: 0.33Hz | Threads: 2/8
+Joy: X=-0.97 Y= 0.85 Z= 0.19 | Calibrated
+Joy: X=-0.97 Y= 0.83 Z= 0.19 | Calibrated
+Sprint: OFF
+Joy: X= 0.53 Y=-0.15 Z= 0.00 | Calibrated
+Move: U'
+Joy: X= 0.49 Y= 0.00 Z= 0.00 | Calibrated
+Joy: X= 0.55 Y= 0.00 Z= 0.00 | Calibrated
+Joy: X= 0.51 Y= 0.22 Z= 0.00 | Calibrated
+Sprint: ON
+Joy: X= 0.23 Y= 1.00 Z= 0.13 | Calibrated
+Move: R
+Joy: X= 0.23 Y= 1.00 Z= 0.13 | Calibrated
+Joy: X= 0.18 Y= 0.83 Z= 0.00 | Calibrated
 
-Shutdown complete
+📊 320s | Orient: 11.0Hz | Moves: 0.33Hz | Threads: 2/8
+
+📊 325s | Orient: 10.8Hz | Moves: 0.33Hz | Threads: 2/8
+
+📊 330s | Orient: 10.7Hz | Moves: 0.32Hz | Threads: 2/8
+Resetting joystick...
