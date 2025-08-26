@@ -1,198 +1,59 @@
-## Instructions to Create a Clean V2 Cube Controller
+this is much better architecturally - you've eliminated the thread explosion problem. but there's still an issue that's causing your lag:
 
-### Step 1: Delete Everything and Start Fresh
-Create a new file called `cube_controller_v2_clean.py`. Do NOT copy-paste from the old file - you'll just inherit the problems.
+**the gamepad.update() calls are excessive**
 
-### Step 2: Required Imports Only
+you're calling `gamepad.update()` after every single state change. for combos, you're calling it 5+ times in rapid succession. each update() call sends a report to the windows driver, which has overhead.
+
+fix this by batching updates:
+
 ```python
-import asyncio
-import time
-import json
-from pathlib import Path
-import vgamepad as vg
-import sys
+# in handle_orientation - you're already doing this right
+self.gamepad.left_joystick_float(x_value_float=joy_x, y_value_float=joy_y)
+self.gamepad.right_joystick_float(x_value_float=joy_z, y_value_float=0)
+self.gamepad.update()  # single update for all changes
 
-# Add parent directory for gan_web_bluetooth
-sys.path.append(str(Path(__file__).parent.parent))
-from gan_web_bluetooth import GanSmartCube
-from gan_web_bluetooth.protocols.base import (
-    GanCubeMoveEvent, 
-    GanCubeOrientationEvent,
-    GanCubeBatteryEvent
-)
+# but in execute_combo you're doing:
+self.gamepad.press_button(b1)
+self.gamepad.update()  # update 1
+await asyncio.sleep(0.05)
+self.gamepad.press_button(b2)
+self.gamepad.update()  # update 2
+await asyncio.sleep(0.1)
+self.gamepad.release_button(b2)
+self.gamepad.release_button(b1)
+self.gamepad.update()  # update 3
 ```
 
-### Step 3: Single Simple Controller Class
+change combos to:
 ```python
-class CubeControllerClean:
-    def __init__(self):
-        self.config = self.load_config()
-        self.cube = None
-        self.gamepad = vg.VX360Gamepad()
-        
-        # State tracking
-        self.calibration_ref = None
-        self.last_quaternion = None
-        self.last_move = None
-        self.last_move_time = 0
-        self.sprinting = False
-        
-        # Performance
-        self.last_update = 0
-        self.update_interval = 8  # 125Hz max
+self.gamepad.press_button(b1)
+# no update here
+await asyncio.sleep(0.05)
+self.gamepad.press_button(b2)
+self.gamepad.update()  # single update after both pressed
+await asyncio.sleep(0.1)
+self.gamepad.release_button(b2)
+self.gamepad.release_button(b1)
+self.gamepad.update()  # single update after both released
 ```
 
-### Step 4: Direct Event Handlers (NO THREADS)
-```python
-    def handle_orientation(self, event: GanCubeOrientationEvent):
-        """Direct handler - NO executor, NO threads"""
-        now_ms = time.perf_counter_ns() // 1_000_000
-        
-        # Rate limit to 125Hz
-        if now_ms - self.last_update < self.update_interval:
-            return
-        self.last_update = now_ms
-        
-        # Extract quaternion
-        qx = event.quaternion.x
-        qy = event.quaternion.y
-        qz = event.quaternion.z
-        qw = event.quaternion.w
-        
-        # Store for calibration
-        self.last_quaternion = (qx, qy, qz, qw)
-        
-        # Apply calibration if set
-        if self.calibration_ref:
-            qx, qy, qz, qw = self.apply_calibration(qx, qy, qz, qw)
-        
-        # Direct mapping to joystick
-        joy_x = qy * 2.5  # left/right
-        joy_y = -qx * 2.5  # forward/back
-        joy_z = -qz * 2.0  # rotation
-        
-        # Deadzone
-        if abs(joy_x) < 0.1: joy_x = 0
-        if abs(joy_y) < 0.1: joy_y = 0
-        if abs(joy_z) < 0.085: joy_z = 0
-        
-        # Update gamepad IMMEDIATELY
-        self.gamepad.left_joystick_float(x_value_float=joy_x, y_value_float=joy_y)
-        self.gamepad.right_joystick_float(x_value_float=joy_z, y_value_float=0)
-        self.gamepad.update()
-        
-        # Sprint check (simple)
-        if joy_y > 0.7 and not self.sprinting:
-            self.gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
-            self.sprinting = True
-        elif joy_y < 0.6 and self.sprinting:
-            self.gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
-            self.sprinting = False
-```
+**other issues i see:**
 
-### Step 5: Move Handler with Async Releases
+1. **sprint logic in orientation handler** - this is getting called 125 times per second. move sprint state changes to a separate task that runs at 10hz to avoid rapid on/off
+
+2. **no periodic update task** - if orientation stops coming but joysticks are held, they'll stick. add a safety task:
 ```python
-    def handle_move(self, event: GanCubeMoveEvent):
-        """Direct handler - NO threads for button releases"""
-        move = event.move
-        now_ms = time.perf_counter_ns() // 1_000_000
-        
-        # Duplicate check
-        if move == self.last_move and (now_ms - self.last_move_time) < 50:
-            return
-        self.last_move = move
-        self.last_move_time = now_ms
-        
-        print(f"Move: {move}")
-        
-        # Get mapping
-        action = self.config.get('move_mappings', {}).get(move)
-        if not action:
-            return
-        
-        # Execute action
-        if action.startswith('gamepad_combo_'):
-            asyncio.create_task(self.execute_combo(action))
-        else:
-            button = self.get_button(action)
-            if button:
-                self.gamepad.press_button(button)
-                self.gamepad.update()
-                # Schedule release with asyncio, NOT threading
-                asyncio.create_task(self.release_button_later(button, 0.1))
-    
-    async def release_button_later(self, button, delay):
-        """Async release - NO THREADS"""
-        await asyncio.sleep(delay)
-        self.gamepad.release_button(button)
+async def update_loop(self):
+    while True:
+        await asyncio.sleep(0.016)  # 60hz
         self.gamepad.update()
 ```
 
-### Step 6: Connection Setup
-```python
-    async def connect(self):
-        """Simple connection"""
-        self.cube = GanSmartCube()
-        
-        # Direct handlers - NO executor.submit()
-        self.cube.on('orientation', self.handle_orientation)
-        self.cube.on('move', self.handle_move)
-        self.cube.on('battery', lambda e: print(f"Battery: {e.level}%"))
-        
-        await self.cube.connect()
-        print("✅ Connected")
-        
-        # Auto-calibrate after 2 seconds
-        await asyncio.sleep(2)
-        if self.last_quaternion:
-            self.calibrate()
-```
+3. **missing stats** - you have no visibility into actual rates. add basic counters to see if you're actually getting 20hz from the cube or if it's dropping
 
-### Step 7: Main Function
-```python
-async def main():
-    controller = CubeControllerClean()
-    
-    try:
-        await controller.connect()
-        print("\n✅ Ready! Move cube to control.")
-        
-        # Just wait forever - no complex loops
-        await asyncio.Future()
-        
-    except KeyboardInterrupt:
-        print("\nShutting down...")
-    finally:
-        controller.gamepad.reset()
-        controller.gamepad.update()
-        if controller.cube:
-            await controller.cube.disconnect()
+this version is definitely cleaner than the threaded mess, but test if the lag is from:
+- bluetooth connection issues (cube not sending data consistently)
+- windows gamepad driver overhead (try reducing update() calls)
+- the cube itself (battery low? firmware issues?)
 
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-### Key Rules for Implementation:
-
-1. **NO ThreadPoolExecutor** - The cube sends 20Hz data, you don't need parallel processing
-2. **NO threading.Thread()** - Use asyncio.create_task() for all delays
-3. **NO command queues** - Update gamepad directly in handlers
-4. **NO complex state machines** - Simple if/else for sprint
-5. **NO duplicate classes** - One controller class only
-6. **Rate limit at handler level** - Check timestamp, return early if too soon
-7. **Direct gamepad updates** - Call update() immediately after changing state
-
-### What This Fixes:
-- No thread accumulation (was creating threads on every button press)
-- No queue overflow (no queues)
-- No executor bottleneck (no executor)
-- Predictable latency (direct processing)
-- Won't degrade over time (no resource leaks)
-
-### Expected Performance:
-- Consistent 8-10ms processing time
-- No degradation after hours of play
-- All inputs register properly
-- Total latency: BLE delay (30ms) + processing (10ms) = ~40ms
-
-The key insight: your cube sends data at 20Hz. processing that in 4+ threads doesn't make it faster, it just creates contention. keep it simple.
+if inputs still aren't registering, add debug prints in handle_move to see if events are even arriving.
