@@ -1,0 +1,40 @@
+Here's a prompt for Claude Code:
+
+---
+
+**Task: Create a clean, optimized V2 cube controller based on architectural feedback**
+
+Please read the following two files:
+1. `feedback.txt` - Contains specific architectural instructions and rules for creating a clean implementation
+2. `cube_controller_v2.py` - The current problematic implementation (use as reference for config loading and calibration math ONLY)
+
+Create a new file called `cube_controller_v2_clean.py` that follows these requirements:
+
+**MUST FOLLOW RULES FROM feedback.txt:**
+- NO ThreadPoolExecutor or threading.Thread() - use only asyncio
+- NO command queues - update gamepad directly in event handlers  
+- NO complex state machines - simple if/else logic only
+- Direct event handlers without executor.submit()
+- Rate limit orientation at handler level (8ms minimum between updates)
+- Use asyncio.create_task() for all delayed operations
+
+**REQUIRED FUNCTIONALITY:**
+1. Connect to GAN cube using gan_web_bluetooth library
+2. Process orientation events → map to gamepad joysticks
+3. Process move events → map to gamepad buttons
+4. Calibration system (copy math from reference but simplify structure)
+5. Sprint detection (forward tilt > 0.7 holds B button)
+6. Config file loading for move mappings
+
+**STRUCTURE:**
+- Single CubeControllerClean class
+- Direct event handlers (handle_orientation, handle_move)
+- Async button release using asyncio.create_task
+- Simple main() function with asyncio.Future() to run forever
+
+**PERFORMANCE GOALS:**
+- Process events in <10ms
+- No performance degradation over time
+- No thread/resource leaks
+
+The resulting file should be under 300 lines, clean, and focused solely on the core functionality without any threading complexity. Copy ONLY the calibration quaternion math and config loading logic from the reference - ignore everything else about its architecture.

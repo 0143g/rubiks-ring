@@ -1,5 +1,669 @@
 #!/usr/bin/env python3
 """
+V2 Cube Controller - FIXED VERSION
+Addresses feedback while fixing critical bugs from optimized version
+"""
+
+import asyncio
+import time
+import json
+import sys
+from pathlib import Path
+from typing import Optional, Dict, Any
+import threading
+from concurrent.futures import ThreadPoolExecutor
+import queue
+import keyboard
+import vgamepad as vg
+import math
+
+# Add parent directory to import gan_web_bluetooth
+sys.path.append(str(Path(__file__).parent.parent))
+
+# Use the existing, working GAN library
+from gan_web_bluetooth import GanSmartCube
+from gan_web_bluetooth.protocols.base import (
+    GanCubeMoveEvent, 
+    GanCubeOrientationEvent,
+    GanCubeBatteryEvent,
+    GanCubeHardwareEvent,
+    GanCubeFaceletsEvent
+)
+
+# ============================================================================
+# GAMEPAD WORKER WITH COMMAND QUEUE
+# ============================================================================
+
+class GamepadWorker:
+    """Single worker thread for all gamepad operations"""
+    
+    def __init__(self):
+        self.gamepad = vg.VX360Gamepad()
+        self.command_queue = queue.Queue(maxsize=100)  # Limit queue size
+        self.running = True
+        
+        # Atomic state for joystick
+        self.joy_x = 0.0
+        self.joy_y = 0.0
+        self.joy_z = 0.0
+        
+        # Current button states
+        self.buttons_held = set()
+        
+        # Start worker thread
+        self.thread = threading.Thread(target=self._worker, daemon=True)
+        self.thread.start()
+    
+    def _worker(self):
+        """Process commands and update gamepad at 250Hz"""
+        last_update = time.perf_counter()
+        
+        while self.running:
+            # Process pending commands (with timeout to avoid blocking)
+            try:
+                cmd, args = self.command_queue.get(timeout=0.001)
+                self._execute_command(cmd, args)
+            except queue.Empty:
+                pass
+            
+            # Update gamepad at 250Hz
+            now = time.perf_counter()
+            if now - last_update >= 0.004:  # 250Hz
+                self.gamepad.left_joystick_float(x_value_float=self.joy_x, y_value_float=self.joy_y)
+                self.gamepad.right_joystick_float(x_value_float=self.joy_z, y_value_float=0)
+                self.gamepad.update()
+                last_update = now
+    
+    def _execute_command(self, cmd: str, args: tuple):
+        """Execute a gamepad command"""
+        if cmd == 'button_press':
+            button, duration = args
+            # Press immediately
+            self.gamepad.press_button(button)
+            self.gamepad.update()
+            # Schedule release after duration
+            def release():
+                time.sleep(duration)
+                self.queue_command('button_release', (button,))
+            threading.Thread(target=release, daemon=True).start()
+            
+        elif cmd == 'button_release':
+            button = args[0]
+            self.gamepad.release_button(button)
+            self.gamepad.update()
+            self.buttons_held.discard(button)
+            
+        elif cmd == 'button_hold':
+            button = args[0]
+            self.gamepad.press_button(button)
+            self.gamepad.update()
+            self.buttons_held.add(button)
+            
+        elif cmd == 'combo':
+            button1, button2, timing = args
+            # Execute combo sequence in separate thread
+            def do_combo():
+                delay1, delay2, delay3, _ = timing
+                
+                if delay1 > 0:
+                    time.sleep(delay1)
+                
+                # Press first button
+                self.queue_command('button_hold', (button1,))
+                time.sleep(delay2)
+                
+                # Press second button
+                self.queue_command('button_hold', (button2,))
+                time.sleep(delay3)
+                
+                # Release both
+                self.queue_command('button_release', (button1,))
+                self.queue_command('button_release', (button2,))
+            
+            threading.Thread(target=do_combo, daemon=True).start()
+            
+        elif cmd == 'trigger':
+            side, duration = args
+            if side == 'right':
+                self.gamepad.right_trigger(255)
+            else:
+                self.gamepad.left_trigger(255)
+            self.gamepad.update()
+            
+            # Schedule release
+            def release():
+                time.sleep(duration)
+                self.queue_command('trigger_release', (side,))
+            threading.Thread(target=release, daemon=True).start()
+            
+        elif cmd == 'trigger_release':
+            side = args[0]
+            if side == 'right':
+                self.gamepad.right_trigger(0)
+            else:
+                self.gamepad.left_trigger(0)
+            self.gamepad.update()
+            
+        elif cmd == 'reset':
+            self.gamepad.reset()
+            self.gamepad.update()
+            self.buttons_held.clear()
+            self.joy_x = 0
+            self.joy_y = 0
+            self.joy_z = 0
+    
+    def update_joystick(self, x: float, y: float, z: float):
+        """Update joystick position atomically"""
+        self.joy_x = max(-1.0, min(1.0, x))
+        self.joy_y = max(-1.0, min(1.0, y))
+        self.joy_z = max(-1.0, min(1.0, z))
+    
+    def queue_command(self, cmd: str, args: tuple):
+        """Queue a command for the worker thread"""
+        try:
+            self.command_queue.put((cmd, args), block=False)
+        except queue.Full:
+            # Drop oldest command if queue is full
+            try:
+                self.command_queue.get_nowait()
+                self.command_queue.put((cmd, args), block=False)
+            except:
+                pass
+    
+    def press_button(self, button, duration=0.1):
+        """Queue button press"""
+        self.queue_command('button_press', (button, duration))
+    
+    def hold_button(self, button):
+        """Queue button hold"""
+        self.queue_command('button_hold', (button,))
+    
+    def release_button(self, button):
+        """Queue button release"""
+        self.queue_command('button_release', (button,))
+    
+    def press_combo(self, button1, button2, timing=(0.0, 0.05, 0.1, 0.05)):
+        """Queue button combo"""
+        self.queue_command('combo', (button1, button2, timing))
+    
+    def press_trigger(self, side: str, duration=0.1):
+        """Queue trigger press"""
+        self.queue_command('trigger', (side, duration))
+    
+    def reset(self):
+        """Queue reset"""
+        self.queue_command('reset', ())
+    
+    def cleanup(self):
+        """Cleanup worker thread"""
+        self.running = False
+        self.reset()
+
+
+# ============================================================================
+# ORIENTATION COALESCER
+# ============================================================================
+
+class OrientationCoalescer:
+    """Coalesce orientation updates to reduce processing overhead"""
+    
+    def __init__(self, min_interval_ms: int = 8):  # 125Hz max
+        self.min_interval_ms = min_interval_ms
+        self.last_update_time = 0
+    
+    def should_process(self) -> bool:
+        """Check if enough time has passed to process"""
+        now_ms = time.perf_counter_ns() // 1_000_000
+        if now_ms - self.last_update_time >= self.min_interval_ms:
+            self.last_update_time = now_ms
+            return True
+        return False
+
+
+# ============================================================================
+# DUPLICATE FILTER
+# ============================================================================
+
+class DuplicateFilter:
+    """Simple duplicate filter"""
+    
+    def __init__(self, window_ms: int = 50):
+        self.window_ms = window_ms
+        self.last_move = None
+        self.last_move_time = 0
+        self.lock = threading.Lock()  # Need lock since moves process in threads
+    
+    def is_duplicate(self, move: str) -> bool:
+        """Check if move is duplicate"""
+        with self.lock:
+            now_ms = time.perf_counter_ns() // 1_000_000
+            
+            if move == self.last_move and (now_ms - self.last_move_time) < self.window_ms:
+                return True
+            
+            self.last_move = move
+            self.last_move_time = now_ms
+            return False
+
+
+# ============================================================================
+# SIMPLIFIED SPRINT STATE MACHINE
+# ============================================================================
+
+class SimplifiedSprintMachine:
+    """Simplified sprint/roll handling"""
+    
+    def __init__(self, gamepad: GamepadWorker):
+        self.gamepad = gamepad
+        self.sprinting = False
+        self.forward_threshold = 0.7
+        self.hysteresis = 0.1
+    
+    def update_orientation(self, pitch: float):
+        """Update sprint based on pitch"""
+        if not self.sprinting:
+            should_sprint = pitch > self.forward_threshold
+        else:
+            should_sprint = pitch > (self.forward_threshold - self.hysteresis)
+        
+        if should_sprint != self.sprinting:
+            self.sprinting = should_sprint
+            if self.sprinting:
+                self.gamepad.hold_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+                print("Sprint: ON")
+            else:
+                self.gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+                print("Sprint: OFF")
+    
+    def handle_roll(self):
+        """Handle roll during sprint"""
+        if not self.sprinting:
+            return
+        
+        print("Rolling...")
+        # Simple roll sequence via command queue
+        self.gamepad.queue_command('button_release', (vg.XUSB_BUTTON.XUSB_GAMEPAD_B,))
+        
+        def restore():
+            time.sleep(0.05)
+            self.gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B, 0.1)
+            time.sleep(0.15)
+            if self.sprinting:
+                self.gamepad.hold_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+        
+        threading.Thread(target=restore, daemon=True).start()
+    
+    def stop(self):
+        """Force stop sprint"""
+        if self.sprinting:
+            self.sprinting = False
+            self.gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+
+
+# ============================================================================
+# FIXED CONTROLLER
+# ============================================================================
+
+class CubeControllerV2Fixed:
+    """Fixed cube controller - balanced threading with proper event handling"""
+    
+    def __init__(self, config_path: str = "controller_config.json"):
+        # Configuration
+        self.config = self.load_config(config_path)
+        
+        # Cube connection
+        self.cube: Optional[GanSmartCube] = None
+        
+        # Single gamepad worker
+        self.gamepad = GamepadWorker()
+        
+        # Processors
+        self.orientation_coalescer = OrientationCoalescer(min_interval_ms=8)
+        self.duplicate_filter = DuplicateFilter(window_ms=50)
+        self.sprint_machine = SimplifiedSprintMachine(self.gamepad)
+        
+        # State
+        self.enable_sprint = True
+        self.show_debug = True
+        
+        # Calibration
+        self.calibration_reference = None
+        self.last_raw_quaternion = None
+        
+        # Use 4 threads - balance between too few and too many
+        self.executor = ThreadPoolExecutor(max_workers=4)
+        
+        # Stats
+        self.orientation_count = 0
+        self.move_count = 0
+        self.coalesced_count = 0
+        self.start_time = 0
+        self.last_debug_time = 0
+        
+        # Setup hotkeys
+        self._setup_hotkeys()
+        
+        print("V2 Cube Controller (FIXED) initialized")
+        print(f"Using {self.executor._max_workers} worker threads for events")
+        print(f"Single gamepad worker with command queue")
+        print(f"Loaded {len(self.config.get('move_mappings', {}))} move mappings")
+    
+    def load_config(self, config_path: str) -> Dict[str, Any]:
+        """Load configuration"""
+        paths_to_try = [
+            Path(config_path),
+            Path(__file__).parent / config_path,
+            Path(__file__).parent / "config.json",
+            Path(__file__).parent.parent / "controller_config.json"
+        ]
+        
+        for path in paths_to_try:
+            if path.exists():
+                with open(path, 'r') as f:
+                    config = json.load(f)
+                    print(f"Loaded config from: {path}")
+                    return config
+        
+        print("WARNING: No config file found, using defaults")
+        return {"move_mappings": {}}
+    
+    async def connect_cube(self):
+        """Connect to cube"""
+        print("Connecting to cube...")
+        
+        self.cube = GanSmartCube()
+        
+        # Process both moves and orientation in thread pool to avoid blocking
+        self.cube.on('move', lambda e: self.executor.submit(self.process_move, e))
+        self.cube.on('orientation', lambda e: self.executor.submit(self.process_orientation, e))
+        self.cube.on('battery', lambda e: print(f"Battery: {e.level}%"))
+        self.cube.on('connected', self._handle_connected)
+        self.cube.on('disconnected', lambda e: print("❌ Cube disconnected"))
+        
+        await self.cube.connect()
+    
+    def _handle_connected(self, event):
+        """Handle connection"""
+        print("✅ Cube connected!")
+        self.start_time = time.perf_counter()
+        
+        # Auto-calibrate after 2 seconds
+        def _calibrate():
+            time.sleep(2)
+            if self.last_raw_quaternion:
+                print("\n🔄 Auto-calibrating...")
+                self.calibrate()
+                print("📍 Place cube with GREEN face forward\n")
+        
+        threading.Thread(target=_calibrate, daemon=True).start()
+    
+    def process_orientation(self, event: GanCubeOrientationEvent):
+        """Process orientation with coalescing"""
+        try:
+            self.orientation_count += 1
+            
+            # Check if we should process (rate limit)
+            if not self.orientation_coalescer.should_process():
+                return
+            
+            self.coalesced_count += 1
+            
+            # Extract quaternion
+            qx_raw = event.quaternion.x
+            qy_raw = event.quaternion.y
+            qz_raw = event.quaternion.z
+            qw_raw = event.quaternion.w
+            
+            # Store for calibration
+            self.last_raw_quaternion = {'x': qx_raw, 'y': qy_raw, 'z': qz_raw, 'w': qw_raw}
+            
+            # Apply calibration if available
+            if self.calibration_reference:
+                ref = self.calibration_reference
+                
+                # Normalize reference
+                ref_norm = (ref['x']**2 + ref['y']**2 + ref['z']**2 + ref['w']**2) ** 0.5
+                if ref_norm > 0:
+                    ref_x = ref['x'] / ref_norm
+                    ref_y = ref['y'] / ref_norm
+                    ref_z = ref['z'] / ref_norm
+                    ref_w = ref['w'] / ref_norm
+                else:
+                    ref_x, ref_y, ref_z, ref_w = 0, 0, 0, 1
+                
+                # Calculate relative rotation
+                ref_inv_x = -ref_x
+                ref_inv_y = -ref_y
+                ref_inv_z = -ref_z
+                ref_inv_w = ref_w
+                
+                qx = ref_inv_w*qx_raw + ref_inv_x*qw_raw + ref_inv_y*qz_raw - ref_inv_z*qy_raw
+                qy = ref_inv_w*qy_raw - ref_inv_x*qz_raw + ref_inv_y*qw_raw + ref_inv_z*qx_raw
+                qz = ref_inv_w*qz_raw + ref_inv_x*qy_raw - ref_inv_y*qx_raw + ref_inv_z*qw_raw
+                qw = ref_inv_w*qw_raw - ref_inv_x*qx_raw - ref_inv_y*qy_raw - ref_inv_z*qz_raw
+            else:
+                qx, qy, qz, qw = qx_raw, qy_raw, qz_raw, qw_raw
+            
+            # Convert to joystick
+            sensitivity = self.config.get('sensitivity', {})
+            tilt_x_sens = sensitivity.get('tilt_x_sensitivity', 2.5)
+            tilt_y_sens = sensitivity.get('tilt_y_sensitivity', 2.5)
+            spin_z_sens = sensitivity.get('spin_z_sensitivity', 2.0)
+            
+            joy_y = -qx * tilt_y_sens * 2
+            joy_x = qy * tilt_x_sens * 2
+            joy_z = -qz * spin_z_sens
+            
+            # Apply deadzone
+            deadzone = self.config.get('deadzone', {}).get('general_deadzone', 0.1)
+            spin_deadzone = self.config.get('deadzone', {}).get('spin_deadzone', 0.085)
+            
+            if abs(joy_x) < deadzone: joy_x = 0
+            if abs(joy_y) < deadzone: joy_y = 0
+            if abs(joy_z) < spin_deadzone: joy_z = 0
+            
+            # Update joystick
+            self.gamepad.update_joystick(joy_x, joy_y, joy_z)
+            
+            # Update sprint
+            if self.enable_sprint:
+                self.sprint_machine.update_orientation(joy_y)
+            
+            # Debug output
+            if self.show_debug:
+                now = time.perf_counter_ns() // 1_000_000
+                if now - self.last_debug_time > 100:  # 10Hz
+                    if abs(joy_x) > 0.1 or abs(joy_y) > 0.1 or abs(joy_z) > 0.1:
+                        cal_str = "CAL" if self.calibration_reference else "RAW"
+                        print(f"Joy: X={joy_x:5.2f} Y={joy_y:5.2f} Z={joy_z:5.2f} | {cal_str}")
+                    self.last_debug_time = now
+                    
+        except Exception as e:
+            print(f"Error processing orientation: {e}")
+    
+    def process_move(self, event: GanCubeMoveEvent):
+        """Process move in worker thread"""
+        try:
+            move = event.move
+            
+            # Check duplicate
+            if self.duplicate_filter.is_duplicate(move):
+                return
+            
+            print(f"Move: {move}")
+            self.move_count += 1
+            
+            # Special handling for roll during sprint
+            if move == "U'" and self.sprint_machine.sprinting:
+                self.sprint_machine.handle_roll()
+                return
+            
+            # Get action from config
+            action = self.config.get('move_mappings', {}).get(move)
+            if not action:
+                return
+            
+            # Execute action immediately
+            self.execute_gamepad_action(action)
+            
+        except Exception as e:
+            print(f"Error processing move: {e}")
+    
+    def execute_gamepad_action(self, action: str):
+        """Execute gamepad action via command queue"""
+        button_map = {
+            'gamepad_a': vg.XUSB_BUTTON.XUSB_GAMEPAD_A,
+            'gamepad_b': vg.XUSB_BUTTON.XUSB_GAMEPAD_B,
+            'gamepad_x': vg.XUSB_BUTTON.XUSB_GAMEPAD_X,
+            'gamepad_y': vg.XUSB_BUTTON.XUSB_GAMEPAD_Y,
+            'gamepad_r1': vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER,
+            'gamepad_r3': vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_THUMB,
+            'gamepad_dpad_up': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP,
+            'gamepad_dpad_down': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN,
+            'gamepad_dpad_left': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT,
+            'gamepad_dpad_right': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT,
+        }
+        
+        if action in button_map:
+            self.gamepad.press_button(button_map[action])
+            
+        elif action == 'gamepad_r2':
+            self.gamepad.press_trigger('right')
+            
+        elif action == 'gamepad_l2':
+            self.gamepad.press_trigger('left')
+            
+        elif action.startswith('gamepad_combo_'):
+            # Parse combo
+            combo = action.replace('gamepad_combo_', '').split('+')
+            if len(combo) == 2:
+                button_map_combo = {
+                    'y': vg.XUSB_BUTTON.XUSB_GAMEPAD_Y,
+                    'dpad_down': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN,
+                    'dpad_up': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP,
+                    'dpad_left': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT,
+                    'dpad_right': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT,
+                    'r1': vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER,
+                }
+                
+                button1 = button_map_combo.get(combo[0])
+                button2 = button_map_combo.get(combo[1])
+                
+                if button1 and button2:
+                    self.gamepad.press_combo(button1, button2)
+    
+    def calibrate(self):
+        """Calibrate the cube"""
+        if not self.last_raw_quaternion:
+            print("ERROR: No cube data yet")
+            return
+        
+        self.calibration_reference = self.last_raw_quaternion.copy()
+        self.sprint_machine.stop()
+        
+        print(f"CALIBRATED: ({self.calibration_reference['x']:.3f}, "
+              f"{self.calibration_reference['y']:.3f}, "
+              f"{self.calibration_reference['z']:.3f}, "
+              f"{self.calibration_reference['w']:.3f})")
+    
+    def _setup_hotkeys(self):
+        """Setup keyboard hotkeys"""
+        try:
+            keyboard.add_hotkey('f5', lambda: self.calibrate())
+            keyboard.add_hotkey('f6', self._toggle_sprint)
+            keyboard.add_hotkey('f7', self._toggle_debug)
+            keyboard.add_hotkey('f9', self._reset_joystick)
+            
+            print("\n📌 Hotkeys:")
+            print("  F5 - Recalibrate")
+            print("  F6 - Toggle sprint")
+            print("  F7 - Toggle debug")
+            print("  F9 - Reset joystick\n")
+        except:
+            pass
+    
+    def _toggle_sprint(self):
+        self.enable_sprint = not self.enable_sprint
+        print(f"Sprint: {'ON' if self.enable_sprint else 'OFF'}")
+        if not self.enable_sprint:
+            self.sprint_machine.stop()
+    
+    def _toggle_debug(self):
+        self.show_debug = not self.show_debug
+        print(f"Debug: {'ON' if self.show_debug else 'OFF'}")
+    
+    def _reset_joystick(self):
+        print("Resetting...")
+        self.sprint_machine.stop()
+        self.gamepad.reset()
+    
+    async def print_stats_loop(self):
+        """Print performance stats"""
+        while True:
+            await asyncio.sleep(5)
+            
+            if self.start_time > 0:
+                runtime = time.perf_counter() - self.start_time
+                if runtime > 0:
+                    orientation_rate = self.orientation_count / runtime
+                    coalesced_rate = self.coalesced_count / runtime
+                    move_rate = self.move_count / runtime
+                    
+                    if self.orientation_count > 0:
+                        drop_percent = ((1 - (self.coalesced_count / self.orientation_count)) * 100)
+                    else:
+                        drop_percent = 0
+                    
+                    print(f"\n📊 {runtime:.0f}s | Orient: {orientation_rate:.1f}Hz→{coalesced_rate:.1f}Hz ({drop_percent:.0f}% dropped) | Moves: {move_rate:.2f}Hz")
+    
+    async def run(self):
+        """Main run loop"""
+        try:
+            await self.connect_cube()
+            
+            # Start stats printer
+            stats_task = asyncio.create_task(self.print_stats_loop())
+            
+            print("\n✅ V2 FIXED ready!")
+            print("Architecture: Single gamepad worker + 4 event processing threads")
+            print("Orientation coalescing at 125Hz max")
+            print("Move the cube to control\n")
+            
+            # Run forever
+            await asyncio.Future()
+            
+        except KeyboardInterrupt:
+            print("\nShutting down...")
+        finally:
+            self.gamepad.cleanup()
+            self.executor.shutdown(wait=False)
+            if self.cube:
+                await self.cube.disconnect()
+            try:
+                keyboard.unhook_all()
+            except:
+                pass
+
+
+# ============================================================================
+# MAIN
+# ============================================================================
+
+async def main():
+    controller = CubeControllerV2Fixed()
+    await controller.run()
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("\nShutdown complete")
+    except Exception as e:
+        print(f"Fatal error: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
+"""
 V2 Cube Controller - Direct BLE to Gamepad (Fixed Version)
 Uses gan_web_bluetooth library for proper protocol handling
 Focus: Remove WebSocket overhead, not reimplement BLE
