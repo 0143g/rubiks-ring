@@ -1,0 +1,4 @@
+# V2 Cube Controller - Minimal Dependencies
+bleak==0.21.1          # Bluetooth LE communication
+vgamepad==0.1.0        # Virtual Xbox gamepad (Windows only)
+pycryptodome==3.20.0   # AES encryption for cube protocol

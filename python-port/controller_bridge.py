@@ -338,6 +338,10 @@ class CrossPlatformController:
                 await self._gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT)
             elif action == "gamepad_dpad_left":
                 await self._gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT)
+            elif action == "gamepad_dpad_down":
+                await self._gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN)
+            elif action == "gamepad_dpad_up":
+                await self._gamepad_button_press(vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP)
             elif action == "gamepad_b_hold":
                 # Only hold if not already held and not rolling
                 if not self.b_button_held_by_sprint and not self.rolling_in_progress:

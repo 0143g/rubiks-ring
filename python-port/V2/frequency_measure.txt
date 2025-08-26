@@ -1,0 +1,617 @@
+(venv) PS M:\mikerson\rubiks\python-port\V2> ls
+
+
+    Directory: M:\mikerson\rubiks\python-port\V2
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         8/25/2025   6:17 PM           8924 measure_cube_frequency.py
+-a----         8/25/2025   6:15 PM           2902 notes.txt
+-a----         8/25/2025   6:19 PM          10846 V2_PLAN.md
+
+
+(venv) PS M:\mikerson\rubiks\python-port\V2> python .\measure_cube_frequency.py
+Scanning for GAN cube...
+Scanning for devices...
+Found 18 devices:
+  A4:C1:38:A8:19:72: Petkit_W4X
+  71:9E:F7:19:33:EC: Unknown
+  58:9F:E5:99:78:0B: LE_WH-1000XM6
+  7E:6B:EE:5F:36:E8: Unknown
+  6C:4A:85:1D:B1:4E: Unknown
+  4E:23:9E:30:AC:E6: Unknown
+  AB:12:34:62:BC:15: GANi39Jl
+  6B:E9:AB:8F:5A:56: Unknown
+  65:ED:31:A8:EA:25: Unknown
+  7D:C3:03:0C:09:D7: Unknown
+  D6:49:9B:B4:81:BD: Unknown
+  9C:04:A0:9F:6C:64: ihoment_H6075_6C64
+  51:14:88:A0:36:C9: Unknown
+  2C:99:75:BD:F3:9D: Unknown
+  D4:9D:C0:84:04:D1: Unknown
+  EA:7F:31:DA:40:66: Unknown
+  D5:9F:41:68:46:96: Unknown
+  7E:D1:D7:93:71:E6: Unknown
+Found potential GAN cube: GANi39Jl at AB:12:34:62:BC:15
+Connecting to device at AB:12:34:62:BC:15...
+Connected! Device is connected: True
+Discovering services...
+Found 4 services:
+  Service: 00001800-0000-1000-8000-00805f9b34fb
+  Service: 00001801-0000-1000-8000-00805f9b34fb
+  Service: f95a48e6-a721-11e9-a2a3-022ae2dbcce4
+  Service: 6e400001-b5a3-f393-e0a9-e50e24dc4179
+Looking for Gen2 service: 6e400001-b5a3-f393-e0a9-e50e24dc4179
+✓ Found Gen2 service
+✓ Gen2 protocol configured
+Connected! Starting frequency measurement...
+Move the cube around to generate orientation data.
+Turn faces to generate move events.
+
+Measuring for 30 seconds. Move the cube to generate data...
+
+============================================================
+Runtime: 2.0s
+============================================================
+
+ORIENTATION:
+  Count: 26
+  Frequency: 13.2 Hz
+  Avg interval: 75.6ms
+  Min interval: 45.0ms
+  Max interval: 179.7ms
+
+MOVE:
+  Count: 1
+  Frequency: 0.0 Hz
+  Avg interval: 0.0ms
+  Min interval: 0.0ms
+  Max interval: 0.0ms
+
+FACELETS:
+  Count: 1
+  Frequency: 0.0 Hz
+  Avg interval: 0.0ms
+  Min interval: 0.0ms
+  Max interval: 0.0ms
+
+------------------------------------------------------------
+BLE CONSTRAINTS:
+  Theoretical min latency: 7.5ms (BLE connection interval)
+  Typical BLE latency: 15-30ms
+  Observed orientation rate: ~13.2Hz
+
+RECOMMENDATIONS:
+  Orientation updates every ~76ms
+  Gamepad update rate: 60-125Hz (8-16ms)
+  Expected total latency: 86-106ms
+
+============================================================
+Runtime: 4.0s
+============================================================
+
+ORIENTATION:
+  Count: 40
+  Frequency: 10.1 Hz
+  Avg interval: 99.3ms
+  Min interval: 1.2ms
+  Max interval: 419.8ms
+
+MOVE:
+  Count: 3
+  Frequency: 0.9 Hz
+  Avg interval: 1079.8ms
+  Min interval: 839.4ms
+  Max interval: 1320.1ms
+
+FACELETS:
+  Count: 2
+  Frequency: 1.1 Hz
+  Avg interval: 900.8ms
+  Min interval: 900.8ms
+  Max interval: 900.8ms
+
+------------------------------------------------------------
+BLE CONSTRAINTS:
+  Theoretical min latency: 7.5ms (BLE connection interval)
+  Typical BLE latency: 15-30ms
+  Observed orientation rate: ~10.1Hz
+
+RECOMMENDATIONS:
+  Orientation updates every ~99ms
+  Gamepad update rate: 60-125Hz (8-16ms)
+  Expected total latency: 109-129ms
+
+============================================================
+Runtime: 6.0s
+============================================================
+
+ORIENTATION:
+  Count: 51
+  Frequency: 10.5 Hz
+  Avg interval: 95.4ms
+  Min interval: 1.0ms
+  Max interval: 419.8ms
+
+MOVE:
+  Count: 4
+  Frequency: 1.1 Hz
+  Avg interval: 900.1ms
+  Min interval: 540.6ms
+  Max interval: 1320.1ms
+
+FACELETS:
+  Count: 4
+  Frequency: 0.7 Hz
+  Avg interval: 1379.9ms
+  Min interval: 900.8ms
+  Max interval: 1679.4ms
+
+------------------------------------------------------------
+BLE CONSTRAINTS:
+  Theoretical min latency: 7.5ms (BLE connection interval)
+  Typical BLE latency: 15-30ms
+  Observed orientation rate: ~10.5Hz
+
+RECOMMENDATIONS:
+  Orientation updates every ~95ms
+  Gamepad update rate: 60-125Hz (8-16ms)
+  Expected total latency: 105-125ms
+
+============================================================
+Runtime: 8.0s
+============================================================
+
+ORIENTATION:
+  Count: 71
+  Frequency: 8.8 Hz
+  Avg interval: 113.6ms
+  Min interval: 1.0ms
+  Max interval: 1618.3ms
+
+MOVE:
+  Count: 7
+  Frequency: 1.1 Hz
+  Avg interval: 920.1ms
+  Min interval: 240.3ms
+  Max interval: 2339.5ms
+
+FACELETS:
+  Count: 6
+  Frequency: 0.9 Hz
+  Avg interval: 1092.1ms
+  Min interval: 240.7ms
+  Max interval: 1679.4ms
+
+------------------------------------------------------------
+BLE CONSTRAINTS:
+  Theoretical min latency: 7.5ms (BLE connection interval)
+  Typical BLE latency: 15-30ms
+  Observed orientation rate: ~8.8Hz
+
+RECOMMENDATIONS:
+  Orientation updates every ~114ms
+  Gamepad update rate: 60-125Hz (8-16ms)
+  Expected total latency: 124-144ms
+
+============================================================
+Runtime: 10.0s
+============================================================
+
+ORIENTATION:
+  Count: 75
+  Frequency: 7.8 Hz
+  Avg interval: 128.5ms
+  Min interval: 1.0ms
+  Max interval: 1618.3ms
+
+MOVE:
+  Count: 8
+  Frequency: 0.9 Hz
+  Avg interval: 1114.3ms
+  Min interval: 240.3ms
+  Max interval: 2339.5ms
+
+FACELETS:
+  Count: 7
+  Frequency: 1.0 Hz
+  Avg interval: 1050.1ms
+  Min interval: 240.7ms
+  Max interval: 1679.4ms
+
+------------------------------------------------------------
+BLE CONSTRAINTS:
+  Theoretical min latency: 7.5ms (BLE connection interval)
+  Typical BLE latency: 15-30ms
+  Observed orientation rate: ~7.8Hz
+
+RECOMMENDATIONS:
+  Orientation updates every ~129ms
+  Gamepad update rate: 60-125Hz (8-16ms)
+  Expected total latency: 139-159ms
+
+============================================================
+Runtime: 12.0s
+============================================================
+
+ORIENTATION:
+  Count: 93
+  Frequency: 7.8 Hz
+  Avg interval: 128.1ms
+  Min interval: 1.0ms
+  Max interval: 1618.3ms
+
+MOVE:
+  Count: 11
+  Frequency: 1.0 Hz
+  Avg interval: 966.3ms
+  Min interval: 240.3ms
+  Max interval: 2339.5ms
+
+FACELETS:
+  Count: 10
+  Frequency: 0.9 Hz
+  Avg interval: 1106.7ms
+  Min interval: 179.7ms
+  Max interval: 2519.6ms
+
+------------------------------------------------------------
+BLE CONSTRAINTS:
+  Theoretical min latency: 7.5ms (BLE connection interval)
+  Typical BLE latency: 15-30ms
+  Observed orientation rate: ~7.8Hz
+
+RECOMMENDATIONS:
+  Orientation updates every ~128ms
+  Gamepad update rate: 60-125Hz (8-16ms)
+  Expected total latency: 138-158ms
+
+============================================================
+Runtime: 14.0s
+============================================================
+
+ORIENTATION:
+  Count: 104
+  Frequency: 7.4 Hz
+  Avg interval: 135.2ms
+  Min interval: 1.0ms
+  Max interval: 1618.3ms
+
+MOVE:
+  Count: 11
+  Frequency: 1.0 Hz
+  Avg interval: 966.3ms
+  Min interval: 240.3ms
+  Max interval: 2339.5ms
+
+FACELETS:
+  Count: 10
+  Frequency: 0.9 Hz
+  Avg interval: 1106.7ms
+  Min interval: 179.7ms
+  Max interval: 2519.6ms
+
+------------------------------------------------------------
+BLE CONSTRAINTS:
+  Theoretical min latency: 7.5ms (BLE connection interval)
+  Typical BLE latency: 15-30ms
+  Observed orientation rate: ~7.4Hz
+
+RECOMMENDATIONS:
+  Orientation updates every ~136ms
+  Gamepad update rate: 60-125Hz (8-16ms)
+  Expected total latency: 146-166ms
+
+============================================================
+Runtime: 16.0s
+============================================================
+
+ORIENTATION:
+  Count: 111
+  Frequency: 6.6 Hz
+  Avg interval: 150.0ms
+  Min interval: 1.0ms
+  Max interval: 1618.3ms
+
+MOVE:
+  Count: 12
+  Frequency: 0.8 Hz
+  Avg interval: 1254.5ms
+  Min interval: 240.3ms
+  Max interval: 4136.3ms
+
+FACELETS:
+  Count: 10
+  Frequency: 0.9 Hz
+  Avg interval: 1106.7ms
+  Min interval: 179.7ms
+  Max interval: 2519.6ms
+
+------------------------------------------------------------
+BLE CONSTRAINTS:
+  Theoretical min latency: 7.5ms (BLE connection interval)
+  Typical BLE latency: 15-30ms
+  Observed orientation rate: ~6.6Hz
+
+RECOMMENDATIONS:
+  Orientation updates every ~151ms
+  Gamepad update rate: 60-125Hz (8-16ms)
+  Expected total latency: 161-181ms
+
+============================================================
+Runtime: 18.0s
+============================================================
+
+ORIENTATION:
+  Count: 136
+  Frequency: 6.8 Hz
+  Avg interval: 145.8ms
+  Min interval: 1.0ms
+  Max interval: 1618.3ms
+
+MOVE:
+  Count: 15
+  Frequency: 0.9 Hz
+  Avg interval: 1144.2ms
+  Min interval: 180.0ms
+  Max interval: 4136.3ms
+
+FACELETS:
+  Count: 13
+  Frequency: 0.7 Hz
+  Avg interval: 1355.0ms
+  Min interval: 179.7ms
+  Max interval: 4319.6ms
+
+------------------------------------------------------------
+BLE CONSTRAINTS:
+  Theoretical min latency: 7.5ms (BLE connection interval)
+  Typical BLE latency: 15-30ms
+  Observed orientation rate: ~6.8Hz
+
+RECOMMENDATIONS:
+  Orientation updates every ~147ms
+  Gamepad update rate: 60-125Hz (8-16ms)
+  Expected total latency: 157-177ms
+
+============================================================
+Runtime: 20.0s
+============================================================
+
+ORIENTATION:
+  Count: 174
+  Frequency: 9.5 Hz
+  Avg interval: 104.4ms
+  Min interval: 1.0ms
+  Max interval: 958.8ms
+
+MOVE:
+  Count: 21
+  Frequency: 1.1 Hz
+  Avg interval: 891.0ms
+  Min interval: 0.0ms
+  Max interval: 4136.3ms
+
+FACELETS:
+  Count: 16
+  Frequency: 0.9 Hz
+  Avg interval: 1172.0ms
+  Min interval: 179.7ms
+  Max interval: 4319.6ms
+
+------------------------------------------------------------
+BLE CONSTRAINTS:
+  Theoretical min latency: 7.5ms (BLE connection interval)
+  Typical BLE latency: 15-30ms
+  Observed orientation rate: ~9.5Hz
+
+RECOMMENDATIONS:
+  Orientation updates every ~105ms
+  Gamepad update rate: 60-125Hz (8-16ms)
+  Expected total latency: 115-135ms
+
+============================================================
+Runtime: 22.0s
+============================================================
+
+ORIENTATION:
+  Count: 192
+  Frequency: 9.8 Hz
+  Avg interval: 102.6ms
+  Min interval: 1.0ms
+  Max interval: 958.8ms
+
+MOVE:
+  Count: 23
+  Frequency: 1.1 Hz
+  Avg interval: 894.5ms
+  Min interval: 0.0ms
+  Max interval: 4136.3ms
+
+FACELETS:
+  Count: 19
+  Frequency: 0.9 Hz
+  Avg interval: 1123.3ms
+  Min interval: 179.7ms
+  Max interval: 4319.6ms
+
+------------------------------------------------------------
+BLE CONSTRAINTS:
+  Theoretical min latency: 7.5ms (BLE connection interval)
+  Typical BLE latency: 15-30ms
+  Observed orientation rate: ~9.8Hz
+
+RECOMMENDATIONS:
+  Orientation updates every ~102ms
+  Gamepad update rate: 60-125Hz (8-16ms)
+  Expected total latency: 112-132ms
+
+============================================================
+Runtime: 24.0s
+============================================================
+
+ORIENTATION:
+  Count: 215
+  Frequency: 13.3 Hz
+  Avg interval: 74.4ms
+  Min interval: 1.0ms
+  Max interval: 419.8ms
+
+MOVE:
+  Count: 26
+  Frequency: 1.1 Hz
+  Avg interval: 888.0ms
+  Min interval: 0.0ms
+  Max interval: 4136.3ms
+
+FACELETS:
+  Count: 21
+  Frequency: 0.9 Hz
+  Avg interval: 1098.0ms
+  Min interval: 179.7ms
+  Max interval: 4319.6ms
+
+------------------------------------------------------------
+BLE CONSTRAINTS:
+  Theoretical min latency: 7.5ms (BLE connection interval)
+  Typical BLE latency: 15-30ms
+  Observed orientation rate: ~13.3Hz
+
+RECOMMENDATIONS:
+  Orientation updates every ~75ms
+  Gamepad update rate: 60-125Hz (8-16ms)
+  Expected total latency: 85-105ms
+
+============================================================
+Runtime: 26.0s
+============================================================
+
+ORIENTATION:
+  Count: 237
+  Frequency: 12.7 Hz
+  Avg interval: 78.6ms
+  Min interval: 1.0ms
+  Max interval: 419.8ms
+
+MOVE:
+  Count: 28
+  Frequency: 1.1 Hz
+  Avg interval: 877.8ms
+  Min interval: 0.0ms
+  Max interval: 4136.3ms
+
+FACELETS:
+  Count: 24
+  Frequency: 1.0 Hz
+  Avg interval: 1048.7ms
+  Min interval: 179.7ms
+  Max interval: 4319.6ms
+
+------------------------------------------------------------
+BLE CONSTRAINTS:
+  Theoretical min latency: 7.5ms (BLE connection interval)
+  Typical BLE latency: 15-30ms
+  Observed orientation rate: ~12.7Hz
+
+RECOMMENDATIONS:
+  Orientation updates every ~79ms
+  Gamepad update rate: 60-125Hz (8-16ms)
+  Expected total latency: 89-109ms
+
+============================================================
+Runtime: 28.0s
+============================================================
+
+ORIENTATION:
+  Count: 257
+  Frequency: 10.8 Hz
+  Avg interval: 91.8ms
+  Min interval: 1.0ms
+  Max interval: 419.8ms
+
+MOVE:
+  Count: 31
+  Frequency: 1.1 Hz
+  Avg interval: 876.0ms
+  Min interval: 0.0ms
+  Max interval: 4136.3ms
+
+FACELETS:
+  Count: 25
+  Frequency: 0.9 Hz
+  Avg interval: 1072.5ms
+  Min interval: 179.7ms
+  Max interval: 4319.6ms
+
+------------------------------------------------------------
+BLE CONSTRAINTS:
+  Theoretical min latency: 7.5ms (BLE connection interval)
+  Typical BLE latency: 15-30ms
+  Observed orientation rate: ~10.8Hz
+
+RECOMMENDATIONS:
+  Orientation updates every ~93ms
+  Gamepad update rate: 60-125Hz (8-16ms)
+  Expected total latency: 103-123ms
+
+============================================================
+FINAL REPORT
+============================================================
+
+ORIENTATION SUMMARY:
+  Total events: 277
+  Average frequency: 10.2 Hz
+  Average interval: 97.2ms
+  Min/Max interval: 1.1ms / 419.8ms
+  Interval percentiles: P50=60.4ms, P90=179.7ms, P99=419.8ms
+
+MOVE SUMMARY:
+  Total events: 33
+  Average frequency: 1.1 Hz
+  Average interval: 879.4ms
+  Min/Max interval: 0.0ms / 4136.3ms
+  Interval percentiles: P50=600.9ms, P90=1560.1ms, P99=4136.3ms
+
+V2 REALISTIC TARGETS:
+  Base cube latency: ~98ms
+  Processing overhead target: <10ms
+  Total average latency: 103-108ms
+  Total max latency: <100ms (BLE hiccups)
+
+============================================================
+Runtime: 30.0s
+============================================================
+
+ORIENTATION:
+  Count: 277
+  Frequency: 10.2 Hz
+  Avg interval: 97.2ms
+  Min interval: 1.1ms
+  Max interval: 419.8ms
+
+MOVE:
+  Count: 33
+  Frequency: 1.1 Hz
+  Avg interval: 879.4ms
+  Min interval: 0.0ms
+  Max interval: 4136.3ms
+
+FACELETS:
+  Count: 27
+  Frequency: 0.9 Hz
+  Avg interval: 1082.3ms
+  Min interval: 179.7ms
+  Max interval: 4319.6ms
+
+------------------------------------------------------------
+BLE CONSTRAINTS:
+  Theoretical min latency: 7.5ms (BLE connection interval)
+  Typical BLE latency: 15-30ms
+  Observed orientation rate: ~10.2Hz
+
+RECOMMENDATIONS:
+  Orientation updates every ~98ms
+  Gamepad update rate: 60-125Hz (8-16ms)
+  Expected total latency: 108-128ms
+Disconnected

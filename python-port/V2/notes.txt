@@ -1,0 +1,90 @@
+**good calls:**
+- single file approach is correct
+- removing flask/websocket layer is the biggest win
+- pre-computing lookups is smart
+- using `perf_counter_ns()` for timing
+
+**reality checks needed:**
+
+1. **<10ms average latency is fantasy** - bluetooth ble itself has 7.5-30ms connection intervals. your cube's 15-20hz means 50-66ms between updates. realistic target: 20-30ms processing overhead on top of ble latency
+
+2. **blocking sleep in sprint/roll is terrible**:
+```python
+# don't do this
+time.sleep(0.05)  # blocks entire event loop!
+```
+instead:
+```python
+async def handle_roll(self):
+    self.rolling = True
+    self.gamepad.release_button(B)
+    await asyncio.sleep(0.05)  # non-blocking
+    # etc
+```
+
+3. **orientation coalescing is backwards** - you want to process EVERY orientation update immediately but throttle gamepad updates:
+```python
+def process_orientation(self, quat):
+    # always update internal state
+    self.current_orientation = quat
+    
+    # but only update gamepad at fixed rate
+    now = time.perf_counter_ns() // 1_000_000
+    if now - self.last_gamepad_update > 16:  # 60fps max
+        x, y = self.quat_to_joystick(self.current_orientation)
+        self.gamepad.left_joystick(x, y)
+        self.gamepad.update()
+        self.last_gamepad_update = now
+```
+
+4. **missing critical optimization** - the plan doesn't address duplicate event filtering:
+```python
+class DuplicateFilter:
+    def __init__(self):
+        self.last_move = None
+        self.last_move_time = 0
+        
+    def is_duplicate(self, move):
+        now = time.perf_counter_ns() // 1_000_000
+        if move == self.last_move and (now - self.last_move_time) < 50:
+            return True
+        self.last_move = move
+        self.last_move_time = now
+        return False
+```
+
+5. **vgamepad.update() is the bottleneck** - calling it after every change is wasteful. batch updates:
+```python
+class GamepadBatcher:
+    def __init__(self, gamepad):
+        self.gamepad = gamepad
+        self.dirty = False
+        
+    def left_joystick(self, x, y):
+        self.gamepad.left_joystick_float(x, y)
+        self.dirty = True
+        
+    async def flush_loop(self):
+        while True:
+            if self.dirty:
+                self.gamepad.update()
+                self.dirty = False
+            await asyncio.sleep(0.008)  # 125hz
+```
+
+**what's missing:**
+- no mention of handling ble connection parameters (request faster interval)
+- no strategy for dealing with bluetooth packet loss
+- no consideration of windows scheduling (might need process priority boost)
+
+**revised targets:**
+- avg latency: 30-40ms (realistic with ble)
+- max latency: 100ms (occasional ble hiccups)
+- cpu: <3% (achievable)
+- memory: <30mb (fine)
+
+**simplified implementation order:**
+1. get basic ble → gamepad working (no features)
+2. add duplicate filtering
+3. add gamepad batching
+4. only then add sprint/roll logic
