@@ -27,7 +27,7 @@
     "D": "gamepad_a",
     "D'": "gamepad_r2",
     "F": "gamepad_dpad_right",
-    "F'": "gamepad_dpad_left",
+    "F'": "gamepad_dpad_down",
     "B": "gamepad_combo_y+r1",
     "B'": "gamepad_r3",
     "AUTO_B_PRESS": "gamepad_b_hold",

@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-V2 Cube Controller - Direct BLE to Gamepad (Fixed Version)
-Uses gan_web_bluetooth library for proper protocol handling
-Focus: Remove WebSocket overhead, not reimplement BLE
+V2 Cube Controller - ASYNC VERSION
+Fixes freezing by using async queues to decouple BLE from processing
 """
 
 import asyncio
@@ -16,6 +15,7 @@ import threading
 import keyboard
 import vgamepad as vg
 import os
+import math
 
 # Add parent directory to import gan_web_bluetooth
 sys.path.append(str(Path(__file__).parent.parent))
@@ -31,8 +31,6 @@ from gan_web_bluetooth.protocols.base import (
     GanCubeHardwareEvent,
     GanCubeFaceletsEvent
 )
-from gan_web_bluetooth.utils import now
-import math
 
 # ============================================================================
 # GAMEPAD BATCHER - Critical optimization from plan
@@ -107,7 +105,9 @@ class DuplicateFilter:
         now_ms = time.perf_counter_ns() // 1_000_000
         
         # Same move within 50ms = duplicate
-        if move == self.last_move and (now_ms - self.last_move_time) < 50: return True
+        if move == self.last_move and (now_ms - self.last_move_time) < 50:
+            return True
+            
         self.last_move = move
         self.last_move_time = now_ms
         return False
@@ -178,11 +178,11 @@ class SprintStateMachine:
 
 
 # ============================================================================
-# MAIN CONTROLLER
+# ASYNC CONTROLLER WITH QUEUES
 # ============================================================================
 
-class CubeControllerV2:
-    """Direct cube to gamepad controller using gan_web_bluetooth"""
+class CubeControllerV2Async:
+    """Async cube controller with non-blocking event processing"""
     
     def __init__(self, config_path: str = "controller_config.json"):
         # Store config path for hot-reloading
@@ -204,38 +204,34 @@ class CubeControllerV2:
         self.sprint_machine = SprintStateMachine(self.batcher)
         
         # State tracking
-        self.enable_sprint = True  # Sprint mode ENABLED
-        self.last_orientation_time = 0
-        self.last_orientation_debug = 0  # For debug output
-        self.show_orientation_debug = True  # Toggle for orientation output
+        self.enable_sprint = True
+        self.show_orientation_debug = True
         
-        # Calibration system from V1
-        self.calibration_reference = None  # Will store raw quaternion when calibrated
-        self.last_raw_quaternion = None  # Store last raw quaternion for calibration
+        # Calibration system
+        self.calibration_reference = None
+        self.last_raw_quaternion = None
+        
+        # ASYNC QUEUES - The key to non-blocking!
+        self.orientation_queue = asyncio.Queue(maxsize=100)
+        self.move_queue = asyncio.Queue(maxsize=100)
         
         # Performance monitoring
         self.orientation_count = 0
         self.move_count = 0
         self.start_time = 0
-        
-        # Freeze detection (diagnostics only, no auto-disconnect)
-        self.last_unique_quaternion = None
-        self.same_quaternion_count = 0
-        self.freeze_detected = False
+        self.last_orientation_debug = 0
         
         # Hotkey support
         self.hotkeys_registered = False
         
-        print("V2 Cube Controller (Fixed) initialized")
+        print("V2 Cube Controller (ASYNC) initialized")
         print(f"Loaded {len(self.config.get('move_mappings', {}))} move mappings")
-        print(f"Sprint mode: {'ENABLED' if self.enable_sprint else 'DISABLED'} (threshold: {self.sprint_machine.forward_tilt_threshold})")
+        print(f"Sprint mode: {'ENABLED' if self.enable_sprint else 'DISABLED'}")
         
         # Setup hotkeys if available
         if KEYBOARD_AVAILABLE:
             self._setup_hotkeys()
-        else:
-            print("Hotkeys disabled (keyboard module not available)")
-        
+    
     def load_config(self, config_path: str) -> Dict[str, Any]:
         """Load configuration from JSON file"""
         paths_to_try = [
@@ -249,7 +245,6 @@ class CubeControllerV2:
             if path.exists():
                 with open(path, 'r') as f:
                     config = json.load(f)
-                    # Store the path and modification time for hot-reloading
                     self.config_path = path
                     self.config_last_modified = os.path.getmtime(path)
                     print(f"Loaded config from: {path}")
@@ -257,7 +252,7 @@ class CubeControllerV2:
                     
         print("WARNING: No config file found, using defaults")
         return {"move_mappings": {}}
-        
+    
     async def connect_cube(self):
         """Connect to cube using gan_web_bluetooth"""
         print("Connecting to cube...")
@@ -265,99 +260,119 @@ class CubeControllerV2:
         # Create cube instance
         self.cube = GanSmartCube()
         
-        # Setup event handlers
-        self.cube.on('move', self._handle_move)
-        self.cube.on('orientation', self._handle_orientation)
+        # Setup event handlers - MINIMAL WORK IN HANDLERS!
+        self.cube.on('move', self._handle_move_minimal)
+        self.cube.on('orientation', self._handle_orientation_minimal)
         self.cube.on('battery', self._handle_battery)
         self.cube.on('hardware', self._handle_hardware)
         self.cube.on('facelets', self._handle_facelets)
         self.cube.on('connected', self._handle_connected)
         self.cube.on('disconnected', self._handle_disconnected)
         
-        # Connect (library handles protocol detection)
+        # Connect
         await self.cube.connect()
-        
+    
     def _handle_connected(self, event):
         """Handle cube connected event"""
         print("✅ Cube connected successfully!")
         self.start_time = time.perf_counter()
         
-        # Auto-calibrate after connection (like V1)
+        # Auto-calibrate after connection
         asyncio.create_task(self._auto_calibrate())
-        
+    
     def _handle_disconnected(self, event):
         """Handle cube disconnected event"""
         print("❌ Cube disconnected")
-        
-    def _handle_move(self, event: GanCubeMoveEvent):
-        """Handle move event - CRITICAL PATH"""
-        move = event.move
-        
-        # Check for duplicate
-        if self.duplicate_filter.is_duplicate(move):
-            return
-            
-        print(f"Move: {move}")
-        self.move_count += 1
-        
-        # Special handling for roll during sprint
-        if move == "U'" and self.sprint_machine.sprinting:
-            asyncio.create_task(self.sprint_machine.handle_roll())
-            return
-            
-        # Get action from config
-        action = self.config.get('move_mappings', {}).get(move)
-        if not action:
-            return
-            
-        # Execute action
-        self._execute_gamepad_action(action)
-        
-    def _handle_orientation(self, event: GanCubeOrientationEvent):
-        """Handle orientation event - CRITICAL PATH"""
-        # No rate limiting here - process every event
-        # The gamepad batcher already handles rate limiting at 125Hz
-        now = time.perf_counter_ns() // 1_000_000
-        self.last_orientation_time = now
-        
+    
+    # =========================================================================
+    # MINIMAL EVENT HANDLERS - Just queue the data!
+    # =========================================================================
+    
+    def _handle_move_minimal(self, event: GanCubeMoveEvent):
+        """MINIMAL handler - just queue the move"""
+        try:
+            self.move_queue.put_nowait(event)
+        except asyncio.QueueFull:
+            # Drop oldest move if queue is full
+            try:
+                self.move_queue.get_nowait()
+                self.move_queue.put_nowait(event)
+            except:
+                pass
+    
+    def _handle_orientation_minimal(self, event: GanCubeOrientationEvent):
+        """MINIMAL handler - just queue the orientation"""
+        try:
+            self.orientation_queue.put_nowait(event)
+        except asyncio.QueueFull:
+            # Drop oldest orientation if queue is full
+            try:
+                self.orientation_queue.get_nowait()
+                self.orientation_queue.put_nowait(event)
+            except:
+                pass
+    
+    def _handle_battery(self, event: GanCubeBatteryEvent):
+        """Handle battery event"""
+        print(f"Battery: {event.level}%")
+    
+    def _handle_hardware(self, event: GanCubeHardwareEvent):
+        """Handle hardware info event"""
+        pass
+    
+    def _handle_facelets(self, event: GanCubeFaceletsEvent):
+        """Handle cube state update"""
+        pass
+    
+    # =========================================================================
+    # ASYNC PROCESSORS - Do the heavy work here!
+    # =========================================================================
+    
+    async def process_orientation_queue(self):
+        """Process orientation events from queue asynchronously"""
+        while True:
+            try:
+                event = await self.orientation_queue.get()
+                
+                # Process the orientation
+                await self._process_orientation(event)
+                
+            except Exception as e:
+                print(f"Error processing orientation: {e}")
+                await asyncio.sleep(0.001)
+    
+    async def process_move_queue(self):
+        """Process move events from queue asynchronously"""
+        while True:
+            try:
+                event = await self.move_queue.get()
+                
+                # Process the move
+                await self._process_move(event)
+                
+            except Exception as e:
+                print(f"Error processing move: {e}")
+                await asyncio.sleep(0.001)
+    
+    async def _process_orientation(self, event: GanCubeOrientationEvent):
+        """Process orientation event (async, non-blocking)"""
         self.orientation_count += 1
+        now = time.perf_counter_ns() // 1_000_000
         
-        # Extract RAW quaternion
+        # Extract quaternion
         qx_raw = event.quaternion.x
         qy_raw = event.quaternion.y
         qz_raw = event.quaternion.z
         qw_raw = event.quaternion.w
         
-        # Store raw quaternion for calibration
+        # Store for calibration
         self.last_raw_quaternion = {'x': qx_raw, 'y': qy_raw, 'z': qz_raw, 'w': qw_raw}
         
-        # Freeze detection - check if getting same exact values
-        current_quat_rounded = (round(qx_raw, 4), round(qy_raw, 4), round(qz_raw, 4), round(qw_raw, 4))
-        if current_quat_rounded == self.last_unique_quaternion:
-            self.same_quaternion_count += 1
-            
-            # Warn if frozen for 2+ seconds (~20 updates at 10Hz)
-            if self.same_quaternion_count == 20 and not self.freeze_detected:
-                print(f"\n⚠️ WARNING: Orientation appears frozen! Same quaternion for 20+ updates")
-                print(f"  Raw quaternion stuck at: {current_quat_rounded}")
-                print("  Press F5 to recalibrate or F9 to reset joystick to center")
-                self.freeze_detected = True
-            elif self.same_quaternion_count % 50 == 0:  # Remind every 5 seconds
-                print(f"  Still frozen ({self.same_quaternion_count} identical updates)")
-        else:
-            # Values changed
-            if self.freeze_detected:
-                print(f"✅ Orientation unfrozen after {self.same_quaternion_count} updates")
-                self.freeze_detected = False
-            self.same_quaternion_count = 0
-            self.last_unique_quaternion = current_quat_rounded
-        
-        # Apply calibration if available (same as V1)
+        # Apply calibration if available
         if self.calibration_reference:
-            # Calculate relative rotation from calibration reference
             ref = self.calibration_reference
             
-            # Normalize reference quaternion
+            # Normalize reference
             ref_norm = (ref['x']**2 + ref['y']**2 + ref['z']**2 + ref['w']**2) ** 0.5
             if ref_norm > 0:
                 ref_x = ref['x'] / ref_norm
@@ -367,41 +382,29 @@ class CubeControllerV2:
             else:
                 ref_x, ref_y, ref_z, ref_w = 0, 0, 0, 1
             
-            # Calculate inverse (conjugate) of reference quaternion
+            # Calculate inverse of reference
             ref_inv_x = -ref_x
             ref_inv_y = -ref_y
             ref_inv_z = -ref_z
             ref_inv_w = ref_w
             
-            # Calculate relative rotation: relative = inverse(reference) * current
+            # Calculate relative rotation
             qx = ref_inv_w*qx_raw + ref_inv_x*qw_raw + ref_inv_y*qz_raw - ref_inv_z*qy_raw
             qy = ref_inv_w*qy_raw - ref_inv_x*qz_raw + ref_inv_y*qw_raw + ref_inv_z*qx_raw
             qz = ref_inv_w*qz_raw + ref_inv_x*qy_raw - ref_inv_y*qx_raw + ref_inv_z*qw_raw
             qw = ref_inv_w*qw_raw - ref_inv_x*qx_raw - ref_inv_y*qy_raw - ref_inv_z*qz_raw
         else:
-            # No calibration - use raw
             qx, qy, qz, qw = qx_raw, qy_raw, qz_raw, qw_raw
         
-        # Use V1's direct quaternion component mapping (more intuitive)
-        # When calibrated, identity quaternion (0,0,0,1) = cube at rest
-        # The calibrated quaternion components directly map to tilt
-        
-        # Get sensitivity settings (use V1 names)
+        # Convert to joystick
         sensitivity = self.config.get('sensitivity', {})
         tilt_x_sens = sensitivity.get('tilt_x_sensitivity', 2.5)
-        tilt_y_sens = sensitivity.get('tilt_y_sensitivity', 2.5) 
+        tilt_y_sens = sensitivity.get('tilt_y_sensitivity', 2.5)
         spin_z_sens = sensitivity.get('spin_z_sensitivity', 2.0)
         
-        # V1 mapping: quaternion components directly control joysticks
-        # INVERTED for intuitive control (like V1)
-        joy_y = -qx * tilt_y_sens * 2   # Forward/back tilt (INVERTED)
-        joy_x = qy * tilt_x_sens * 2    # Left/right tilt
-        joy_z = -qz * spin_z_sens       # Rotation around vertical
-        
-        # Clamp to valid range
-        joy_x = max(-1.0, min(1.0, joy_x))
-        joy_y = max(-1.0, min(1.0, joy_y))
-        joy_z = max(-1.0, min(1.0, joy_z))
+        joy_y = -qx * tilt_y_sens * 2
+        joy_x = qy * tilt_x_sens * 2
+        joy_z = -qz * spin_z_sens
         
         # Apply deadzone
         deadzone = self.config.get('deadzone', {}).get('general_deadzone', 0.1)
@@ -413,48 +416,49 @@ class CubeControllerV2:
             joy_y = 0
         if abs(joy_z) < spin_deadzone:
             joy_z = 0
-            
-        # Update gamepad through batcher
+        
+        # Update gamepad
         self.batcher.update_orientation(joy_x, joy_y, joy_z)
         
-        # Debug output (rate limited to avoid spam)
-        if self.show_orientation_debug and now - self.last_orientation_debug > 100: # 100ms updates for now
-            # Always show output if values are significant OR if we haven't printed in a while
-            time_since_last = now - self.last_orientation_debug
-            if abs(joy_x) > 0.1 or abs(joy_y) > 0.1 or abs(joy_z) > 0.1 or time_since_last > 2000:
+        # Update sprint
+        if self.enable_sprint:
+            self.sprint_machine.update_orientation(joy_y)
+        
+        # Debug output
+        if self.show_orientation_debug and now - self.last_orientation_debug > 100:
+            if abs(joy_x) > 0.1 or abs(joy_y) > 0.1 or abs(joy_z) > 0.1:
                 if self.calibration_reference:
                     print(f"Joystick: X={joy_x:.2f} Y={joy_y:.2f} Z={joy_z:.2f} | Calibrated: ({qx:.3f}, {qy:.3f}, {qz:.3f}, {qw:.3f})")
                 else:
-                    print(f"Joystick: X={joy_x:.2f} Y={joy_y:.2f} Z={joy_z:.2f} | RAW (not calibrated): ({qx:.3f}, {qy:.3f}, {qz:.3f}, {qw:.3f})")
-                
-                # If values are near zero but we're still getting updates, note that
-                if abs(joy_x) <= 0.1 and abs(joy_y) <= 0.1 and abs(joy_z) <= 0.1 and time_since_last > 2000:
-                    print(f"  (Near-zero values for {time_since_last/1000:.1f}s)")
-            
+                    print(f"Joystick: X={joy_x:.2f} Y={joy_y:.2f} Z={joy_z:.2f} | RAW: ({qx:.3f}, {qy:.3f}, {qz:.3f}, {qw:.3f})")
             self.last_orientation_debug = now
+    
+    async def _process_move(self, event: GanCubeMoveEvent):
+        """Process move event (async, non-blocking)"""
+        move = event.move
         
-        # Update sprint state if enabled
-        if self.enable_sprint:
-            # Use forward tilt (joy_y) for sprint detection
-            self.sprint_machine.update_orientation(joy_y)
+        # Check for duplicate
+        if self.duplicate_filter.is_duplicate(move):
+            return
         
-    def _handle_battery(self, event: GanCubeBatteryEvent):
-        """Handle battery event"""
-        print(f"Battery: {event.level}%")
+        print(f"Move: {move}")
+        self.move_count += 1
         
-    def _handle_hardware(self, event: GanCubeHardwareEvent):
-        """Handle hardware info event"""
-        # Usually just logged once at connection
-        pass
+        # Special handling for roll during sprint
+        if move == "U'" and self.sprint_machine.sprinting:
+            await self.sprint_machine.handle_roll()
+            return
         
-    def _handle_facelets(self, event: GanCubeFaceletsEvent):
-        """Handle cube state update"""
-        # Not needed for gamepad control
-        pass
+        # Get action from config
+        action = self.config.get('move_mappings', {}).get(move)
+        if not action:
+            return
         
-    def _execute_gamepad_action(self, action: str):
-        """Execute gamepad action through batcher"""
-        # Button mappings
+        # Execute action
+        await self._execute_gamepad_action(action)
+    
+    async def _execute_gamepad_action(self, action: str):
+        """Execute gamepad action (async)"""
         button_map = {
             'gamepad_a': vg.XUSB_BUTTON.XUSB_GAMEPAD_A,
             'gamepad_b': vg.XUSB_BUTTON.XUSB_GAMEPAD_B,
@@ -471,187 +475,40 @@ class CubeControllerV2:
         if action in button_map:
             button = button_map[action]
             self.batcher.press_button(button)
-            asyncio.create_task(self._delayed_release(button, 0.1))
+            await asyncio.sleep(0.1)
+            self.batcher.release_button(button)
             
         elif action == 'gamepad_r2':
             self.batcher.press_trigger('right', 255)
-            asyncio.create_task(self._delayed_trigger_release('right', 0.1))
+            await asyncio.sleep(0.1)
+            self.batcher.press_trigger('right', 0)
             
         elif action == 'gamepad_l2':
             self.batcher.press_trigger('left', 255)
-            asyncio.create_task(self._delayed_trigger_release('left', 0.1))
-            
-        elif action.startswith('gamepad_combo_'):
-            asyncio.create_task(self._execute_combo(action))
-            
-        elif action == 'gamepad_b_hold':
-            # Sprint mode auto-hold
-            self.sprint_machine.start_sprint()
-            
-        elif action == 'gamepad_b_release':
-            # Sprint mode auto-release
-            self.sprint_machine.stop_sprint()
-            
-    async def _delayed_release(self, button, delay: float):
-        """Release button after delay"""
-        await asyncio.sleep(delay)
-        self.batcher.release_button(button)
-        
-    async def _delayed_trigger_release(self, side: str, delay: float):
-        """Release trigger after delay"""
-        await asyncio.sleep(delay)
-        self.batcher.press_trigger(side, 0)
-        
-    async def _execute_combo(self, action: str):
-        """Execute button combo"""
-        # Parse combo (e.g., gamepad_combo_y+dpad_down)
-        combo = action.replace('gamepad_combo_', '').split('+')
-        if len(combo) != 2:
-            return
-            
-        button_map = {
-            'y': vg.XUSB_BUTTON.XUSB_GAMEPAD_Y,
-            'dpad_down': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN,
-            'r1': vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER,
-        }
-        
-        button1 = button_map.get(combo[0])
-        button2 = button_map.get(combo[1])
-        
-        if button1 and button2:
-            self.batcher.press_button(button1)
-            await asyncio.sleep(0.05)
-            self.batcher.press_button(button2)
             await asyncio.sleep(0.1)
-            self.batcher.release_button(button2)
-            await asyncio.sleep(0.05)
-            self.batcher.release_button(button1)
-            
+            self.batcher.press_trigger('left', 0)
+    
+    # =========================================================================
+    # CALIBRATION & HOTKEYS
+    # =========================================================================
+    
     async def _auto_calibrate(self):
-        """Auto-calibrate after connection (same as V1)"""
-        # Wait for orientation data to start flowing
+        """Auto-calibrate after connection"""
         await asyncio.sleep(2.0)
         
         if self.last_raw_quaternion:
             print("\n🔄 Auto-calibrating cube...")
             self.calibrate()
             print("📍 Place cube with GREEN face forward for optimal control\n")
-        else:
-            print("⚠️ No orientation data yet, skipping auto-calibration")
-    
-    def _setup_hotkeys(self):
-        """Setup keyboard hotkeys for various functions"""
-        try:
-            # F5 for recalibration
-            keyboard.add_hotkey('f5', self._hotkey_recalibrate, suppress=False)
-            
-            # F6 to toggle sprint mode
-            keyboard.add_hotkey('f6', self._hotkey_toggle_sprint, suppress=False)
-            
-            # F7 to toggle debug output
-            keyboard.add_hotkey('f7', self._hotkey_toggle_debug, suppress=False)
-            
-            # F8 to reload config
-            keyboard.add_hotkey('f8', self._hotkey_reload_config, suppress=False)
-            
-            # F9 to reset joystick
-            keyboard.add_hotkey('f9', self._hotkey_reset_joystick, suppress=False)
-            
-            self.hotkeys_registered = True
-            print("\n📌 Hotkeys enabled:")
-            print("  F5 - Recalibrate cube")
-            print("  F6 - Toggle sprint mode")
-            print("  F7 - Toggle debug output")
-            print("  F8 - Reload config")
-            print("  F9 - Reset joystick to center\n")
-            
-        except Exception as e:
-            print(f"Failed to register hotkeys: {e}")
-            self.hotkeys_registered = False
-    
-    def _hotkey_recalibrate(self):
-        """Hotkey handler for recalibration (thread-safe)"""
-        # Schedule the calibration in the async event loop
-        if self.last_raw_quaternion:
-            print("\n🔄 [F5] Recalibrating cube...")
-            self.calibrate()
-        else:
-            print("\n⚠️ [F5] Cannot calibrate - no orientation data yet")
-    
-    def _hotkey_toggle_sprint(self):
-        """Hotkey handler to toggle sprint mode"""
-        self.enable_sprint = not self.enable_sprint
-        status = "ENABLED" if self.enable_sprint else "DISABLED"
-        print(f"\n🏃 [F6] Sprint mode: {status}")
-        
-        # If disabling sprint while sprinting, stop it
-        if not self.enable_sprint and self.sprint_machine.sprinting:
-            self.sprint_machine.stop_sprint()
-    
-    def _hotkey_toggle_debug(self):
-        """Hotkey handler to toggle debug output"""
-        self.show_orientation_debug = not self.show_orientation_debug
-        status = "ON" if self.show_orientation_debug else "OFF"
-        print(f"\n🐛 [F7] Debug output: {status}")
-    
-    def _hotkey_reload_config(self):
-        """Hotkey handler to reload config"""
-        self.reload_config()
-    
-    def _hotkey_reset_joystick(self):
-        """Hotkey handler to reset joystick to center (emergency stop)"""
-        print("\n🎮 [F9] Resetting joystick to center...")
-        
-        # Stop any sprint
-        if self.sprint_machine.sprinting:
-            self.sprint_machine.stop_sprint()
-        
-        # Reset joystick to center
-        self.batcher.update_orientation(0, 0, 0)
-        
-        # Clear freeze detection
-        self.freeze_detected = False
-        self.same_quaternion_count = 0
-        
-        print("  Joystick centered. Try moving the cube to resume control.")
-    
-    def reload_config(self):
-        """Reload configuration from file"""
-        if not self.config_path:
-            print("\n⚠️ No config file to reload")
-            return
-            
-        try:
-            with open(self.config_path, 'r') as f:
-                new_config = json.load(f)
-            
-            # Update config
-            self.config = new_config
-            self.config_last_modified = os.path.getmtime(self.config_path)
-            
-            # Update sprint threshold if changed
-            if 'timing' in new_config:
-                new_threshold = new_config['timing'].get('forward_tilt_threshold', 0.7)
-                if new_threshold != self.sprint_machine.forward_tilt_threshold:
-                    self.sprint_machine.forward_tilt_threshold = new_threshold
-                    print(f"  Sprint threshold updated: {new_threshold}")
-            
-            print(f"\n♻️ [F8] Config reloaded from {self.config_path.name}")
-            print(f"  {len(self.config.get('move_mappings', {}))} move mappings loaded")
-            
-        except Exception as e:
-            print(f"\n❌ Failed to reload config: {e}")
     
     def calibrate(self):
-        """Calibrate the cube to current position (same as V1)"""
+        """Calibrate the cube to current position"""
         if not self.last_raw_quaternion:
             print("ERROR: No cube data yet. Move the cube first.")
             return
-            
-        # Store current RAW quaternion as calibration reference
+        
         self.calibration_reference = self.last_raw_quaternion.copy()
         
-        # Reset sprint state on calibration
         if self.sprint_machine.sprinting:
             self.sprint_machine.stop_sprint()
         
@@ -660,10 +517,52 @@ class CubeControllerV2:
               f"{self.calibration_reference['w']:.3f})")
         print("Cube calibrated! Current position is now identity (0,0,0,1)")
     
+    def _setup_hotkeys(self):
+        """Setup keyboard hotkeys"""
+        try:
+            keyboard.add_hotkey('f5', self._hotkey_recalibrate, suppress=False)
+            keyboard.add_hotkey('f6', self._hotkey_toggle_sprint, suppress=False)
+            keyboard.add_hotkey('f7', self._hotkey_toggle_debug, suppress=False)
+            keyboard.add_hotkey('f9', self._hotkey_reset_joystick, suppress=False)
+            
+            self.hotkeys_registered = True
+            print("\n📌 Hotkeys enabled:")
+            print("  F5 - Recalibrate cube")
+            print("  F6 - Toggle sprint mode")
+            print("  F7 - Toggle debug output")
+            print("  F9 - Reset joystick\n")
+            
+        except Exception as e:
+            print(f"Failed to register hotkeys: {e}")
+    
+    def _hotkey_recalibrate(self):
+        if self.last_raw_quaternion:
+            print("\n🔄 [F5] Recalibrating cube...")
+            self.calibrate()
+    
+    def _hotkey_toggle_sprint(self):
+        self.enable_sprint = not self.enable_sprint
+        print(f"\n🏃 [F6] Sprint mode: {'ENABLED' if self.enable_sprint else 'DISABLED'}")
+        if not self.enable_sprint and self.sprint_machine.sprinting:
+            self.sprint_machine.stop_sprint()
+    
+    def _hotkey_toggle_debug(self):
+        self.show_orientation_debug = not self.show_orientation_debug
+        print(f"\n🐛 [F7] Debug output: {'ON' if self.show_orientation_debug else 'OFF'}")
+    
+    def _hotkey_reset_joystick(self):
+        print("\n🎮 [F9] Resetting joystick to center...")
+        if self.sprint_machine.sprinting:
+            self.sprint_machine.stop_sprint()
+        self.batcher.update_orientation(0, 0, 0)
+        print("  Joystick centered.")
+    
+    # =========================================================================
+    # MAIN RUN LOOP
+    # =========================================================================
+    
     async def print_stats_loop(self):
-        """Print performance statistics and check for config changes"""
-        last_check_time = time.time()
-        
+        """Print performance statistics"""
         while True:
             await asyncio.sleep(5)
             
@@ -672,36 +571,32 @@ class CubeControllerV2:
                 orientation_rate = self.orientation_count / runtime if runtime > 0 else 0
                 move_rate = self.move_count / runtime if runtime > 0 else 0
                 
-                print(f"\n📊 Stats: {runtime:.0f}s | Orientation: {orientation_rate:.1f}Hz | Moves: {move_rate:.2f}Hz")
-            
-            # Check for config file changes (every 5 seconds)
-            now = time.time()
-            if self.config_path and now - last_check_time > 5:
-                try:
-                    current_mtime = os.path.getmtime(self.config_path)
-                    if current_mtime > self.config_last_modified:
-                        print("\n🔄 Config file changed, auto-reloading...")
-                        self.reload_config()
-                except:
-                    pass  # File might be temporarily unavailable during save
-                last_check_time = now
+                # Check queue sizes
+                orient_queue_size = self.orientation_queue.qsize()
+                move_queue_size = self.move_queue.qsize()
                 
+                print(f"\n📊 Stats: {runtime:.0f}s | Orient: {orientation_rate:.1f}Hz | Moves: {move_rate:.2f}Hz | Queues: O={orient_queue_size} M={move_queue_size}")
+    
     async def run(self):
         """Main run loop"""
         try:
             # Connect to cube
             await self.connect_cube()
             
-            # Start background tasks
-            flush_task = asyncio.create_task(self.batcher.flush_loop())
-            stats_task = asyncio.create_task(self.print_stats_loop())
+            # Start all background tasks
+            tasks = [
+                asyncio.create_task(self.batcher.flush_loop()),
+                asyncio.create_task(self.process_orientation_queue()),
+                asyncio.create_task(self.process_move_queue()),
+                asyncio.create_task(self.print_stats_loop())
+            ]
             
-            print("\n✅ V2 Controller ready!")
+            print("\n✅ V2 Controller (ASYNC) ready!")
             print("Move the cube to control gamepad.")
             print("Press Ctrl+C to exit.\n")
             
             # Run forever
-            await asyncio.Future()
+            await asyncio.gather(*tasks)
             
         except KeyboardInterrupt:
             print("\nShutting down...")
@@ -716,7 +611,6 @@ class CubeControllerV2:
             self.gamepad.reset()
             self.gamepad.update()
             
-            # Cleanup hotkeys
             if KEYBOARD_AVAILABLE and self.hotkeys_registered:
                 try:
                     keyboard.unhook_all()
@@ -730,7 +624,7 @@ class CubeControllerV2:
 # ============================================================================
 
 async def main():
-    controller = CubeControllerV2()
+    controller = CubeControllerV2Async()
     await controller.run()
 
 if __name__ == "__main__":
