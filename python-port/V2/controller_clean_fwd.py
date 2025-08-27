@@ -16,25 +16,25 @@ import keyboard
 sys.path.append(str(Path(__file__).parent.parent))
 from gan_web_bluetooth import GanSmartCube
 from gan_web_bluetooth.protocols.base import (
-    GanCubeMoveEvent, 
+    GanCubeMoveEvent,
     GanCubeOrientationEvent,
     GanCubeBatteryEvent
 )
 
 class CubeControllerClean:
     """Clean cube controller - pure async, no threads"""
-    
+
     def __init__(self):
         # Load config
         self.config = self.load_config()
-        
+
         # Cube connection
         self.cube = None
-        
+
         # Gamepad
         self.gamepad = vg.VX360Gamepad()
         self.gamepad_dirty = False  # Track when gamepad needs update
-        
+
         # State tracking
         self.calibration_ref = None
         self.last_quaternion = None
@@ -42,24 +42,23 @@ class CubeControllerClean:
         self.last_move_time = 0
         self.sprinting = False
         self.pending_sprint_state = None  # For sprint task
-        self.current_joy_x = 0  # Track for sprint detection
         self.current_joy_y = 0  # Track for sprint detection
-        
+
         # Performance - rate limit orientation
         self.last_update = 0
         self.update_interval = 8  # 125Hz max
-        
+
         # Stats
         self.orientation_count = 0
         self.move_count = 0
         self.start_time = 0
-        
+
         # Debug
         self.debug_moves = True  # Toggle to see move arrival times
-        
+
         print("V2 Clean Controller initialized")
         print(f"Loaded {len(self.config.get('move_mappings', {}))} mappings")
-    
+
     def load_config(self):
         """Load configuration from JSON file"""
         paths = [
@@ -67,81 +66,80 @@ class CubeControllerClean:
             Path(__file__).parent / "controller_config.json",
             Path(__file__).parent.parent / "controller_config.json"
         ]
-        
+
         for path in paths:
             if path.exists():
                 with open(path, 'r') as f:
                     print(f"Config loaded from: {path}")
                     return json.load(f)
-        
+
         print("No config found, using defaults")
         return {"move_mappings": {}}
-    
+
     def handle_orientation(self, event: GanCubeOrientationEvent):
         """Direct handler - NO executor, NO threads"""
         now_ms = time.perf_counter_ns() // 1_000_000
-        
+
         # Rate limit to 125Hz
         if now_ms - self.last_update < self.update_interval:
             return
         self.last_update = now_ms
-        
+
         # Extract quaternion
         qx = event.quaternion.x
         qy = event.quaternion.y
         qz = event.quaternion.z
         qw = event.quaternion.w
-        
+
         # Store for calibration
         self.last_quaternion = (qx, qy, qz, qw)
-        
+
         # Apply calibration if set
         if self.calibration_ref:
             qx, qy, qz, qw = self.apply_calibration(qx, qy, qz, qw)
-        
+
         # Get sensitivity
         sens = self.config.get('sensitivity', {})
         x_sens = sens.get('tilt_x_sensitivity', 2.5)
         y_sens = sens.get('tilt_y_sensitivity', 2.5)
         z_sens = sens.get('spin_z_sensitivity', 2.0)
-        
+
         # Direct mapping to joystick
         joy_x = qy * x_sens * 2  # left/right
         joy_y = -qx * y_sens * 2  # forward/back
         joy_z = -qz * z_sens  # rotation
-        
+
         # Deadzone
         deadzone = self.config.get('deadzone', {}).get('general_deadzone', 0.1)
         spin_dz = self.config.get('deadzone', {}).get('spin_deadzone', 0.085)
-        
+
         if abs(joy_x) < deadzone: joy_x = 0
         if abs(joy_y) < deadzone: joy_y = 0
         if abs(joy_z) < spin_dz: joy_z = 0
-        
+
         # Clamp values
         joy_x = max(-1.0, min(1.0, joy_x))
         joy_y = max(-1.0, min(1.0, joy_y))
         joy_z = max(-1.0, min(1.0, joy_z))
-        
+
         # Update gamepad - IMMEDIATE update for orientation
         self.gamepad.left_joystick_float(x_value_float=joy_x, y_value_float=joy_y)
         self.gamepad.right_joystick_float(x_value_float=joy_z, y_value_float=0)
         self.gamepad.update()
-        
+
         # Track for sprint detection (handled by separate task)
-        self.current_joy_x = joy_x
         self.current_joy_y = joy_y
         self.orientation_count += 1
-    
+
     def handle_move(self, event: GanCubeMoveEvent):
         """Direct handler - NO threads for button releases"""
         move = event.move
         now_ms = time.perf_counter_ns() // 1_000_000
-        
+
         # Debug: show move arrival
         if self.debug_moves:
             print(f"[{time.perf_counter():.3f}] Move received: {move}")
-        
+
         # Duplicate check
         if move == self.last_move and (now_ms - self.last_move_time) < 50:
             if self.debug_moves:
@@ -149,24 +147,24 @@ class CubeControllerClean:
             return
         self.last_move = move
         self.last_move_time = now_ms
-        
+
         self.move_count += 1
-        
+
         # Special roll handling
         if move == "U'" and self.sprinting:
             asyncio.create_task(self.execute_roll())
             return
-        
+
         # Get mapping
         action = self.config.get('move_mappings', {}).get(move)
         if not action:
             if self.debug_moves:
                 print(f"  -> No mapping found")
             return
-        
+
         if self.debug_moves:
             print(f"  -> Action: {action}")
-        
+
         # Execute action with IMMEDIATE updates
         if action.startswith('gamepad_combo_'):
             asyncio.create_task(self.execute_combo(action))
@@ -184,13 +182,13 @@ class CubeControllerClean:
                 self.gamepad.press_button(button)
                 self.gamepad.update()  # IMMEDIATE update for button press
                 asyncio.create_task(self.release_button_later(button, 0.1))
-    
+
     async def release_button_later(self, button, delay):
         """Async release - NO THREADS"""
         await asyncio.sleep(delay)
         self.gamepad.release_button(button)
         self.gamepad.update()  # Update after release
-    
+
     async def release_trigger_later(self, side, delay):
         """Async trigger release - NO THREADS"""
         await asyncio.sleep(delay)
@@ -199,7 +197,7 @@ class CubeControllerClean:
         else:
             self.gamepad.left_trigger(0)
         self.gamepad.update()  # Update after release
-    
+
     async def execute_roll(self):
         """Handle roll during sprint"""
         print("Rolling...")
@@ -207,27 +205,27 @@ class CubeControllerClean:
         self.gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
         self.gamepad.update()
         await asyncio.sleep(0.05)
-        
+
         # Tap B
         self.gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
         self.gamepad.update()
         await asyncio.sleep(0.1)
-        
+
         self.gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
         self.gamepad.update()
         await asyncio.sleep(0.05)
-        
+
         # Re-hold if still sprinting
         if self.sprinting:
             self.gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
             self.gamepad.update()
-    
+
     async def execute_combo(self, action):
         """Execute button combo"""
         combo = action.replace('gamepad_combo_', '').split('+')
         if len(combo) != 2:
             return
-        
+
         button_map = {
             'y': vg.XUSB_BUTTON.XUSB_GAMEPAD_Y,
             'dpad_down': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN,
@@ -236,23 +234,23 @@ class CubeControllerClean:
             'dpad_right': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT,
             'r1': vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER,
         }
-        
+
         b1 = button_map.get(combo[0])
         b2 = button_map.get(combo[1])
-        
+
         if b1 and b2:
             self.gamepad.press_button(b1)
             # No update yet
             await asyncio.sleep(0.05)
-            
+
             self.gamepad.press_button(b2)
             self.gamepad.update()  # Single update after both pressed
             await asyncio.sleep(0.1)
-            
+
             self.gamepad.release_button(b2)
             self.gamepad.release_button(b1)
             self.gamepad.update()  # Single update after both released
-    
+
     def get_button(self, action):
         """Map action to button"""
         button_map = {
@@ -269,11 +267,11 @@ class CubeControllerClean:
             'gamepad_dpad_right': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT,
         }
         return button_map.get(action)
-    
+
     def apply_calibration(self, qx, qy, qz, qw):
         """Apply calibration quaternion math"""
         ref_x, ref_y, ref_z, ref_w = self.calibration_ref
-        
+
         # Normalize reference
         norm = (ref_x**2 + ref_y**2 + ref_z**2 + ref_w**2) ** 0.5
         if norm > 0:
@@ -283,68 +281,65 @@ class CubeControllerClean:
             ref_w /= norm
         else:
             ref_x, ref_y, ref_z, ref_w = 0, 0, 0, 1
-        
+
         # Inverse of reference
         inv_x = -ref_x
         inv_y = -ref_y
         inv_z = -ref_z
         inv_w = ref_w
-        
+
         # Relative rotation
         new_x = inv_w*qx + inv_x*qw + inv_y*qz - inv_z*qy
         new_y = inv_w*qy - inv_x*qz + inv_y*qw + inv_z*qx
         new_z = inv_w*qz + inv_x*qy - inv_y*qx + inv_z*qw
         new_w = inv_w*qw - inv_x*qx - inv_y*qy - inv_z*qz
-        
+
         return new_x, new_y, new_z, new_w
-    
+
     def calibrate(self):
         """Calibrate to current position"""
         if not self.last_quaternion:
             print("No orientation data yet")
             return
-        
+
         self.calibration_ref = self.last_quaternion
-        
+
         # Reset sprint
         if self.sprinting:
             self.sprinting = False
             self.gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
             self.gamepad.update()
-        
-        print(f"✅ Calibrated at {self.calibration_ref}")
-    
+
+        print(f"âœ… Calibrated at {self.calibration_ref}")
+
     def reset_camera_joystick(self):
         """Reset the right joystick (camera) to center"""
         self.gamepad.right_joystick_float(x_value_float=0.0, y_value_float=0.0)
         self.gamepad.update()
-        print("🎯 Camera joystick reset to center")
-    
+        print("ðŸŽ¯ Camera joystick reset to center")
+
     def toggle_debug(self):
         """Toggle move debug output"""
         self.debug_moves = not self.debug_moves
         print(f"Move debug: {'ON' if self.debug_moves else 'OFF'}")
-    
+
     async def sprint_task(self):
         """Handle sprint state at 10Hz to avoid rapid on/off"""
         while True:
             await asyncio.sleep(0.1)  # 10Hz
-            
-            # Calculate overall movement speed (magnitude of joystick vector)
-            movement_speed = (self.current_joy_x**2 + self.current_joy_y**2) ** 0.5
-            
+
             # Check if sprint state should change
-            if movement_speed > 0.7 and not self.sprinting:
+            if self.current_joy_y > 0.7 and not self.sprinting:
                 self.sprinting = True
                 self.gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
                 self.gamepad.update()  # IMMEDIATE update for sprint
                 print("Sprint: ON")
-            elif movement_speed < 0.6 and self.sprinting:
+            elif self.current_joy_y < 0.6 and self.sprinting:
                 self.sprinting = False
                 self.gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
                 self.gamepad.update()  # IMMEDIATE update for sprint
                 print("Sprint: OFF")
-    
+
     async def stats_loop(self):
         """Print performance stats"""
         while True:
@@ -353,63 +348,63 @@ class CubeControllerClean:
                 runtime = time.perf_counter() - self.start_time
                 ori_rate = self.orientation_count / runtime if runtime > 0 else 0
                 move_rate = self.move_count / runtime if runtime > 0 else 0
-                print(f"📊 Stats: {runtime:.0f}s | Orientation: {ori_rate:.1f}Hz | Moves: {move_rate:.2f}Hz")
-                
+                print(f"ðŸ“Š Stats: {runtime:.0f}s | Orientation: {ori_rate:.1f}Hz | Moves: {move_rate:.2f}Hz")
+
                 # Warn if rates are low
                 if ori_rate < 10:
-                    print("  ⚠️ LOW orientation rate - check BLE connection")
-    
+                    print("  âš ï¸ LOW orientation rate - check BLE connection")
+
     async def keyboard_task(self):
         """Handle keyboard shortcuts"""
         # Set up keyboard hooks
         keyboard.add_hotkey('f5', self.calibrate)
         keyboard.add_hotkey('f6', self.reset_camera_joystick)
         keyboard.add_hotkey('f7', self.toggle_debug)
-        
-        print("⌨️  F5: Reset calibration | F6: Reset camera | F7: Toggle debug")
-        
+
+        print("âŒ¨ï¸  F5: Reset calibration | F6: Reset camera | F7: Toggle debug")
+
         # Keep running to handle keyboard events
         while True:
             await asyncio.sleep(0.1)
-    
+
     async def connect(self):
         """Simple connection"""
         self.cube = GanSmartCube()
-        
+
         # Direct handlers - NO executor.submit()
         self.cube.on('orientation', self.handle_orientation)
         self.cube.on('move', self.handle_move)
-        self.cube.on('battery', lambda e: print(f"🔋 Battery: {e.level}%"))
-        
+        self.cube.on('battery', lambda e: print(f"ðŸ”‹ Battery: {e.level}%"))
+
         await self.cube.connect()
-        print("✅ Connected")
+        print("âœ… Connected")
         self.start_time = time.perf_counter()
-        
+
         # Auto-calibrate after 2 seconds
         await asyncio.sleep(2)
         if self.last_quaternion:
             self.calibrate()
-            print("📍 Place cube with GREEN face forward")
+            print("ðŸ“ Place cube with GREEN face forward")
 
 
 async def main():
     controller = CubeControllerClean()
-    
+
     try:
         await controller.connect()
-        
+
         # Start background tasks (NO update_loop anymore)
         sprint_task = asyncio.create_task(controller.sprint_task())
         stats_task = asyncio.create_task(controller.stats_loop())
         keyboard_task = asyncio.create_task(controller.keyboard_task())
-        
-        print("\n✅ Ready! Move cube to control.")
+
+        print("\nâœ… Ready! Move cube to control.")
         print("Press F7 to toggle move debug output")
         print("Press Ctrl+C to exit\n")
-        
+
         # Just wait forever
         await asyncio.Future()
-        
+
     except KeyboardInterrupt:
         print("\nShutting down...")
     finally:
