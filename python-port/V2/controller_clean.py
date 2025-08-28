@@ -8,6 +8,7 @@ import asyncio
 import time
 import json
 import sys
+import os
 from pathlib import Path
 import vgamepad as vg
 import keyboard
@@ -25,8 +26,10 @@ class CubeControllerClean:
     """Clean cube controller - pure async, no threads"""
     
     def __init__(self):
-        # Load config
+        # Config management
+        self.current_config_path = None
         self.config = self.load_config()
+        self.config_mtime = 0  # Track modification time
         
         # Cube connection
         self.cube = None
@@ -60,22 +63,51 @@ class CubeControllerClean:
         print("V2 Clean Controller initialized")
         print(f"Loaded {len(self.config.get('move_mappings', {}))} mappings")
     
-    def load_config(self):
+    def load_config(self, config_name="controller_config.json"):
         """Load configuration from JSON file"""
         paths = [
-            Path("controller_config.json"),
-            Path(__file__).parent / "controller_config.json",
-            Path(__file__).parent.parent / "controller_config.json"
+            Path(config_name),
+            Path(__file__).parent / config_name,
+            Path(__file__).parent.parent / config_name
         ]
         
         for path in paths:
             if path.exists():
                 with open(path, 'r') as f:
+                    self.current_config_path = path
+                    # Track modification time for hot reload
+                    self.config_mtime = os.path.getmtime(path)
+                    config = json.load(f)
                     print(f"Config loaded from: {path}")
-                    return json.load(f)
+                    print(f"Loaded {len(config.get('move_mappings', {}))} mappings")
+                    return config
         
-        print("No config found, using defaults")
+        print(f"No config found ({config_name}), using defaults")
         return {"move_mappings": {}}
+    
+    def reload_config(self):
+        """Reload configuration from current file"""
+        if self.current_config_path and self.current_config_path.exists():
+            try:
+                with open(self.current_config_path, 'r') as f:
+                    new_config = json.load(f)
+                    self.config = new_config
+                    self.config_mtime = os.path.getmtime(self.current_config_path)
+                    print(f"✅ Config reloaded from: {self.current_config_path}")
+                    print(f"Active mappings: {len(self.config.get('move_mappings', {}))}")
+                    return True
+            except Exception as e:
+                print(f"⚠️ Error reloading config: {e}")
+        return False
+    
+    def switch_config(self, config_name):
+        """Switch to a different config file"""
+        old_path = self.current_config_path
+        self.config = self.load_config(config_name)
+        if self.current_config_path != old_path:
+            print(f"🔄 Switched config to: {config_name}")
+            return True
+        return False
     
     def handle_orientation(self, event: GanCubeOrientationEvent):
         """Direct handler - NO executor, NO threads"""
@@ -325,6 +357,16 @@ class CubeControllerClean:
         self.debug_moves = not self.debug_moves
         print(f"Move debug: {'ON' if self.debug_moves else 'OFF'}")
     
+    def load_config_1(self):
+        """Load controller_config.json (F9)"""
+        if self.switch_config("controller_config.json"):
+            print("[F9] Loaded config 1")
+    
+    def load_config_2(self):
+        """Load controller_config2.json (F10)"""
+        if self.switch_config("controller_config2.json"):
+            print("[F10] Loaded config 2")
+    
     async def sprint_task(self):
         """Handle sprint state at 10Hz to avoid rapid on/off"""
         while True:
@@ -359,14 +401,32 @@ class CubeControllerClean:
                 if ori_rate < 10:
                     print("  ⚠️ LOW orientation rate - check BLE connection")
     
+    async def config_watcher(self):
+        """Watch config file for changes and hot reload"""
+        while True:
+            await asyncio.sleep(1)  # Check every second
+            
+            if self.current_config_path and self.current_config_path.exists():
+                try:
+                    current_mtime = os.path.getmtime(self.current_config_path)
+                    if current_mtime > self.config_mtime:
+                        print("🔄 Config file changed, reloading...")
+                        self.reload_config()
+                except Exception as e:
+                    # Ignore errors (file might be in the middle of being saved)
+                    pass
+    
     async def keyboard_task(self):
         """Handle keyboard shortcuts"""
         # Set up keyboard hooks
         keyboard.add_hotkey('f5', self.calibrate)
         keyboard.add_hotkey('f6', self.reset_camera_joystick)
         keyboard.add_hotkey('f7', self.toggle_debug)
+        keyboard.add_hotkey('f9', self.load_config_1)
+        keyboard.add_hotkey('f10', self.load_config_2)
         
-        print("⌨️  F5: Reset calibration | F6: Reset camera | F7: Toggle debug")
+        print("⌨️  F5: Calibrate | F6: Reset camera | F7: Debug")
+        print("⌨️  F9: Config 1 | F10: Config 2")
         
         # Keep running to handle keyboard events
         while True:
@@ -402,9 +462,10 @@ async def main():
         sprint_task = asyncio.create_task(controller.sprint_task())
         stats_task = asyncio.create_task(controller.stats_loop())
         keyboard_task = asyncio.create_task(controller.keyboard_task())
+        config_watcher = asyncio.create_task(controller.config_watcher())
         
         print("\n✅ Ready! Move cube to control.")
-        print("Press F7 to toggle move debug output")
+        print("Hot reload enabled - config changes apply automatically")
         print("Press Ctrl+C to exit\n")
         
         # Just wait forever

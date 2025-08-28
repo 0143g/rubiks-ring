@@ -353,6 +353,21 @@ class CubeControllerClean:
                 # Warn if rates are low
                 if ori_rate < 10:
                     print("  âš ï¸ LOW orientation rate - check BLE connection")
+    
+    async def config_watcher(self):
+        """Watch config file for changes and hot reload"""
+        while True:
+            await asyncio.sleep(1)  # Check every second
+            
+            if self.current_config_path and self.current_config_path.exists():
+                try:
+                    current_mtime = os.path.getmtime(self.current_config_path)
+                    if current_mtime > self.config_mtime:
+                        print("🔄 Config file changed, reloading...")
+                        self.reload_config()
+                except Exception as e:
+                    # Ignore errors (file might be in the middle of being saved)
+                    pass
 
     async def keyboard_task(self):
         """Handle keyboard shortcuts"""
