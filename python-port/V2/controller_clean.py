@@ -45,7 +45,6 @@ class CubeControllerClean:
         self.last_move_time = 0
         self.sprinting = False
         self.pending_sprint_state = None  # For sprint task
-        self.current_joy_x = 0  # Track for sprint detection
         self.current_joy_y = 0  # Track for sprint detection
         
         # Performance - rate limit orientation
@@ -161,7 +160,6 @@ class CubeControllerClean:
         self.gamepad.update()
         
         # Track for sprint detection (handled by separate task)
-        self.current_joy_x = joy_x
         self.current_joy_y = joy_y
         self.orientation_count += 1
     
@@ -372,16 +370,13 @@ class CubeControllerClean:
         while True:
             await asyncio.sleep(0.1)  # 10Hz
             
-            # Calculate overall movement speed (magnitude of joystick vector)
-            movement_speed = (self.current_joy_x**2 + self.current_joy_y**2) ** 0.5
-            
             # Check if sprint state should change
-            if movement_speed > 0.7 and not self.sprinting:
+            if self.current_joy_y > 0.7 and not self.sprinting:
                 self.sprinting = True
                 self.gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
                 self.gamepad.update()  # IMMEDIATE update for sprint
                 print("Sprint: ON")
-            elif movement_speed < 0.6 and self.sprinting:
+            elif self.current_joy_y < 0.6 and self.sprinting:
                 self.sprinting = False
                 self.gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
                 self.gamepad.update()  # IMMEDIATE update for sprint
