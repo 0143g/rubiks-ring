@@ -25,3 +25,135 @@ b5dafb9d8d86d852014b464c14c52cc65ea6d97d
 7b5803ecc8f31b862ffa62c979cb69c3ad9a3451
 2132b1756cc5d9cf3d1708c166eb6f3bf861f0b7
 d3ca1a0d18871e707e4b29e43a7682f4756610ef
+
+PS M:\mikerson\rubiks\python-port> python .\gan_decode_demo.py
+
+================================================================================
+GAN CUBE BLUETOOTH PACKET DECODER - EDUCATIONAL DEMO
+================================================================================
+
+This demonstrates the complete decoding pipeline:
+1. AES-CBC decryption with MAC-based salt
+2. Event type identification from bit patterns
+3. Bit-level field extraction
+4. Value normalization (quaternions, moves, etc.)
+
+
+********************************************************************************
+PACKET 1
+********************************************************************************
+
+================================================================================
+RAW HEX PACKET: 9dd006d0b39605bc891cea688b94abdbc124dec1
+================================================================================
+
+1. AES DECRYPTION
+   MAC Address: D3:CA:1A:0D:18:87
+   Salt (reversed MAC): 87180d1acad3
+   Key (first 6 bytes salted): 881a4f42fb6516072005185442111253
+   IV (first 6 bytes salted): 981b3f42ebd476272095781432120243
+
+   DECRYPTED BYTES: 778b2a8bb4b7ed2c6f006156007530b27bbd4aed
+   Binary: 01110111 10001011 00101010 10001011
+
+2. EVENT TYPE IDENTIFICATION
+   First byte: 0x77 = 01110111
+   Event type (bits 0-3): 0111 = 0x7
+   Event name: UNKNOWN_07
+
+3. EVENT-SPECIFIC PARSING
+   Raw data: 778b2a8bb4b7ed2c6f006156007530b27bbd4aed
+
+4. FINAL DECODED RESULT
+   {'type': 'UNKNOWN_07', 'raw': '778b2a8bb4b7ed2c6f006156007530b27bbd4aed'}
+
+
+********************************************************************************
+PACKET 2
+********************************************************************************
+
+================================================================================
+RAW HEX PACKET: cbea4ed308df6c77c31afee4d02ad6b297c406be
+================================================================================
+
+1. AES DECRYPTION
+   MAC Address: D3:CA:1A:0D:18:87
+   Salt (reversed MAC): 87180d1acad3
+   Key (first 6 bytes salted): 881a4f42fb6516072005185442111253
+   IV (first 6 bytes salted): 981b3f42ebd476272095781432120243
+
+   DECRYPTED BYTES: e001edae9c5b105822bab8c5b2cbd3e8b050b285
+   Binary: 11100000 00000001 11101101 10101110
+
+2. EVENT TYPE IDENTIFICATION
+   First byte: 0xE0 = 11100000
+   Event type (bits 0-3): 1110 = 0xE
+   Event name: UNKNOWN_0E
+
+3. EVENT-SPECIFIC PARSING
+   Raw data: e001edae9c5b105822bab8c5b2cbd3e8b050b285
+
+4. FINAL DECODED RESULT
+   {'type': 'UNKNOWN_0E', 'raw': 'e001edae9c5b105822bab8c5b2cbd3e8b050b285'}
+
+
+********************************************************************************
+PACKET 3
+********************************************************************************
+
+================================================================================
+RAW HEX PACKET: 451ed604dc7535c778ba89a6f617e18dbac4244b
+================================================================================
+
+1. AES DECRYPTION
+   MAC Address: D3:CA:1A:0D:18:87
+   Salt (reversed MAC): 87180d1acad3
+   Key (first 6 bytes salted): 881a4f42fb6516072005185442111253
+   IV (first 6 bytes salted): 981b3f42ebd476272095781432120243
+
+   DECRYPTED BYTES: 486111f3dbe6aa65e2e0153a7187f9a9235eb294
+   Binary: 01001000 01100001 00010001 11110011
+
+2. EVENT TYPE IDENTIFICATION
+   First byte: 0x48 = 01001000
+   Event type (bits 0-3): 0100 = 0x4
+   Event name: FACELETS
+
+3. EVENT-SPECIFIC PARSING
+   Raw data: 486111f3dbe6aa65e2e0153a7187f9a9235eb294
+
+4. FINAL DECODED RESULT
+   {'type': 'FACELETS', 'raw': '486111f3dbe6aa65e2e0153a7187f9a9235eb294'}
+
+
+================================================================================
+DECODING SUMMARY
+================================================================================
+
+🔐 ENCRYPTION:
+  • Uses AES-128-CBC with MAC address as salt
+  • Salt = reversed MAC bytes
+  • Key/IV first 6 bytes modified by (base + salt) % 0xFF
+  • Decrypts in two chunks: bytes[4:20] then bytes[0:16]
+
+📊 EVENT IDENTIFICATION:
+  • Event type in bits 0-3 of first byte
+  • 0x01 = Orientation (quaternion)
+  • 0x02 = Move (face turns)
+  • 0x09 = Battery level
+
+🔢 BIT-LEVEL PARSING:
+  • Data packed at arbitrary bit boundaries
+  • Quaternions: 16 bits each (1 sign + 15 magnitude)
+  • Moves: 5 bits per move (4 face + 1 direction)
+  • Timestamps: 16 bits for elapsed time
+
+📐 NORMALIZATION:
+  • Quaternions: raw/0x7FFF with sign from bit 15
+  • Moves: face index to URFDLB notation
+  • Direction: 0=CW, 1=CCW (prime notation)
+
+✅ DECODED EVENT TYPES:
+  • UNKNOWN_07: 1 packet(s)
+  • UNKNOWN_0E: 1 packet(s)
+  • FACELETS: 1 packet(s)
