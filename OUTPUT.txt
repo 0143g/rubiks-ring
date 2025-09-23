@@ -1,14 +1,27 @@
-PS M:\mikerson\rubiks\python-port> python .\run_controller.py
-ERROR: No move_mappings found in config file!
-Please ensure move_mappings exists in your controller_config.json
-Virtual Xbox controller created
-Gamepad controller bridge initialized
-Loaded 14 move mappings
-Starting controller bridge on localhost:8083
-Press Ctrl+C to stop
-Gamepad Controller Bridge
-Starting server on localhost:8083
-Server ready
-Client connected: ('::1', 53586, 0, 0)
-
-Controller bridge stopped
+PS M:\mikerson\rubiks\python-port> python .\gan_raw_stream.py
+9dd006d0b39605bc891cea688b94abdbc124dec1
+cbea4ed308df6c77c31afee4d02ad6b297c406be
+451ed604dc7535c778ba89a6f617e18dbac4244b
+b066cb4009a3e86232e655b76bf61ab6f49130e0
+5b729a665086910ee3b1f6ee89dcb22ec1b3aff3
+1d7ca2954c5459d038c0c762b99a01fffd055576
+313a01ed46ed9b03739d4290fb61c8ac6020e01c
+f63bde5365bdb74d38d8061411c61e2d2b7ed4fb
+f9f1acb95df53889e265614586fd8a0304224f75
+ac35092431594504b7a0ebdeb41e7628ce7ee868
+d5619216b4251354ff6d090ecaed07ded30a1d8d
+56d1fca847ad926081e427f8da0258d297dacc77
+f4426d4cbce7029f697452af5972f70597fb5135
+5a11e480849a1989e5cd21ad725861491a1d1dfb
+e3c76fd21720f71bc873cf0723194774b2194d83
+4a98f7416fb0b24eef91af3de207d148553717c8
+6f6de0446a3b63b211843b234d20c0e794ee0ac7
+ea6372ce4a15b48c510ac8955e6dbab5ead8271f
+60552867049d02766d254bf931c7638d9dd01a4c
+f95df498a8ae0b6b0778e8e5852bf1e8e51243f1
+b5dafb9d8d86d852014b464c14c52cc65ea6d97d
+279342bd53b34a9cfd0b6444a3e3b4a74e4dcbb4
+25229671fe7ad306ba68ea798c460606289dcb41
+7b5803ecc8f31b862ffa62c979cb69c3ad9a3451
+2132b1756cc5d9cf3d1708c166eb6f3bf861f0b7
+d3ca1a0d18871e707e4b29e43a7682f4756610ef

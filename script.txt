@@ -1,0 +1,15 @@
+throughout the thousands of years of documented history, every now and then someone comes around who literally changes the world. geniuses with novel ideas that alter the course of humanity: people like issac newton, albert einstein, jesus.
+
+i am not one of those people, but i do have a lot of ideas. most of them... aren't great. but sometimes you gotta get through the bad ideas to get to the good ones. and yeah, this is definitely one of the bad ones.
+
+[iron pineapple-esque intro (overloaded, pacifist, etc)]
+
+can you beat elden ring with a rubiks cube? now look i know the first thing you're probably thinking is why? why do that? because it'd be FUNNY and people on the internet would like it. and the second thing you're probably thinking is: how is that even possible? it's a plastic cube that does nothing but cause stress and confusion. and yeah maybe for YOU but for me i'm actually pretty alright at it, nothing crazy though.
+
+the main hurdle is answering the question: how do i take a piece of plastic and turn it into a functioning gaming controller? and i think i know just how to do that.
+
+[cube intro and tech shit]
+
+so one night recently i was completely and entirely sober and, as sober people tend to do, they stumble onto chinese rubiks cube websites. i happened to come across a website and found this: the gan356 i 3 smart cube. it's just like a regular cube except it has bluetooth capabilities. now apparently you're supposed to use it by connecting the cube to their app and it'll show you stats for your solves and stuff but fuck all that i wanna break it. see according to the product description, you get "ultra-precise tracking, gyroscope-based motion capture, and up to 15 hours of playtime" which sounds perfect. nobody has ever lied about the capabilities of their product just to get sales before.
+
+so i got the cube and took it out of the box and shit and figured i should test out how functional it really is. i tried to connect the cube to their official app but then i realized it's all in chinese which i probably should have expected. so i skipped all that and decided to just go and figure it out myself. i might not be able to read chinese but i can read data. all i have to do is setup a script to check what the cube is sending over bluetooth and... ah yes it's all fucking encrypted how lovely. 
